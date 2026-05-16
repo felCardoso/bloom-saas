@@ -2,8 +2,19 @@
 
 import { useState, Fragment } from "react";
 import {
-  Check, X, Sparkles, Users, ShoppingBag, Package, Calendar,
-  BarChart3, MessageCircle, Bell, Download, UsersRound, HeadphonesIcon,
+  Check,
+  X,
+  Sparkles,
+  Users,
+  ShoppingBag,
+  Package,
+  Calendar,
+  BarChart3,
+  MessageCircle,
+  Bell,
+  Download,
+  UsersRound,
+  HeadphonesIcon,
   Zap,
 } from "lucide-react";
 import { usePlan } from "@/lib/plan-context";
@@ -97,7 +108,11 @@ const FEATURES_TABLE = [
       {
         label: "Suporte",
         icon: HeadphonesIcon,
-        values: { free: "Comunidade", pro: "E-mail (48h)", premium: "Prioritário (24h)" },
+        values: {
+          free: "Comunidade",
+          pro: "E-mail (48h)",
+          premium: "Prioritário (24h)",
+        },
       },
     ],
   },
@@ -140,15 +155,16 @@ export default function PricingPage() {
           Escolha o plano ideal para você
         </h1>
         <p className="text-neutral-500 text-sm lg:text-base max-w-lg mx-auto">
-          Comece grátis e faça upgrade conforme seu negócio cresce. Sem surpresas.
+          Comece grátis e faça upgrade conforme seu negócio cresce. Sem
+          surpresas.
         </p>
         {planId !== "free" && (
           <p className="text-xs text-neutral-400">
             Você está no plano{" "}
             <span className="font-semibold text-rose-500">
               {PLANS[planId].name}
-            </span>
-            {" "}— altere abaixo para simular outros planos.
+            </span>{" "}
+            — altere abaixo para simular outros planos.
           </p>
         )}
       </div>
@@ -170,7 +186,7 @@ export default function PricingPage() {
                 isCurrent
                   ? "border-rose-300 ring-2 ring-rose-200"
                   : "border-neutral-200",
-                isPro ? "bg-rose-500 text-white" : "bg-white"
+                isPro ? "bg-rose-500 text-white" : "bg-white",
               )}
             >
               {/* Popular badge */}
@@ -189,7 +205,7 @@ export default function PricingPage() {
                       "text-[11px] font-bold px-3 py-1 rounded-full",
                       isPro
                         ? "bg-white text-rose-600"
-                        : "bg-rose-500 text-white"
+                        : "bg-rose-500 text-white",
                     )}
                   >
                     Plano atual
@@ -201,7 +217,7 @@ export default function PricingPage() {
                 <p
                   className={cn(
                     "text-sm font-semibold mb-1",
-                    isPro ? "text-rose-100" : "text-neutral-500"
+                    isPro ? "text-rose-100" : "text-neutral-500",
                   )}
                 >
                   {p.name}
@@ -210,7 +226,7 @@ export default function PricingPage() {
                   <span
                     className={cn(
                       "text-3xl font-bold",
-                      isPro ? "text-white" : "text-neutral-800"
+                      isPro ? "text-white" : "text-neutral-800",
                     )}
                   >
                     {p.price === 0 ? "Grátis" : `R$ ${p.price}`}
@@ -219,7 +235,7 @@ export default function PricingPage() {
                     <span
                       className={cn(
                         "text-sm",
-                        isPro ? "text-rose-200" : "text-neutral-400"
+                        isPro ? "text-rose-200" : "text-neutral-400",
                       )}
                     >
                       {p.period}
@@ -229,7 +245,7 @@ export default function PricingPage() {
                 <p
                   className={cn(
                     "text-xs mt-1",
-                    isPro ? "text-rose-100" : "text-neutral-400"
+                    isPro ? "text-rose-100" : "text-neutral-400",
                   )}
                 >
                   {p.description}
@@ -252,7 +268,8 @@ export default function PricingPage() {
                   p.features.whatsappLink && "Link WhatsApp",
                   p.features.stockAlerts && "Alertas de estoque",
                   p.features.csvExport && "Exportar CSV",
-                  p.features.multipleUsers > 0 && `Até ${p.features.multipleUsers} usuários`,
+                  p.features.multipleUsers > 0 &&
+                    `Até ${p.features.multipleUsers} usuários`,
                 ]
                   .filter(Boolean)
                   .map((f) => (
@@ -260,13 +277,13 @@ export default function PricingPage() {
                       key={String(f)}
                       className={cn(
                         "flex items-center gap-2 text-sm",
-                        isPro ? "text-white" : "text-neutral-600"
+                        isPro ? "text-white" : "text-neutral-600",
                       )}
                     >
                       <Check
                         className={cn(
-                          "w-4 h-4 flex-shrink-0",
-                          isPro ? "text-rose-200" : "text-rose-500"
+                          "w-4 h-4 shrink-0",
+                          isPro ? "text-rose-200" : "text-rose-500",
                         )}
                       />
                       {String(f)}
@@ -284,19 +301,19 @@ export default function PricingPage() {
                       ? "bg-white/20 text-white cursor-default"
                       : "bg-neutral-100 text-neutral-400 cursor-default"
                     : isPro
-                    ? "bg-white text-rose-600 hover:bg-rose-50"
-                    : isDowngrade
-                    ? "border border-neutral-200 text-neutral-600 hover:bg-neutral-50"
-                    : "bg-rose-500 text-white hover:bg-rose-600"
+                      ? "bg-white text-rose-600 hover:bg-rose-50"
+                      : isDowngrade
+                        ? "border border-neutral-200 text-neutral-600 hover:bg-neutral-50"
+                        : "bg-rose-500 text-white hover:bg-rose-600",
                 )}
               >
                 {isCurrent
                   ? "Plano atual"
                   : isDowngrade
-                  ? `Fazer downgrade`
-                  : id === "free"
-                  ? "Usar grátis"
-                  : `Assinar ${p.name}`}
+                    ? `Fazer downgrade`
+                    : id === "free"
+                      ? "Usar grátis"
+                      : `Assinar ${p.name}`}
               </button>
             </div>
           );
@@ -349,7 +366,7 @@ export default function PricingPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[520px]">
+          <table className="w-full min-w-130">
             <thead>
               <tr className="border-b border-neutral-100">
                 <th className="text-left px-5 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wide w-[40%]">
@@ -360,9 +377,7 @@ export default function PricingPage() {
                     key={id}
                     className={cn(
                       "px-4 py-3 text-xs font-bold uppercase tracking-wide text-center",
-                      id === planId
-                        ? "text-rose-500"
-                        : "text-neutral-500"
+                      id === planId ? "text-rose-500" : "text-neutral-500",
                     )}
                   >
                     {PLANS[id].name}
@@ -393,7 +408,7 @@ export default function PricingPage() {
                     >
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
-                          <row.icon className="w-4 h-4 text-neutral-400 flex-shrink-0" />
+                          <row.icon className="w-4 h-4 text-neutral-400 shrink-0" />
                           <span className="text-sm text-neutral-700">
                             {row.label}
                           </span>
@@ -404,13 +419,11 @@ export default function PricingPage() {
                           key={id}
                           className={cn(
                             "px-4 py-3.5 text-center",
-                            id === planId ? "bg-rose-50/40" : ""
+                            id === planId ? "bg-rose-50/40" : "",
                           )}
                         >
                           <FeatureValue
-                            value={
-                              row.values[id as keyof typeof row.values]
-                            }
+                            value={row.values[id as keyof typeof row.values]}
                           />
                         </td>
                       ))}

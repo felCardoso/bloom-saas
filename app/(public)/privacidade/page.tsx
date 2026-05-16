@@ -6,10 +6,26 @@ export const metadata: Metadata = {
 };
 
 const highlights = [
-  { icon: Shield, label: "Conformidade com a LGPD", desc: "Seguimos a Lei Geral de Proteção de Dados (Lei nº 13.709/2018) em todas as operações." },
-  { icon: Lock, label: "Seus dados são seus", desc: "Nunca vendemos ou compartilhamos seus dados com terceiros para fins publicitários." },
-  { icon: Eye, label: "Transparência total", desc: "Descrevemos exatamente quais dados coletamos e como cada um é utilizado." },
-  { icon: Trash2, label: "Direito ao esquecimento", desc: "Você pode solicitar a exclusão de todos os seus dados a qualquer momento." },
+  {
+    icon: Shield,
+    label: "Conformidade com a LGPD",
+    desc: "Seguimos a Lei Geral de Proteção de Dados (Lei nº 13.709/2018) em todas as operações.",
+  },
+  {
+    icon: Lock,
+    label: "Seus dados são seus",
+    desc: "Nunca vendemos ou compartilhamos seus dados com terceiros para fins publicitários.",
+  },
+  {
+    icon: Eye,
+    label: "Transparência total",
+    desc: "Descrevemos exatamente quais dados coletamos e como cada um é utilizado.",
+  },
+  {
+    icon: Trash2,
+    label: "Direito ao esquecimento",
+    desc: "Você pode solicitar a exclusão de todos os seus dados a qualquer momento.",
+  },
 ];
 
 const sections = [
@@ -152,7 +168,9 @@ export default function PrivacidadePage() {
           Última atualização: 1º de maio de 2026 · Em conformidade com a LGPD
         </p>
         <p className="mt-4 text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed">
-          Sua privacidade é fundamental para nós. Este documento explica de forma clara quais dados coletamos, como os utilizamos e quais são seus direitos.
+          Sua privacidade é fundamental para nós. Este documento explica de
+          forma clara quais dados coletamos, como os utilizamos e quais são seus
+          direitos.
         </p>
       </div>
 
@@ -163,12 +181,16 @@ export default function PrivacidadePage() {
             key={h.label}
             className="flex items-start gap-3 p-4 bg-rose-50 rounded-2xl border border-rose-100"
           >
-            <div className="w-8 h-8 bg-rose-100 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+            <div className="w-8 h-8 bg-rose-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
               <h.icon className="w-4 h-4 text-rose-500" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-neutral-800">{h.label}</p>
-              <p className="text-xs text-neutral-500 mt-0.5 leading-relaxed">{h.desc}</p>
+              <p className="text-sm font-semibold text-neutral-800">
+                {h.label}
+              </p>
+              <p className="text-xs text-neutral-500 mt-0.5 leading-relaxed">
+                {h.desc}
+              </p>
             </div>
           </div>
         ))}
@@ -198,8 +220,12 @@ export default function PrivacidadePage() {
             <Mail className="w-4 h-4 text-rose-500" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-neutral-800">DPO / Privacidade</p>
-            <p className="text-xs text-neutral-500">privacidade@rosecrm.com.br</p>
+            <p className="text-sm font-semibold text-neutral-800">
+              DPO / Privacidade
+            </p>
+            <p className="text-xs text-neutral-500">
+              privacidade@rosecrm.com.br
+            </p>
           </div>
         </a>
         <a
@@ -210,7 +236,9 @@ export default function PrivacidadePage() {
             <FileText className="w-4 h-4 text-rose-500" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-neutral-800">Central de Suporte</p>
+            <p className="text-sm font-semibold text-neutral-800">
+              Central de Suporte
+            </p>
             <p className="text-xs text-neutral-500">Dúvidas e solicitações</p>
           </div>
         </a>

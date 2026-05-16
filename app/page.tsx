@@ -3,17 +3,49 @@
 import Link from "next/link";
 import { useState } from "react";
 import {
-  Sparkles, Users, ShoppingBag, BarChart3, Calendar, Package,
-  ArrowRight, Check, Menu, X,
+  Sparkles,
+  Users,
+  ShoppingBag,
+  BarChart3,
+  Calendar,
+  Package,
+  ArrowRight,
+  Check,
+  Menu,
+  X,
 } from "lucide-react";
 
 const features = [
-  { icon: Users, title: "Gestão de Clientes", desc: "Centralize toda a carteira de clientes com histórico de compras, aniversários e anotações." },
-  { icon: ShoppingBag, title: "Controle de Pedidos", desc: "Registre e acompanhe pedidos do recebimento até a entrega, com atualização de status em um clique." },
-  { icon: Package, title: "Catálogo de Produtos", desc: "Organize produtos por categoria, controle estoque e acompanhe margem de lucro automaticamente." },
-  { icon: Calendar, title: "Agenda Inteligente", desc: "Follow-ups, entregas e aniversários de clientes para nunca perder uma venda." },
-  { icon: BarChart3, title: "Relatórios e Insights", desc: "Visualize receita, ticket médio e desempenho para tomar decisões estratégicas com confiança." },
-  { icon: Sparkles, title: "Design Minimalista", desc: "Interface limpa e intuitiva pensada para revendedoras que querem praticidade no dia a dia." },
+  {
+    icon: Users,
+    title: "Gestão de Clientes",
+    desc: "Centralize toda a carteira de clientes com histórico de compras, aniversários e anotações.",
+  },
+  {
+    icon: ShoppingBag,
+    title: "Controle de Pedidos",
+    desc: "Registre e acompanhe pedidos do recebimento até a entrega, com atualização de status em um clique.",
+  },
+  {
+    icon: Package,
+    title: "Catálogo de Produtos",
+    desc: "Organize produtos por categoria, controle estoque e acompanhe margem de lucro automaticamente.",
+  },
+  {
+    icon: Calendar,
+    title: "Agenda Inteligente",
+    desc: "Follow-ups, entregas e aniversários de clientes para nunca perder uma venda.",
+  },
+  {
+    icon: BarChart3,
+    title: "Relatórios e Insights",
+    desc: "Visualize receita, ticket médio e desempenho para tomar decisões estratégicas com confiança.",
+  },
+  {
+    icon: Sparkles,
+    title: "Design Minimalista",
+    desc: "Interface limpa e intuitiva pensada para revendedoras que querem praticidade no dia a dia.",
+  },
 ];
 
 const plans = [
@@ -31,7 +63,13 @@ const plans = [
     price: "R$ 29",
     period: "/mês",
     desc: "Para revendedoras em crescimento",
-    features: ["Clientes ilimitados", "Pedidos ilimitados", "Relatórios completos", "Agenda avançada", "Suporte prioritário"],
+    features: [
+      "Clientes ilimitados",
+      "Pedidos ilimitados",
+      "Relatórios completos",
+      "Agenda avançada",
+      "Suporte prioritário",
+    ],
     cta: "Experimentar 14 dias",
     primary: true,
   },
@@ -40,7 +78,12 @@ const plans = [
     price: "R$ 59",
     period: "/mês",
     desc: "Para times e grandes carteiras",
-    features: ["Tudo do Pro", "Múltiplos usuários", "Exportação de dados", "API integrations"],
+    features: [
+      "Tudo do Pro",
+      "Múltiplos usuários",
+      "Exportação de dados",
+      "API integrations",
+    ],
     cta: "Falar com vendas",
     primary: false,
   },
@@ -59,7 +102,9 @@ export default function LandingPage() {
             <div className="w-7 h-7 sm:w-8 sm:h-8 bg-rose-500 rounded-xl flex items-center justify-center shadow-sm">
               <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
             </div>
-            <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">Bloom</span>
+            <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">
+              Bloom
+            </span>
           </div>
 
           {/* Desktop links */}
@@ -83,7 +128,11 @@ export default function LandingPage() {
             onClick={() => setMenuOpen((v) => !v)}
             className="sm:hidden p-2 rounded-xl text-neutral-500 hover:bg-neutral-50 transition-colors"
           >
-            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {menuOpen ? (
+              <X className="w-5 h-5" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
           </button>
         </div>
 
@@ -117,11 +166,12 @@ export default function LandingPage() {
           </div>
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-neutral-900 dark:text-neutral-100 leading-tight mb-4 sm:mb-6">
             Organize seu negócio{" "}
-            <span className="text-rose-500">de beleza</span>{" "}
-            com elegância
+            <span className="text-rose-500">de beleza</span> com elegância
           </h1>
           <p className="text-base sm:text-lg text-neutral-500 dark:text-neutral-400 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed">
-            Gerencie clientes, pedidos e produtos em um único lugar. Feito especialmente para revendedoras de Mary Kay, Avon, Natura e similares.
+            Gerencie clientes, pedidos e produtos em um único lugar. Feito
+            especialmente para revendedoras de Mary Kay, Avon, Natura e
+            similares.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
@@ -138,14 +188,16 @@ export default function LandingPage() {
               Já tenho conta
             </Link>
           </div>
-          <p className="text-xs text-neutral-400 mt-4">Sem cartão de crédito · Cancele quando quiser</p>
+          <p className="text-xs text-neutral-400 mt-4">
+            Sem cartão de crédito · Cancele quando quiser
+          </p>
         </div>
       </section>
 
       {/* Preview mockup */}
       <section className="px-4 sm:px-6 pb-16 sm:pb-24">
         <div className="max-w-5xl mx-auto">
-          <div className="bg-gradient-to-br from-rose-50 to-neutral-50 border border-neutral-200 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-soft">
+          <div className="bg-linear-to-br from-rose-50 to-neutral-50 border border-neutral-200 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-soft">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
               {[
                 { label: "Clientes", value: "248", sub: "↑ 12%" },
@@ -153,28 +205,44 @@ export default function LandingPage() {
                 { label: "Receita", value: "R$4.820", sub: "↑ 23%" },
                 { label: "Ticket Médio", value: "R$141", sub: "↑ 5%" },
               ].map((s) => (
-                <div key={s.label} className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-card">
-                  <p className="text-base sm:text-xl font-bold text-neutral-800">{s.value}</p>
-                  <p className="text-[11px] sm:text-xs font-medium text-neutral-600 mt-0.5">{s.label}</p>
-                  <p className="text-[10px] sm:text-[11px] text-emerald-500 mt-1">{s.sub} este mês</p>
+                <div
+                  key={s.label}
+                  className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-card"
+                >
+                  <p className="text-base sm:text-xl font-bold text-neutral-800">
+                    {s.value}
+                  </p>
+                  <p className="text-[11px] sm:text-xs font-medium text-neutral-600 mt-0.5">
+                    {s.label}
+                  </p>
+                  <p className="text-[10px] sm:text-[11px] text-emerald-500 mt-1">
+                    {s.sub} este mês
+                  </p>
                 </div>
               ))}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               <div className="sm:col-span-2 bg-white rounded-xl sm:rounded-2xl p-4 shadow-card">
-                <p className="text-xs sm:text-sm font-semibold text-neutral-700 mb-3">Receita dos Últimos 6 Meses</p>
+                <p className="text-xs sm:text-sm font-semibold text-neutral-700 mb-3">
+                  Receita dos Últimos 6 Meses
+                </p>
                 <div className="flex items-end gap-1.5 sm:gap-2 h-20 sm:h-24">
                   {[38, 52, 41, 68, 52, 64].map((h, i) => (
                     <div
                       key={i}
                       className="flex-1 rounded-t-md transition-all"
-                      style={{ height: `${h}%`, background: i === 5 ? "#D4829C" : "#F2C4D4" }}
+                      style={{
+                        height: `${h}%`,
+                        background: i === 5 ? "#D4829C" : "#F2C4D4",
+                      }}
                     />
                   ))}
                 </div>
               </div>
               <div className="bg-white rounded-xl sm:rounded-2xl p-4 shadow-card">
-                <p className="text-xs sm:text-sm font-semibold text-neutral-700 mb-3">Por Status</p>
+                <p className="text-xs sm:text-sm font-semibold text-neutral-700 mb-3">
+                  Por Status
+                </p>
                 <div className="space-y-2 sm:space-y-2">
                   {[
                     { label: "Ativas", pct: 68, color: "#D4829C" },
@@ -221,8 +289,12 @@ export default function LandingPage() {
                 <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center mb-4">
                   <f.icon className="w-5 h-5 text-rose-500" />
                 </div>
-                <h3 className="text-sm sm:text-base font-semibold text-neutral-800 mb-2">{f.title}</h3>
-                <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed">{f.desc}</p>
+                <h3 className="text-sm sm:text-base font-semibold text-neutral-800 mb-2">
+                  {f.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed">
+                  {f.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -252,7 +324,9 @@ export default function LandingPage() {
               >
                 <p
                   className={`text-sm font-semibold mb-1 ${
-                    plan.primary ? "text-rose-100" : "text-neutral-500 dark:text-neutral-400"
+                    plan.primary
+                      ? "text-rose-100"
+                      : "text-neutral-500 dark:text-neutral-400"
                   }`}
                 >
                   {plan.name}
@@ -260,7 +334,9 @@ export default function LandingPage() {
                 <div className="flex items-baseline gap-1 mb-1">
                   <span
                     className={`text-3xl font-bold ${
-                      plan.primary ? "text-white" : "text-neutral-800 dark:text-neutral-100"
+                      plan.primary
+                        ? "text-white"
+                        : "text-neutral-800 dark:text-neutral-100"
                     }`}
                   >
                     {plan.price}
@@ -273,7 +349,9 @@ export default function LandingPage() {
                 </div>
                 <p
                   className={`text-xs mb-5 sm:mb-6 ${
-                    plan.primary ? "text-rose-100" : "text-neutral-400 dark:text-neutral-500"
+                    plan.primary
+                      ? "text-rose-100"
+                      : "text-neutral-400 dark:text-neutral-500"
                   }`}
                 >
                   {plan.desc}
@@ -282,11 +360,17 @@ export default function LandingPage() {
                   {plan.features.map((feat) => (
                     <li key={feat} className="flex items-center gap-2 text-sm">
                       <Check
-                        className={`w-4 h-4 flex-shrink-0 ${
+                        className={`w-4 h-4 shrink-0 ${
                           plan.primary ? "text-rose-200" : "text-rose-500"
                         }`}
                       />
-                      <span className={plan.primary ? "text-white" : "text-neutral-600 dark:text-neutral-300"}>
+                      <span
+                        className={
+                          plan.primary
+                            ? "text-white"
+                            : "text-neutral-600 dark:text-neutral-300"
+                        }
+                      >
                         {feat}
                       </span>
                     </li>
@@ -315,7 +399,9 @@ export default function LandingPage() {
             <div className="w-6 h-6 bg-rose-500 rounded-lg flex items-center justify-center">
               <Sparkles className="w-3 h-3 text-white" />
             </div>
-            <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">Bloom</span>
+            <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">
+              Bloom
+            </span>
           </div>
           <div className="flex flex-wrap justify-center gap-4">
             {[
@@ -324,12 +410,18 @@ export default function LandingPage() {
               { href: "/termos", label: "Termos de Uso" },
               { href: "/privacidade", label: "Privacidade" },
             ].map((l) => (
-              <Link key={l.href} href={l.href} className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors">
+              <Link
+                key={l.href}
+                href={l.href}
+                className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
+              >
                 {l.label}
               </Link>
             ))}
           </div>
-          <p className="text-xs text-neutral-400">© 2026 Bloom · Feito com ♥ para revendedoras.</p>
+          <p className="text-xs text-neutral-400">
+            © 2026 Bloom · Feito com ♥ para revendedoras.
+          </p>
         </div>
       </footer>
     </div>

@@ -16,7 +16,10 @@ import { UpgradeModal } from "@/components/ui/UpgradeModal";
 
 const statusMap: Record<
   OrderStatus,
-  { label: string; variant: "rose" | "green" | "yellow" | "gray" | "red" | "blue" }
+  {
+    label: string;
+    variant: "rose" | "green" | "yellow" | "gray" | "red" | "blue";
+  }
 > = {
   pendente: { label: "Pendente", variant: "yellow" },
   confirmado: { label: "Confirmado", variant: "blue" },
@@ -41,7 +44,9 @@ export default function PedidosPage() {
   const [addingItem, setAddingItem] = useState({ product_id: "", quantity: 1 });
 
   const filtered = orders.filter((o) => {
-    const matchSearch = o.client_name.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = o.client_name
+      .toLowerCase()
+      .includes(search.toLowerCase());
     const matchStatus = statusFilter === "all" || o.status === statusFilter;
     return matchSearch && matchStatus;
   });
@@ -96,7 +101,7 @@ export default function PedidosPage() {
 
   const totalRevenue = filtered.reduce(
     (s, o) => s + (o.status !== "cancelado" ? o.total : 0),
-    0
+    0,
   );
 
   return (
@@ -135,12 +140,20 @@ export default function PedidosPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
           { label: "Pedidos", value: filtered.length },
-          { label: "Pendentes", value: filtered.filter((o) => o.status === "pendente").length },
-          { label: "Entregues", value: filtered.filter((o) => o.status === "entregue").length },
+          {
+            label: "Pendentes",
+            value: filtered.filter((o) => o.status === "pendente").length,
+          },
+          {
+            label: "Entregues",
+            value: filtered.filter((o) => o.status === "entregue").length,
+          },
           { label: "Receita", value: formatCurrency(totalRevenue) },
         ].map((s) => (
           <Card key={s.label} padding="sm">
-            <p className="text-lg lg:text-xl font-bold text-neutral-800">{s.value}</p>
+            <p className="text-lg lg:text-xl font-bold text-neutral-800">
+              {s.value}
+            </p>
             <p className="text-xs text-neutral-500">{s.label}</p>
           </Card>
         ))}
@@ -152,7 +165,9 @@ export default function PedidosPage() {
           <Card>
             <div className="py-12 text-center">
               <ShoppingBag className="w-8 h-8 mx-auto mb-2 text-neutral-300" />
-              <p className="text-neutral-400 text-sm">Nenhum pedido encontrado</p>
+              <p className="text-neutral-400 text-sm">
+                Nenhum pedido encontrado
+              </p>
             </div>
           </Card>
         ) : (
@@ -179,20 +194,24 @@ export default function PedidosPage() {
                     <p className="text-xs text-neutral-400 truncate">
                       {order.items.map((i) => i.product_name).join(", ")}
                     </p>
-                    <p className="text-xs text-neutral-400 mt-0.5">{formatDate(order.created_at)}</p>
+                    <p className="text-xs text-neutral-400 mt-0.5">
+                      {formatDate(order.created_at)}
+                    </p>
                   </div>
-                  <div className="text-right flex-shrink-0">
+                  <div className="text-right shrink-0">
                     <p className="text-base font-bold text-neutral-800">
                       {formatCurrency(order.total)}
                     </p>
                     <p className="text-xs text-neutral-400">
-                      {order.items.length} {order.items.length === 1 ? "item" : "itens"}
+                      {order.items.length}{" "}
+                      {order.items.length === 1 ? "item" : "itens"}
                     </p>
                   </div>
                 </div>
 
                 {/* Quick actions */}
-                {(order.status === "pendente" || order.status === "confirmado") && (
+                {(order.status === "pendente" ||
+                  order.status === "confirmado") && (
                   <div
                     className="border-t border-neutral-100 px-4 py-2.5 flex gap-2"
                     onClick={(e) => e.stopPropagation()}
@@ -229,15 +248,26 @@ export default function PedidosPage() {
         )}
       </div>
 
-      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} resource="ordersPerMonth" />
+      <UpgradeModal
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        resource="ordersPerMonth"
+      />
 
       {/* Add modal */}
-      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Novo Pedido" size="lg">
+      <Modal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        title="Novo Pedido"
+        size="lg"
+      >
         <div className="space-y-4">
           <Select
             label="Cliente *"
             value={newOrder.client_id}
-            onChange={(e) => setNewOrder((o) => ({ ...o, client_id: e.target.value }))}
+            onChange={(e) =>
+              setNewOrder((o) => ({ ...o, client_id: e.target.value }))
+            }
             options={mockClients.map((c) => ({ value: c.id, label: c.name }))}
             placeholder="Selecione a cliente"
           />
@@ -245,7 +275,10 @@ export default function PedidosPage() {
             label="Status inicial"
             value={newOrder.status}
             onChange={(e) =>
-              setNewOrder((o) => ({ ...o, status: e.target.value as OrderStatus }))
+              setNewOrder((o) => ({
+                ...o,
+                status: e.target.value as OrderStatus,
+              }))
             }
             options={[
               { value: "pendente", label: "Pendente" },
@@ -256,7 +289,9 @@ export default function PedidosPage() {
 
           {/* Add item */}
           <div className="p-4 bg-neutral-50 rounded-2xl space-y-3">
-            <p className="text-sm font-medium text-neutral-700">Adicionar Produto</p>
+            <p className="text-sm font-medium text-neutral-700">
+              Adicionar Produto
+            </p>
             <div className="flex gap-2">
               <select
                 value={addingItem.product_id}
@@ -277,7 +312,10 @@ export default function PedidosPage() {
                 min={1}
                 value={addingItem.quantity}
                 onChange={(e) =>
-                  setAddingItem((i) => ({ ...i, quantity: Number(e.target.value) }))
+                  setAddingItem((i) => ({
+                    ...i,
+                    quantity: Number(e.target.value),
+                  }))
                 }
                 className="w-14 px-2 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-rose-400"
               />
@@ -296,7 +334,9 @@ export default function PedidosPage() {
                     <span className="text-neutral-700 truncate flex-1 mr-2">
                       {item.product_name}
                     </span>
-                    <span className="text-neutral-400 mr-3">×{item.quantity}</span>
+                    <span className="text-neutral-400 mr-3">
+                      ×{item.quantity}
+                    </span>
                     <span className="font-semibold text-neutral-800 whitespace-nowrap">
                       {formatCurrency(item.subtotal)}
                     </span>
@@ -305,7 +345,9 @@ export default function PedidosPage() {
                 <div className="flex justify-between pt-1 text-sm font-bold text-neutral-800 border-t border-neutral-200">
                   <span>Total</span>
                   <span>
-                    {formatCurrency(newOrder.items.reduce((s, i) => s + i.subtotal, 0))}
+                    {formatCurrency(
+                      newOrder.items.reduce((s, i) => s + i.subtotal, 0),
+                    )}
                   </span>
                 </div>
               </div>
@@ -313,10 +355,14 @@ export default function PedidosPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-neutral-700">Observações</label>
+            <label className="text-sm font-medium text-neutral-700">
+              Observações
+            </label>
             <textarea
               value={newOrder.notes}
-              onChange={(e) => setNewOrder((o) => ({ ...o, notes: e.target.value }))}
+              onChange={(e) =>
+                setNewOrder((o) => ({ ...o, notes: e.target.value }))
+              }
               rows={2}
               placeholder="Forma de pagamento, endereço de entrega..."
               className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"
@@ -324,7 +370,11 @@ export default function PedidosPage() {
           </div>
 
           <div className="flex gap-3 pt-1">
-            <Button variant="secondary" className="flex-1" onClick={() => setAddOpen(false)}>
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={() => setAddOpen(false)}
+            >
               Cancelar
             </Button>
             <Button className="flex-1" onClick={handleCreate}>
@@ -345,8 +395,12 @@ export default function PedidosPage() {
             <div className="flex items-center gap-3">
               <Avatar name={selected.client_name} />
               <div className="flex-1">
-                <p className="font-semibold text-neutral-800">{selected.client_name}</p>
-                <p className="text-xs text-neutral-400">{formatDate(selected.created_at)}</p>
+                <p className="font-semibold text-neutral-800">
+                  {selected.client_name}
+                </p>
+                <p className="text-xs text-neutral-400">
+                  {formatDate(selected.created_at)}
+                </p>
               </div>
               <Badge variant={statusMap[selected.status].variant}>
                 {statusMap[selected.status].label}
@@ -355,11 +409,16 @@ export default function PedidosPage() {
 
             <div className="bg-neutral-50 rounded-2xl p-4 space-y-2.5">
               {selected.items.map((item, i) => (
-                <div key={i} className="flex items-center justify-between text-sm">
+                <div
+                  key={i}
+                  className="flex items-center justify-between text-sm"
+                >
                   <span className="text-neutral-700 flex-1 mr-2 truncate">
                     {item.product_name}
                   </span>
-                  <span className="text-neutral-400 mr-3">×{item.quantity}</span>
+                  <span className="text-neutral-400 mr-3">
+                    ×{item.quantity}
+                  </span>
                   <span className="font-medium text-neutral-800 whitespace-nowrap">
                     {formatCurrency(item.subtotal)}
                   </span>
@@ -377,30 +436,35 @@ export default function PedidosPage() {
               </p>
             )}
 
-            {selected.status !== "entregue" && selected.status !== "cancelado" && (
-              <div className="flex gap-2 pt-1">
-                {selected.status === "pendente" && (
+            {selected.status !== "entregue" &&
+              selected.status !== "cancelado" && (
+                <div className="flex gap-2 pt-1">
+                  {selected.status === "pendente" && (
+                    <Button
+                      variant="secondary"
+                      className="flex-1"
+                      onClick={() => updateStatus(selected.id, "cancelado")}
+                    >
+                      Cancelar Pedido
+                    </Button>
+                  )}
                   <Button
-                    variant="secondary"
                     className="flex-1"
-                    onClick={() => updateStatus(selected.id, "cancelado")}
+                    onClick={() =>
+                      updateStatus(
+                        selected.id,
+                        selected.status === "pendente"
+                          ? "confirmado"
+                          : "entregue",
+                      )
+                    }
                   >
-                    Cancelar Pedido
+                    {selected.status === "pendente"
+                      ? "Confirmar"
+                      : "Marcar Entregue"}
                   </Button>
-                )}
-                <Button
-                  className="flex-1"
-                  onClick={() =>
-                    updateStatus(
-                      selected.id,
-                      selected.status === "pendente" ? "confirmado" : "entregue"
-                    )
-                  }
-                >
-                  {selected.status === "pendente" ? "Confirmar" : "Marcar Entregue"}
-                </Button>
-              </div>
-            )}
+                </div>
+              )}
           </div>
         </Modal>
       )}

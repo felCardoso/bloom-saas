@@ -164,7 +164,7 @@ export default function AgendaPage() {
                           {/* Checkbox */}
                           <button
                             onClick={() => toggle(event.id)}
-                            className="flex-shrink-0 text-neutral-300 hover:text-rose-400 transition-colors mt-0.5"
+                            className="shrink-0 text-neutral-300 hover:text-rose-400 transition-colors mt-0.5"
                           >
                             {event.completed ? (
                               <CheckCircle2 className="w-5 h-5 text-emerald-500" />
@@ -174,7 +174,7 @@ export default function AgendaPage() {
                           </button>
 
                           {/* Type icon */}
-                          <div className="w-8 h-8 bg-neutral-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <div className="w-8 h-8 bg-neutral-50 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                             <Icon className="w-4 h-4 text-neutral-500" size={16} />
                           </div>
 

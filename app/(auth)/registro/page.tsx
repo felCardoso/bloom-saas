@@ -149,7 +149,7 @@ export default function RegistroPage() {
               type="checkbox"
               checked={terms}
               onChange={(e) => setTerms(e.target.checked)}
-              className="w-4 h-4 mt-0.5 accent-rose-500 rounded flex-shrink-0"
+              className="w-4 h-4 mt-0.5 accent-rose-500 rounded shrink-0"
             />
             <span className="text-sm text-neutral-600 dark:text-neutral-400 leading-snug">
               Concordo com os{" "}

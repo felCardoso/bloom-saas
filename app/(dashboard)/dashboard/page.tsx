@@ -1,19 +1,16 @@
 import { Users, ShoppingBag, DollarSign, Clock, Calendar } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { RevenueChart } from "@/components/dashboard/RevenueChart";
-import { TopProducts } from "@/components/dashboard/TopProducts";
 import { RecentOrders } from "@/components/dashboard/RecentOrders";
 import { mockDashboardStats, mockOrders, mockSchedule } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { LockedFeature } from "@/components/ui/LockedFeature";
 import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
 
 const trend = Math.round(
   ((mockDashboardStats.revenue_month - mockDashboardStats.revenue_prev_month) /
     mockDashboardStats.revenue_prev_month) *
-    100
+    100,
 );
 
 const eventTypeMap = {
@@ -81,7 +78,9 @@ export default function DashboardPage() {
 
         <Card padding="none">
           <div className="px-5 py-4 border-b border-neutral-100">
-            <h3 className="text-base font-semibold text-neutral-800">Próximos Eventos</h3>
+            <h3 className="text-base font-semibold text-neutral-800">
+              Próximos Eventos
+            </h3>
           </div>
           <div className="divide-y divide-neutral-100">
             {upcoming.map((event) => {
@@ -91,18 +90,22 @@ export default function DashboardPage() {
                   key={event.id}
                   className="px-4 py-3.5 flex items-start gap-3 hover:bg-neutral-50 transition-colors"
                 >
-                  <div className="w-8 h-8 bg-rose-50 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-8 h-8 bg-rose-50 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
                     <Calendar className="w-4 h-4 text-rose-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-800 truncate">{event.title}</p>
+                    <p className="text-sm font-medium text-neutral-800 truncate">
+                      {event.title}
+                    </p>
                     <p className="text-xs text-neutral-400 mt-0.5">
                       {new Date(event.date).toLocaleDateString("pt-BR", {
                         day: "2-digit",
                         month: "short",
                       })}
                     </p>
-                    <Badge variant={type.variant} className="mt-1.5">{type.label}</Badge>
+                    <Badge variant={type.variant} className="mt-1.5">
+                      {type.label}
+                    </Badge>
                   </div>
                 </div>
               );

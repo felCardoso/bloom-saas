@@ -152,7 +152,7 @@ export default function ProdutosPage() {
                 <div className="mt-3 pt-3 border-t border-neutral-100 flex items-center justify-between">
                   <div className="flex items-center gap-1">
                     {lowStock && hasFeature("stockAlerts") && (
-                      <AlertTriangle className="w-3 h-3 text-amber-500 flex-shrink-0" />
+                      <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />
                     )}
                     <span
                       className={`text-xs font-medium ${

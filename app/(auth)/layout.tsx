@@ -17,11 +17,15 @@ const stats = [
   { value: "R$ 2,4M", label: "Em vendas" },
 ];
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+export default function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <div className="min-h-screen flex bg-white">
       {/* Left branding panel */}
-      <div className="hidden lg:flex w-[440px] xl:w-[500px] flex-shrink-0 bg-gradient-to-br from-rose-500 to-rose-600 flex-col p-10 relative overflow-hidden">
+      <div className="hidden lg:flex w-110 xl:w-125 shrink-0 bg-linear-to-br from-rose-500 to-rose-600 flex-col p-10 relative overflow-hidden">
         {/* Decorative circles */}
         <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-white/5" />
         <div className="absolute -bottom-16 -left-16 w-64 h-64 rounded-full bg-white/5" />
@@ -32,7 +36,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
             <Sparkles className="w-4.5 h-4.5 text-white" />
           </div>
-          <span className="text-lg font-bold text-white tracking-tight">Bloom</span>
+          <span className="text-lg font-bold text-white tracking-tight">
+            Bloom
+          </span>
         </div>
 
         {/* Center content */}
@@ -44,14 +50,18 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             Organize seu negócio de beleza com elegância
           </h2>
           <p className="text-sm text-rose-100 leading-relaxed">
-            Clientes, pedidos, produtos e agenda em um único lugar. Simples, bonito e feito para você crescer.
+            Clientes, pedidos, produtos e agenda em um único lugar. Simples,
+            bonito e feito para você crescer.
           </p>
         </div>
 
         {/* Stats */}
         <div className="relative grid grid-cols-3 gap-3 mb-8">
           {stats.map((s) => (
-            <div key={s.label} className="bg-white/10 rounded-2xl p-3.5 backdrop-blur-sm">
+            <div
+              key={s.label}
+              className="bg-white/10 rounded-2xl p-3.5 backdrop-blur-sm"
+            >
               <p className="text-base font-bold text-white">{s.value}</p>
               <p className="text-[11px] text-rose-200 mt-0.5">{s.label}</p>
             </div>
@@ -65,9 +75,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <Star key={i} className="w-3 h-3 fill-amber-300 text-amber-300" />
             ))}
           </div>
-          <p className="text-sm text-white leading-relaxed mb-3">"{testimonial.text}"</p>
+          <p className="text-sm text-white leading-relaxed mb-3">
+            &quot;{testimonial.text}&quot;
+          </p>
           <div>
-            <p className="text-xs font-semibold text-white">{testimonial.name}</p>
+            <p className="text-xs font-semibold text-white">
+              {testimonial.name}
+            </p>
             <p className="text-[11px] text-rose-200">{testimonial.role}</p>
           </div>
         </div>

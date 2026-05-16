@@ -2,8 +2,12 @@
 
 import { useState } from "react";
 import {
-  MessageCircle, Mail, ChevronDown, ChevronUp, CheckCircle2,
-  Clock, Users, Zap, BookOpen, Search,
+  MessageCircle,
+  Mail,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Search,
 } from "lucide-react";
 
 const faqItems = [
@@ -107,9 +111,24 @@ const supportChannels = [
 ];
 
 const slaTable = [
-  { plan: "Grátis", channel: "Comunidade / E-mail", sla: "Melhor esforço", color: "text-neutral-500" },
-  { plan: "Pro", channel: "E-mail", sla: "Resposta em até 48h", color: "text-blue-600" },
-  { plan: "Premium", channel: "E-mail + WhatsApp", sla: "Resposta em até 24h", color: "text-rose-600" },
+  {
+    plan: "Grátis",
+    channel: "Comunidade / E-mail",
+    sla: "Melhor esforço",
+    color: "text-neutral-500",
+  },
+  {
+    plan: "Pro",
+    channel: "E-mail",
+    sla: "Resposta em até 48h",
+    color: "text-blue-600",
+  },
+  {
+    plan: "Premium",
+    channel: "E-mail + WhatsApp",
+    sla: "Resposta em até 24h",
+    color: "text-rose-600",
+  },
 ];
 
 function FAQItem({ q, a }: { q: string; a: string }) {
@@ -124,13 +143,15 @@ function FAQItem({ q, a }: { q: string; a: string }) {
           {q}
         </span>
         {open ? (
-          <ChevronUp className="w-4 h-4 text-neutral-400 flex-shrink-0 mt-0.5" />
+          <ChevronUp className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-neutral-400 flex-shrink-0 mt-0.5" />
+          <ChevronDown className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
         )}
       </button>
       {open && (
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed pb-4 -mt-1">{a}</p>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed pb-4 -mt-1">
+          {a}
+        </p>
       )}
     </div>
   );
@@ -146,7 +167,7 @@ export default function SuportePage() {
         (item) =>
           !search ||
           item.q.toLowerCase().includes(search.toLowerCase()) ||
-          item.a.toLowerCase().includes(search.toLowerCase())
+          item.a.toLowerCase().includes(search.toLowerCase()),
       ),
     }))
     .filter((cat) => cat.questions.length > 0);
@@ -173,22 +194,31 @@ export default function SuportePage() {
             rel="noopener noreferrer"
             className={`flex items-start gap-3 p-4 rounded-2xl border hover:shadow-sm transition-all ${ch.color}`}
           >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${ch.iconBg}`}>
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${ch.iconBg}`}
+            >
               <ch.icon className={`w-5 h-5 ${ch.iconColor}`} />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-0.5">
-                <p className="text-sm font-semibold text-neutral-800">{ch.title}</p>
+                <p className="text-sm font-semibold text-neutral-800">
+                  {ch.title}
+                </p>
                 <div className="flex gap-1">
                   {ch.plans.map((p) => (
-                    <span key={p} className="text-[10px] bg-white/70 text-neutral-500 px-1.5 py-0.5 rounded-md font-medium">
+                    <span
+                      key={p}
+                      className="text-[10px] bg-white/70 text-neutral-500 px-1.5 py-0.5 rounded-md font-medium"
+                    >
                       {p}
                     </span>
                   ))}
                 </div>
               </div>
               <p className="text-xs text-neutral-500">{ch.desc}</p>
-              <p className="text-xs font-semibold text-neutral-700 mt-2 underline">{ch.action} →</p>
+              <p className="text-xs font-semibold text-neutral-700 mt-2 underline">
+                {ch.action} →
+              </p>
             </div>
           </a>
         ))}
@@ -198,36 +228,58 @@ export default function SuportePage() {
       <div className="bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden mb-10">
         <div className="px-5 py-3.5 border-b border-neutral-200 flex items-center gap-2">
           <Clock className="w-4 h-4 text-neutral-400" />
-          <p className="text-sm font-semibold text-neutral-700">Tempo de resposta por plano</p>
+          <p className="text-sm font-semibold text-neutral-700">
+            Tempo de resposta por plano
+          </p>
         </div>
         <table className="w-full">
           <thead>
             <tr className="border-b border-neutral-200">
-              <th className="px-5 py-2.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wide">Plano</th>
-              <th className="px-5 py-2.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wide">Canal</th>
-              <th className="px-5 py-2.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wide">SLA</th>
+              <th className="px-5 py-2.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+                Plano
+              </th>
+              <th className="px-5 py-2.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+                Canal
+              </th>
+              <th className="px-5 py-2.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+                SLA
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-100">
             {slaTable.map((row) => (
-              <tr key={row.plan} className="hover:bg-neutral-100/50 transition-colors">
-                <td className="px-5 py-3 text-sm font-semibold text-neutral-800">{row.plan}</td>
-                <td className="px-5 py-3 text-sm text-neutral-600">{row.channel}</td>
-                <td className={`px-5 py-3 text-sm font-medium ${row.color}`}>{row.sla}</td>
+              <tr
+                key={row.plan}
+                className="hover:bg-neutral-100/50 transition-colors"
+              >
+                <td className="px-5 py-3 text-sm font-semibold text-neutral-800">
+                  {row.plan}
+                </td>
+                <td className="px-5 py-3 text-sm text-neutral-600">
+                  {row.channel}
+                </td>
+                <td className={`px-5 py-3 text-sm font-medium ${row.color}`}>
+                  {row.sla}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
         <div className="px-5 py-3 bg-neutral-100/50">
-          <p className="text-xs text-neutral-400">Horário de atendimento: seg–sex, 9h–18h (horário de Brasília).</p>
+          <p className="text-xs text-neutral-400">
+            Horário de atendimento: seg–sex, 9h–18h (horário de Brasília).
+          </p>
         </div>
       </div>
 
       {/* FAQ */}
       <div className="mb-4">
-        <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200 mb-1">Perguntas frequentes</h2>
+        <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200 mb-1">
+          Perguntas frequentes
+        </h2>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-5">
-          {faqItems.reduce((s, c) => s + c.questions.length, 0)} respostas para as dúvidas mais comuns.
+          {faqItems.reduce((s, c) => s + c.questions.length, 0)} respostas para
+          as dúvidas mais comuns.
         </p>
 
         {/* Search */}
@@ -244,7 +296,9 @@ export default function SuportePage() {
 
         {filteredFaq.length === 0 ? (
           <div className="py-12 text-center">
-            <p className="text-neutral-400 text-sm">Nenhuma pergunta encontrada para "{search}"</p>
+            <p className="text-neutral-400 text-sm">
+              Nenhuma pergunta encontrada para &quot;{search}&quot;
+            </p>
           </div>
         ) : (
           <div className="space-y-8">
@@ -266,16 +320,20 @@ export default function SuportePage() {
 
       {/* Still need help */}
       <div className="mt-10 p-5 bg-rose-50 rounded-2xl border border-rose-100 flex flex-col sm:flex-row items-center gap-4">
-        <div className="w-10 h-10 bg-rose-100 rounded-xl flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 bg-rose-100 rounded-xl flex items-center justify-center shrink-0">
           <MessageCircle className="w-5 h-5 text-rose-500" />
         </div>
         <div className="flex-1 text-center sm:text-left">
-          <p className="text-sm font-semibold text-neutral-800">Não encontrou o que precisava?</p>
-          <p className="text-xs text-neutral-500 mt-0.5">Nossa equipe responde em até 48h no e-mail.</p>
+          <p className="text-sm font-semibold text-neutral-800">
+            Não encontrou o que precisava?
+          </p>
+          <p className="text-xs text-neutral-500 mt-0.5">
+            Nossa equipe responde em até 48h no e-mail.
+          </p>
         </div>
         <a
           href="mailto:suporte@rosecrm.com.br"
-          className="flex-shrink-0 px-4 py-2.5 bg-rose-500 text-white text-sm font-semibold rounded-xl hover:bg-rose-600 transition-colors"
+          className="shrink-0 px-4 py-2.5 bg-rose-500 text-white text-sm font-semibold rounded-xl hover:bg-rose-600 transition-colors"
         >
           Enviar e-mail
         </a>

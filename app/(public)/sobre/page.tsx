@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Heart, Target, Sparkles, ArrowRight, Users, ShoppingBag, Star } from "lucide-react";
+import { Heart, Target, Sparkles, ArrowRight, Star } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Sobre — Bloom",
@@ -86,43 +86,68 @@ export default function SobrePage() {
           Criado por quem entende o negócio de beleza
         </h1>
         <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed">
-          O Bloom nasceu de uma frustração real. Nossa co-fundadora Fernanda passou anos como revendedora de cosméticos, anotando clientes em caderno, pedidos em papel e follow-ups na cabeça — e perdendo vendas por causa disso. Quando ela pediu ao Lucas para criar uma ferramenta simples de usar, o Bloom surgiu.
+          O Bloom nasceu de uma frustração real. Nossa co-fundadora Fernanda
+          passou anos como revendedora de cosméticos, anotando clientes em
+          caderno, pedidos em papel e follow-ups na cabeça — e perdendo vendas
+          por causa disso. Quando ela pediu ao Lucas para criar uma ferramenta
+          simples de usar, o Bloom surgiu.
         </p>
       </div>
 
       {/* Mission */}
       <div className="bg-rose-500 rounded-3xl p-6 sm:p-8 text-white mb-12">
-        <p className="text-xs font-bold uppercase tracking-widest text-rose-200 mb-3">Nossa missão</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-rose-200 mb-3">
+          Nossa missão
+        </p>
         <p className="text-xl sm:text-2xl font-bold leading-snug mb-4">
-          Dar às revendedoras de cosméticos a mesma organização que grandes empresas têm — de forma simples, bonita e acessível.
+          Dar às revendedoras de cosméticos a mesma organização que grandes
+          empresas têm — de forma simples, bonita e acessível.
         </p>
         <p className="text-sm text-rose-100 leading-relaxed">
-          Acreditamos que toda revendedora merece uma ferramenta profissional, não mais uma planilha complicada ou um caderno perdido. O Bloom é para quem ama o que faz e quer crescer com tranquilidade.
+          Acreditamos que toda revendedora merece uma ferramenta profissional,
+          não mais uma planilha complicada ou um caderno perdido. O Bloom é para
+          quem ama o que faz e quer crescer com tranquilidade.
         </p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12">
         {stats.map((s) => (
-          <div key={s.label} className="text-center p-4 bg-neutral-50 dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700">
-            <p className="text-2xl font-bold text-neutral-800 dark:text-neutral-100">{s.value}</p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">{s.label}</p>
+          <div
+            key={s.label}
+            className="text-center p-4 bg-neutral-50 dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700"
+          >
+            <p className="text-2xl font-bold text-neutral-800 dark:text-neutral-100">
+              {s.value}
+            </p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+              {s.label}
+            </p>
           </div>
         ))}
       </div>
 
       {/* Values */}
       <div className="mb-12">
-        <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200 mb-5">O que guia o nosso trabalho</h2>
+        <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200 mb-5">
+          O que guia o nosso trabalho
+        </h2>
         <div className="space-y-4">
           {values.map((v) => (
-            <div key={v.title} className="flex items-start gap-4 p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
-              <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center flex-shrink-0">
+            <div
+              key={v.title}
+              className="flex items-start gap-4 p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 shadow-sm"
+            >
+              <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center shrink-0">
                 <v.icon className="w-5 h-5 text-rose-500" />
               </div>
               <div>
-                <p className="text-sm font-bold text-neutral-800 dark:text-neutral-100 mb-1">{v.title}</p>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">{v.desc}</p>
+                <p className="text-sm font-bold text-neutral-800 dark:text-neutral-100 mb-1">
+                  {v.title}
+                </p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                  {v.desc}
+                </p>
               </div>
             </div>
           ))}
@@ -131,19 +156,32 @@ export default function SobrePage() {
 
       {/* Team */}
       <div className="mb-12">
-        <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200 mb-2">Quem faz o Bloom</h2>
+        <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200 mb-2">
+          Quem faz o Bloom
+        </h2>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-5">
           Um time pequeno, focado e apaixonado pelo produto.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {team.map((member) => (
-            <div key={member.name} className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 shadow-sm text-center">
+            <div
+              key={member.name}
+              className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 shadow-sm text-center"
+            >
               <div className="w-14 h-14 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <span className="text-base font-bold text-rose-600">{member.initials}</span>
+                <span className="text-base font-bold text-rose-600">
+                  {member.initials}
+                </span>
               </div>
-              <p className="text-sm font-bold text-neutral-800 dark:text-neutral-100">{member.name}</p>
-              <p className="text-xs text-rose-500 font-medium mb-2">{member.role}</p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">{member.bio}</p>
+              <p className="text-sm font-bold text-neutral-800 dark:text-neutral-100">
+                {member.name}
+              </p>
+              <p className="text-xs text-rose-500 font-medium mb-2">
+                {member.role}
+              </p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                {member.bio}
+              </p>
             </div>
           ))}
         </div>
@@ -151,18 +189,30 @@ export default function SobrePage() {
 
       {/* Testimonials */}
       <div className="mb-12">
-        <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200 mb-5">O que as revendedoras dizem</h2>
+        <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200 mb-5">
+          O que as revendedoras dizem
+        </h2>
         <div className="space-y-4">
           {testimonials.map((t) => (
-            <div key={t.name} className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
+            <div
+              key={t.name}
+              className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 shadow-sm"
+            >
               <div className="flex gap-0.5 mb-3">
                 {Array.from({ length: t.stars }).map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  <Star
+                    key={i}
+                    className="w-4 h-4 fill-amber-400 text-amber-400"
+                  />
                 ))}
               </div>
-              <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed mb-3">"{t.text}"</p>
+              <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed mb-3">
+                &quot;{t.text}&quot;
+              </p>
               <div>
-                <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-100">{t.name}</p>
+                <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-100">
+                  {t.name}
+                </p>
                 <p className="text-xs text-neutral-400">{t.role}</p>
               </div>
             </div>

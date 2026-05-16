@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import {
-  Plus, Search, Phone, Mail, MapPin, MoreHorizontal, Users, ChevronRight, MessageCircle,
+  Plus,
+  Search,
+  Phone,
+  Mail,
+  MapPin,
+  MoreHorizontal,
+  Users,
+  ChevronRight,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -145,7 +153,9 @@ export default function ClientesPage() {
           <Card>
             <div className="py-12 text-center">
               <Users className="w-8 h-8 mx-auto mb-2 text-neutral-300" />
-              <p className="text-neutral-400 text-sm">Nenhuma cliente encontrada</p>
+              <p className="text-neutral-400 text-sm">
+                Nenhuma cliente encontrada
+              </p>
             </div>
           </Card>
         ) : (
@@ -163,11 +173,13 @@ export default function ClientesPage() {
                     <p className="text-sm font-semibold text-neutral-800 truncate">
                       {client.name}
                     </p>
-                    <Badge variant={status.variant} className="flex-shrink-0">
+                    <Badge variant={status.variant} className="shrink-0">
                       {status.label}
                     </Badge>
                   </div>
-                  <p className="text-xs text-neutral-500">{formatPhone(client.phone)}</p>
+                  <p className="text-xs text-neutral-500">
+                    {formatPhone(client.phone)}
+                  </p>
                   {client.city && (
                     <p className="text-xs text-neutral-400">{client.city}</p>
                   )}
@@ -180,7 +192,7 @@ export default function ClientesPage() {
                     </span>
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-neutral-300 flex-shrink-0" />
+                <ChevronRight className="w-4 h-4 text-neutral-300 shrink-0" />
               </button>
             );
           })
@@ -193,16 +205,22 @@ export default function ClientesPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-neutral-100">
-                {["Cliente", "Contato", "Cidade", "Status", "Pedidos", "Total Gasto", ""].map(
-                  (h) => (
-                    <th
-                      key={h}
-                      className="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wide whitespace-nowrap"
-                    >
-                      {h}
-                    </th>
-                  )
-                )}
+                {[
+                  "Cliente",
+                  "Contato",
+                  "Cidade",
+                  "Status",
+                  "Pedidos",
+                  "Total Gasto",
+                  "",
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wide whitespace-nowrap"
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-50">
@@ -210,7 +228,9 @@ export default function ClientesPage() {
                 <tr>
                   <td colSpan={7} className="px-5 py-12 text-center">
                     <Users className="w-8 h-8 mx-auto mb-2 text-neutral-300" />
-                    <p className="text-neutral-400 text-sm">Nenhuma cliente encontrada</p>
+                    <p className="text-neutral-400 text-sm">
+                      Nenhuma cliente encontrada
+                    </p>
                   </td>
                 </tr>
               ) : (
@@ -294,7 +314,11 @@ export default function ClientesPage() {
       />
 
       {/* Add modal */}
-      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Nova Cliente">
+      <Modal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        title="Nova Cliente"
+      >
         <div className="space-y-4">
           <Input
             label="Nome completo *"
@@ -306,14 +330,18 @@ export default function ClientesPage() {
             <Input
               label="Telefone *"
               value={form.phone}
-              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, phone: e.target.value }))
+              }
               placeholder="(11) 99999-9999"
               type="tel"
             />
             <Input
               label="Aniversário"
               value={form.birthday}
-              onChange={(e) => setForm((f) => ({ ...f, birthday: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, birthday: e.target.value }))
+              }
               type="date"
             />
           </div>
@@ -335,7 +363,10 @@ export default function ClientesPage() {
               label="Status"
               value={form.status}
               onChange={(e) =>
-                setForm((f) => ({ ...f, status: e.target.value as ClientStatus }))
+                setForm((f) => ({
+                  ...f,
+                  status: e.target.value as ClientStatus,
+                }))
               }
               options={[
                 { value: "ativa", label: "Ativa" },
@@ -345,17 +376,25 @@ export default function ClientesPage() {
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-neutral-700">Observações</label>
+            <label className="text-sm font-medium text-neutral-700">
+              Observações
+            </label>
             <textarea
               value={form.notes}
-              onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, notes: e.target.value }))
+              }
               placeholder="Preferências, histórico, observações..."
               rows={3}
               className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent resize-none"
             />
           </div>
           <div className="flex gap-3 pt-1">
-            <Button variant="secondary" className="flex-1" onClick={() => setAddOpen(false)}>
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={() => setAddOpen(false)}
+            >
               Cancelar
             </Button>
             <Button className="flex-1" onClick={handleAdd}>
@@ -398,7 +437,9 @@ export default function ClientesPage() {
                   label: "Ticket médio",
                   value:
                     selected.total_orders > 0
-                      ? formatCurrency(selected.total_spent / selected.total_orders)
+                      ? formatCurrency(
+                          selected.total_spent / selected.total_orders,
+                        )
                       : "—",
                 },
                 {
@@ -412,7 +453,7 @@ export default function ClientesPage() {
                   <p
                     className={cn(
                       "text-base font-bold",
-                      s.highlight ? "text-rose-600" : "text-neutral-800"
+                      s.highlight ? "text-rose-600" : "text-neutral-800",
                     )}
                   >
                     {s.value}
@@ -447,10 +488,15 @@ export default function ClientesPage() {
                       className="flex items-center gap-2 px-3 py-3 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition-colors"
                     >
                       <MessageCircle className="w-4 h-4 text-emerald-600" />
-                      <span className="text-xs font-semibold text-emerald-600 hidden sm:block">WhatsApp</span>
+                      <span className="text-xs font-semibold text-emerald-600 hidden sm:block">
+                        WhatsApp
+                      </span>
                     </a>
                   ) : (
-                    <LockedFeature feature="whatsappLink" className="px-3 py-3 bg-neutral-50 rounded-xl">
+                    <LockedFeature
+                      feature="whatsappLink"
+                      className="px-3 py-3 bg-neutral-50 rounded-xl"
+                    >
                       <MessageCircle className="w-4 h-4" />
                     </LockedFeature>
                   )}
@@ -466,7 +512,9 @@ export default function ClientesPage() {
                   </div>
                   <div>
                     <p className="text-xs text-neutral-500">Email</p>
-                    <p className="text-sm font-medium text-neutral-700">{selected.email}</p>
+                    <p className="text-sm font-medium text-neutral-700">
+                      {selected.email}
+                    </p>
                   </div>
                 </a>
               )}
@@ -477,7 +525,9 @@ export default function ClientesPage() {
                   </div>
                   <div>
                     <p className="text-xs text-neutral-500">Cidade</p>
-                    <p className="text-sm font-medium text-neutral-700">{selected.city}</p>
+                    <p className="text-sm font-medium text-neutral-700">
+                      {selected.city}
+                    </p>
                   </div>
                 </div>
               )}
