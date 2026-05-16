@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Eye, EyeOff, Sparkles, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/Input";
+import { signIn } from "@/lib/actions/auth";
 
 export default function LoginPage() {
   const [showPw, setShowPw] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState({ email: "", password: "", remember: false });
   const [error, setError] = useState("");
 
@@ -18,10 +19,10 @@ export default function LoginPage() {
       return;
     }
     setError("");
-    setLoading(true);
-    setTimeout(() => {
-      window.location.href = "/dashboard";
-    }, 900);
+    startTransition(async () => {
+      const result = await signIn({ email: form.email, password: form.password });
+      if (result?.error) setError(result.error);
+    });
   };
 
   return (
@@ -95,10 +96,10 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={isPending}
           className="w-full flex items-center justify-center gap-2 py-3 bg-rose-500 text-white rounded-xl font-semibold text-sm hover:bg-rose-600 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm"
         >
-          {loading ? (
+          {isPending ? (
             <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
           ) : (
             <>

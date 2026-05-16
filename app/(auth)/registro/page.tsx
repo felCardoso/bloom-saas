@@ -1,16 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Eye, EyeOff, Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
+import { signUp } from "@/lib/actions/auth";
 
 const perks = ["14 dias de teste Pro", "Sem cartão de crédito", "Cancele quando quiser"];
 
 export default function RegistroPage() {
   const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [terms, setTerms] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -35,10 +36,10 @@ export default function RegistroPage() {
     const errs = validate();
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
-    setLoading(true);
-    setTimeout(() => {
-      window.location.href = "/dashboard";
-    }, 1100);
+    startTransition(async () => {
+      const result = await signUp({ name: form.name, email: form.email, password: form.password });
+      if (result?.error) setErrors({ submit: result.error });
+    });
   };
 
   const pwField = (
@@ -97,6 +98,12 @@ export default function RegistroPage() {
           </span>
         ))}
       </div>
+
+      {errors.submit && (
+        <div className="mb-5 px-4 py-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">
+          {errors.submit}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
@@ -167,10 +174,10 @@ export default function RegistroPage() {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={isPending}
           className="w-full flex items-center justify-center gap-2 py-3 bg-rose-500 text-white rounded-xl font-semibold text-sm hover:bg-rose-600 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm"
         >
-          {loading ? (
+          {isPending ? (
             <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
           ) : (
             <>
