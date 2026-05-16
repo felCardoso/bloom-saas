@@ -7,6 +7,8 @@ import { mockDashboardStats, mockOrders, mockSchedule } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { LockedFeature } from "@/components/ui/LockedFeature";
+import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
 
 const trend = Math.round(
   ((mockDashboardStats.revenue_month - mockDashboardStats.revenue_prev_month) /
@@ -65,11 +67,11 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Charts row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <RevenueChart data={mockDashboardStats.monthly_revenue} />
-        <TopProducts products={mockDashboardStats.top_products} />
-      </div>
+      {/* Charts — gated for free plan */}
+      <DashboardCharts
+        monthlyRevenue={mockDashboardStats.monthly_revenue}
+        topProducts={mockDashboardStats.top_products}
+      />
 
       {/* Bottom row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -93,18 +95,14 @@ export default function DashboardPage() {
                     <Calendar className="w-4 h-4 text-rose-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-800 truncate">
-                      {event.title}
-                    </p>
+                    <p className="text-sm font-medium text-neutral-800 truncate">{event.title}</p>
                     <p className="text-xs text-neutral-400 mt-0.5">
                       {new Date(event.date).toLocaleDateString("pt-BR", {
                         day: "2-digit",
                         month: "short",
                       })}
                     </p>
-                    <Badge variant={type.variant} className="mt-1.5">
-                      {type.label}
-                    </Badge>
+                    <Badge variant={type.variant} className="mt-1.5">{type.label}</Badge>
                   </div>
                 </div>
               );

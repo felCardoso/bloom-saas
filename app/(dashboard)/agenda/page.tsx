@@ -13,6 +13,8 @@ import { mockSchedule, mockClients } from "@/lib/mock-data";
 import { formatDate } from "@/lib/utils";
 import type { ScheduleEvent } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { usePlan } from "@/lib/plan-context";
+import { UpgradeModal } from "@/components/ui/UpgradeModal";
 
 const typeMap = {
   follow_up: { label: "Follow-up", variant: "rose" as const, icon: Phone },
@@ -22,8 +24,10 @@ const typeMap = {
 };
 
 export default function AgendaPage() {
+  const { canAdd, usage, setUsage } = usePlan();
   const [events, setEvents] = useState<ScheduleEvent[]>(mockSchedule);
   const [addOpen, setAddOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "pending" | "done">("pending");
   const [form, setForm] = useState({
     client_id: "",
@@ -51,6 +55,14 @@ export default function AgendaPage() {
     setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, completed: !e.completed } : e)));
   }
 
+  function handleAddClick() {
+    if (!canAdd("events")) {
+      setUpgradeOpen(true);
+    } else {
+      setAddOpen(true);
+    }
+  }
+
   function handleAdd() {
     if (!form.client_id || !form.title || !form.date) return;
     const client = mockClients.find((c) => c.id === form.client_id);
@@ -66,6 +78,7 @@ export default function AgendaPage() {
       completed: false,
     };
     setEvents((prev) => [...prev, event].sort((a, b) => a.date.localeCompare(b.date)));
+    setUsage({ events: usage.events + 1 });
     setForm({ client_id: "", type: "follow_up", title: "", description: "", date: "" });
     setAddOpen(false);
   }
@@ -104,7 +117,7 @@ export default function AgendaPage() {
             {overdue} atrasado{overdue > 1 ? "s" : ""}
           </Badge>
         )}
-        <Button onClick={() => setAddOpen(true)} size="sm">
+        <Button onClick={handleAddClick} size="sm">
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">Novo Evento</span>
         </Button>
@@ -202,6 +215,8 @@ export default function AgendaPage() {
           })}
         </div>
       )}
+
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} resource="events" />
 
       {/* Add modal */}
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Novo Evento">

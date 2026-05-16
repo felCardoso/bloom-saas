@@ -12,9 +12,11 @@ import {
   BarChart3,
   Settings,
   X,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { usePlan } from "@/lib/plan-context";
 
 const mainItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Início" },
@@ -26,12 +28,14 @@ const mainItems = [
 const moreItems = [
   { href: "/produtos", icon: Package, label: "Produtos" },
   { href: "/relatorios", icon: BarChart3, label: "Relatórios" },
-  { href: "/configuracoes", icon: Settings, label: "Configurações" },
+  { href: "/pricing", icon: Zap, label: "Planos" },
+  { href: "/configuracoes", icon: Settings, label: "Config." },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
+  const { planId } = usePlan();
 
   const isMoreActive = moreItems.some(
     (i) => pathname === i.href || pathname.startsWith(i.href + "/")

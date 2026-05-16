@@ -11,6 +11,8 @@ import { Select } from "@/components/ui/Select";
 import { mockOrders, mockClients, mockProducts } from "@/lib/mock-data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Order, OrderStatus, OrderItem } from "@/lib/types";
+import { usePlan } from "@/lib/plan-context";
+import { UpgradeModal } from "@/components/ui/UpgradeModal";
 
 const statusMap: Record<
   OrderStatus,
@@ -23,10 +25,12 @@ const statusMap: Record<
 };
 
 export default function PedidosPage() {
+  const { canAdd, usage, setUsage } = usePlan();
   const [orders, setOrders] = useState<Order[]>(mockOrders);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [selected, setSelected] = useState<Order | null>(null);
   const [newOrder, setNewOrder] = useState({
     client_id: "",
@@ -56,6 +60,14 @@ export default function PedidosPage() {
     setAddingItem({ product_id: "", quantity: 1 });
   }
 
+  function handleAddClick() {
+    if (!canAdd("ordersPerMonth")) {
+      setUpgradeOpen(true);
+    } else {
+      setAddOpen(true);
+    }
+  }
+
   function handleCreate() {
     if (!newOrder.client_id || newOrder.items.length === 0) return;
     const client = mockClients.find((c) => c.id === newOrder.client_id);
@@ -72,6 +84,7 @@ export default function PedidosPage() {
       created_at: new Date().toISOString(),
     };
     setOrders((prev) => [order, ...prev]);
+    setUsage({ ordersPerMonth: usage.ordersPerMonth + 1 });
     setNewOrder({ client_id: "", status: "pendente", notes: "", items: [] });
     setAddOpen(false);
   }
@@ -111,7 +124,7 @@ export default function PedidosPage() {
             <option value="entregue">Entregue</option>
             <option value="cancelado">Cancelado</option>
           </select>
-          <Button onClick={() => setAddOpen(true)}>
+          <Button onClick={handleAddClick}>
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Novo Pedido</span>
           </Button>
@@ -215,6 +228,8 @@ export default function PedidosPage() {
           })
         )}
       </div>
+
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} resource="ordersPerMonth" />
 
       {/* Add modal */}
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Novo Pedido" size="lg">
