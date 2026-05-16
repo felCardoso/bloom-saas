@@ -37,38 +37,31 @@ export function Modal({ open, onClose, title, children, size = "md" }: ModalProp
 
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/30 backdrop-blur-sm"
         onClick={onClose}
       />
-
-      {/* Sheet / Dialog */}
       <div
         className={cn(
-          "relative bg-white w-full shadow-elevated",
-          // Mobile: bottom sheet with rounded top corners
+          "relative bg-white dark:bg-neutral-900 w-full shadow-elevated",
           "rounded-t-3xl md:rounded-2xl",
-          // Mobile: max height with scroll, desktop: auto
           "max-h-[92dvh] md:max-h-[90vh] overflow-y-auto",
-          // Desktop size constraint
           "md:w-full",
           desktopSizeClasses[size],
-          // Animation
           "animate-sheet"
         )}
       >
         {/* Drag handle (mobile only) */}
         <div className="flex justify-center pt-3 pb-1 md:hidden">
-          <div className="w-10 h-1 bg-neutral-200 rounded-full" />
+          <div className="w-10 h-1 bg-neutral-200 dark:bg-neutral-700 rounded-full" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-neutral-100 sticky top-0 bg-white z-10">
-          <h2 className="text-base font-semibold text-neutral-800">{title}</h2>
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-neutral-100 dark:border-neutral-800 sticky top-0 bg-white dark:bg-neutral-900 z-10">
+          <h2 className="text-base font-semibold text-neutral-800 dark:text-neutral-100">{title}</h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors -mr-1"
+            className="p-2 rounded-xl text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors -mr-1"
           >
             <X className="w-4 h-4" />
           </button>
