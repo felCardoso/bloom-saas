@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import {
-  Plus, Search, Phone, Mail, MapPin, MoreHorizontal, Users, ChevronRight,
+  Plus, Search, Phone, Mail, MapPin, MoreHorizontal, Users, ChevronRight, MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -11,10 +11,13 @@ import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Card } from "@/components/ui/Card";
+import { UpgradeModal } from "@/components/ui/UpgradeModal";
+import { LockedFeature } from "@/components/ui/LockedFeature";
 import { mockClients } from "@/lib/mock-data";
 import { formatCurrency, formatDate, formatPhone } from "@/lib/utils";
 import type { Client, ClientStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { usePlan } from "@/lib/plan-context";
 
 const statusMap: Record<
   ClientStatus,
@@ -26,10 +29,12 @@ const statusMap: Record<
 };
 
 export default function ClientesPage() {
+  const { canAdd, isNearLimit, usage, plan, hasFeature, setUsage } = usePlan();
   const [clients, setClients] = useState<Client[]>(mockClients);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [addOpen, setAddOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [selected, setSelected] = useState<Client | null>(null);
   const [form, setForm] = useState({
     name: "",
@@ -50,6 +55,14 @@ export default function ClientesPage() {
     return matchSearch && matchStatus;
   });
 
+  function handleAddClick() {
+    if (!canAdd("clients")) {
+      setUpgradeOpen(true);
+    } else {
+      setAddOpen(true);
+    }
+  }
+
   function handleAdd() {
     if (!form.name || !form.phone) return;
     const newClient: Client = {
@@ -60,6 +73,7 @@ export default function ClientesPage() {
       total_spent: 0,
     };
     setClients((prev) => [newClient, ...prev]);
+    setUsage({ clients: usage.clients + 1 });
     setForm({
       name: "",
       phone: "",
@@ -96,7 +110,7 @@ export default function ClientesPage() {
             <option value="inativa">Inativa</option>
             <option value="prospect">Prospect</option>
           </select>
-          <Button onClick={() => setAddOpen(true)}>
+          <Button onClick={handleAddClick}>
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Nova Cliente</span>
           </Button>
@@ -272,6 +286,13 @@ export default function ClientesPage() {
         </div>
       </Card>
 
+      {/* Upgrade modal */}
+      <UpgradeModal
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        resource="clients"
+      />
+
       {/* Add modal */}
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Nova Cliente">
         <div className="space-y-4">
@@ -403,20 +424,37 @@ export default function ClientesPage() {
 
             <div className="space-y-2">
               {selected.phone && (
-                <a
-                  href={`tel:${selected.phone}`}
-                  className="flex items-center gap-3 p-3 bg-neutral-50 rounded-xl hover:bg-neutral-100 transition-colors"
-                >
-                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-card">
-                    <Phone className="w-4 h-4 text-rose-500" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-neutral-500">Telefone</p>
-                    <p className="text-sm font-medium text-neutral-700">
-                      {formatPhone(selected.phone)}
-                    </p>
-                  </div>
-                </a>
+                <div className="flex gap-2">
+                  <a
+                    href={`tel:${selected.phone}`}
+                    className="flex-1 flex items-center gap-3 p-3 bg-neutral-50 rounded-xl hover:bg-neutral-100 transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-card">
+                      <Phone className="w-4 h-4 text-rose-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-neutral-500">Telefone</p>
+                      <p className="text-sm font-medium text-neutral-700">
+                        {formatPhone(selected.phone)}
+                      </p>
+                    </div>
+                  </a>
+                  {hasFeature("whatsappLink") ? (
+                    <a
+                      href={`https://wa.me/55${selected.phone.replace(/\D/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-3 py-3 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition-colors"
+                    >
+                      <MessageCircle className="w-4 h-4 text-emerald-600" />
+                      <span className="text-xs font-semibold text-emerald-600 hidden sm:block">WhatsApp</span>
+                    </a>
+                  ) : (
+                    <LockedFeature feature="whatsappLink" className="px-3 py-3 bg-neutral-50 rounded-xl">
+                      <MessageCircle className="w-4 h-4" />
+                    </LockedFeature>
+                  )}
+                </div>
               )}
               {selected.email && (
                 <a

@@ -11,14 +11,19 @@ import { Select } from "@/components/ui/Select";
 import { mockProducts } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/utils";
 import type { Product } from "@/lib/types";
+import { usePlan } from "@/lib/plan-context";
+import { UpgradeModal } from "@/components/ui/UpgradeModal";
+import { LockedFeature } from "@/components/ui/LockedFeature";
 
 const categories = ["Maquiagem", "Skincare", "Perfumaria", "Cabelos", "Corpo"];
 
 export default function ProdutosPage() {
+  const { canAdd, hasFeature, usage, setUsage } = usePlan();
   const [products, setProducts] = useState<Product[]>(mockProducts);
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [form, setForm] = useState({
     name: "",
     brand: "",
@@ -36,6 +41,14 @@ export default function ProdutosPage() {
     return matchSearch && matchCat;
   });
 
+  function handleAddClick() {
+    if (!canAdd("products")) {
+      setUpgradeOpen(true);
+    } else {
+      setAddOpen(true);
+    }
+  }
+
   function handleAdd() {
     if (!form.name || !form.brand || !form.sale_price) return;
     const product: Product = {
@@ -49,6 +62,7 @@ export default function ProdutosPage() {
       created_at: new Date().toISOString(),
     };
     setProducts((prev) => [product, ...prev]);
+    setUsage({ products: usage.products + 1 });
     setForm({ name: "", brand: "", category: "Maquiagem", cost_price: "", sale_price: "", stock: "" });
     setAddOpen(false);
   }
@@ -84,7 +98,7 @@ export default function ProdutosPage() {
               </option>
             ))}
           </select>
-          <Button onClick={() => setAddOpen(true)}>
+          <Button onClick={handleAddClick}>
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Novo Produto</span>
           </Button>
@@ -137,24 +151,34 @@ export default function ProdutosPage() {
 
                 <div className="mt-3 pt-3 border-t border-neutral-100 flex items-center justify-between">
                   <div className="flex items-center gap-1">
-                    {lowStock && (
+                    {lowStock && hasFeature("stockAlerts") && (
                       <AlertTriangle className="w-3 h-3 text-amber-500 flex-shrink-0" />
                     )}
                     <span
                       className={`text-xs font-medium ${
-                        lowStock ? "text-amber-600" : "text-neutral-500"
+                        lowStock && hasFeature("stockAlerts") ? "text-amber-600" : "text-neutral-500"
                       }`}
                     >
                       {product.stock} un.
                     </span>
                   </div>
-                  {lowStock && <Badge variant="yellow">Baixo</Badge>}
+                  {lowStock && (
+                    hasFeature("stockAlerts") ? (
+                      <Badge variant="yellow">Baixo</Badge>
+                    ) : (
+                      <LockedFeature feature="stockAlerts">
+                        <Badge variant="gray">Estoque</Badge>
+                      </LockedFeature>
+                    )
+                  )}
                 </div>
               </Card>
             );
           })}
         </div>
       )}
+
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} resource="products" />
 
       {/* Add modal */}
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Novo Produto">
