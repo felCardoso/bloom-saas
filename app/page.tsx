@@ -1,0 +1,259 @@
+import Link from "next/link";
+import { Sparkles, Users, ShoppingBag, BarChart3, Calendar, Package, ArrowRight, Check } from "lucide-react";
+
+const features = [
+  { icon: Users, title: "Gestão de Clientes", desc: "Centralize toda a carteira de clientes com histórico de compras, aniversários e anotações." },
+  { icon: ShoppingBag, title: "Controle de Pedidos", desc: "Registre e acompanhe pedidos do recebimento até a entrega, com atualização de status em um clique." },
+  { icon: Package, title: "Catálogo de Produtos", desc: "Organize produtos por categoria, controle estoque e acompanhe margem de lucro automaticamente." },
+  { icon: Calendar, title: "Agenda Inteligente", desc: "Follow-ups, entregas e aniversários de clientes para nunca perder uma venda." },
+  { icon: BarChart3, title: "Relatórios e Insights", desc: "Visualize receita, ticket médio e desempenho para tomar decisões estratégicas com confiança." },
+  { icon: Sparkles, title: "Design Minimalista", desc: "Interface limpa e intuitiva pensada para revendedoras que querem praticidade no dia a dia." },
+];
+
+const plans = [
+  {
+    name: "Starter",
+    price: "Grátis",
+    period: "",
+    desc: "Para quem está começando",
+    features: ["Até 30 clientes", "Até 50 pedidos/mês", "Catálogo básico"],
+    cta: "Começar grátis",
+    primary: false,
+  },
+  {
+    name: "Pro",
+    price: "R$ 29",
+    period: "/mês",
+    desc: "Para revendedoras em crescimento",
+    features: ["Clientes ilimitados", "Pedidos ilimitados", "Relatórios completos", "Agenda avançada", "Suporte prioritário"],
+    cta: "Experimentar 14 dias",
+    primary: true,
+  },
+  {
+    name: "Business",
+    price: "R$ 59",
+    period: "/mês",
+    desc: "Para times e grandes carteiras",
+    features: ["Tudo do Pro", "Múltiplos usuários", "Exportação de dados", "API integrations"],
+    cta: "Falar com vendas",
+    primary: false,
+  },
+];
+
+export default function LandingPage() {
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Nav */}
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-neutral-100">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-rose-500 rounded-xl flex items-center justify-center shadow-sm">
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-sm font-bold text-neutral-800">Rosé</span>
+            <span className="text-sm font-bold text-rose-500">CRM</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard"
+              className="text-sm text-neutral-600 hover:text-neutral-800 font-medium px-4 py-2 rounded-xl hover:bg-neutral-50 transition-colors"
+            >
+              Entrar
+            </Link>
+            <Link
+              href="/dashboard"
+              className="text-sm font-medium bg-rose-500 text-white px-4 py-2 rounded-xl hover:bg-rose-600 transition-colors shadow-sm"
+            >
+              Começar grátis
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="pt-24 pb-20 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 bg-rose-50 text-rose-600 text-xs font-semibold px-4 py-2 rounded-full mb-8 border border-rose-100">
+            <Sparkles className="w-3.5 h-3.5" />
+            CRM feito para revendedoras de cosméticos
+          </div>
+          <h1 className="text-5xl md:text-6xl font-bold text-neutral-900 leading-tight mb-6">
+            Organize seu negócio{" "}
+            <span className="text-rose-500">de beleza</span>{" "}
+            com elegância
+          </h1>
+          <p className="text-lg text-neutral-500 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Gerencie clientes, pedidos e produtos em um único lugar. Feito especialmente para revendedoras de Mary Kay, Avon, Natura e similares.
+          </p>
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 bg-rose-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-rose-600 transition-all shadow-sm text-sm"
+            >
+              Experimentar gratuitamente
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 bg-white text-neutral-700 border border-neutral-200 px-6 py-3 rounded-xl font-semibold hover:bg-neutral-50 transition-all shadow-sm text-sm"
+            >
+              Ver demonstração
+            </Link>
+          </div>
+          <p className="text-xs text-neutral-400 mt-4">Sem cartão de crédito · Cancele quando quiser</p>
+        </div>
+      </section>
+
+      {/* Preview mockup */}
+      <section className="px-6 pb-24">
+        <div className="max-w-5xl mx-auto">
+          <div className="bg-gradient-to-br from-rose-50 to-neutral-50 border border-neutral-200 rounded-3xl p-8 shadow-soft">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              {[
+                { label: "Clientes", value: "248", sub: "↑ 12% este mês" },
+                { label: "Pedidos", value: "34", sub: "↑ 8% este mês" },
+                { label: "Receita", value: "R$4.820", sub: "↑ 23% este mês" },
+                { label: "Ticket Médio", value: "R$141", sub: "↑ 5% este mês" },
+              ].map((s) => (
+                <div key={s.label} className="bg-white rounded-2xl p-4 shadow-card">
+                  <p className="text-xl font-bold text-neutral-800">{s.value}</p>
+                  <p className="text-xs font-medium text-neutral-600 mt-0.5">{s.label}</p>
+                  <p className="text-[11px] text-emerald-500 mt-1">{s.sub}</p>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-span-2 bg-white rounded-2xl p-4 shadow-card">
+                <p className="text-sm font-semibold text-neutral-700 mb-3">Receita dos Últimos 6 Meses</p>
+                <div className="flex items-end gap-2 h-24">
+                  {[38, 52, 41, 68, 52, 64].map((h, i) => (
+                    <div
+                      key={i}
+                      className="flex-1 rounded-t-md"
+                      style={{ height: `${h}%`, background: i === 5 ? "#D4829C" : "#F2C4D4" }}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl p-4 shadow-card">
+                <p className="text-sm font-semibold text-neutral-700 mb-3">Por Status</p>
+                <div className="space-y-2">
+                  {[
+                    { label: "Ativas", pct: 68, color: "#D4829C" },
+                    { label: "Inativas", pct: 20, color: "#E5E7EB" },
+                    { label: "Prospects", pct: 12, color: "#F2C4D4" },
+                  ].map((s) => (
+                    <div key={s.label}>
+                      <div className="flex justify-between text-[11px] text-neutral-500 mb-1">
+                        <span>{s.label}</span>
+                        <span>{s.pct}%</span>
+                      </div>
+                      <div className="h-1.5 bg-neutral-100 rounded-full">
+                        <div
+                          className="h-full rounded-full"
+                          style={{ width: `${s.pct}%`, background: s.color }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-24 px-6 bg-neutral-50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-neutral-800 mb-4">Tudo que você precisa para crescer</h2>
+            <p className="text-neutral-500 max-w-xl mx-auto">
+              Funcionalidades pensadas para o dia a dia da revendedora moderna.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((f) => (
+              <div
+                key={f.title}
+                className="bg-white rounded-2xl p-6 border border-neutral-200 shadow-card hover:shadow-elevated transition-shadow"
+              >
+                <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center mb-4">
+                  <f.icon className="w-5 h-5 text-rose-500" />
+                </div>
+                <h3 className="text-base font-semibold text-neutral-800 mb-2">{f.title}</h3>
+                <p className="text-sm text-neutral-500 leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="py-24 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-neutral-800 mb-4">Planos simples e transparentes</h2>
+            <p className="text-neutral-500">Comece grátis e escale conforme seu negócio cresce.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {plans.map((plan) => (
+              <div
+                key={plan.name}
+                className={`rounded-2xl border p-6 ${
+                  plan.primary
+                    ? "border-rose-300 bg-rose-500 text-white shadow-elevated"
+                    : "border-neutral-200 bg-white shadow-card"
+                }`}
+              >
+                <p className={`text-sm font-semibold mb-1 ${plan.primary ? "text-rose-100" : "text-neutral-500"}`}>
+                  {plan.name}
+                </p>
+                <div className="flex items-baseline gap-1 mb-1">
+                  <span className={`text-3xl font-bold ${plan.primary ? "text-white" : "text-neutral-800"}`}>
+                    {plan.price}
+                  </span>
+                  <span className={`text-sm ${plan.primary ? "text-rose-200" : "text-neutral-400"}`}>
+                    {plan.period}
+                  </span>
+                </div>
+                <p className={`text-xs mb-6 ${plan.primary ? "text-rose-100" : "text-neutral-400"}`}>{plan.desc}</p>
+                <ul className="space-y-2.5 mb-8">
+                  {plan.features.map((feat) => (
+                    <li key={feat} className="flex items-center gap-2 text-sm">
+                      <Check className={`w-4 h-4 flex-shrink-0 ${plan.primary ? "text-rose-200" : "text-rose-500"}`} />
+                      <span className={plan.primary ? "text-white" : "text-neutral-600"}>{feat}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/dashboard"
+                  className={`block text-center py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                    plan.primary
+                      ? "bg-white text-rose-600 hover:bg-rose-50"
+                      : "bg-rose-500 text-white hover:bg-rose-600"
+                  }`}
+                >
+                  {plan.cta}
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-10 px-6 border-t border-neutral-100">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-rose-500 rounded-lg flex items-center justify-center">
+              <Sparkles className="w-3 h-3 text-white" />
+            </div>
+            <span className="text-sm font-bold text-neutral-600">RoséCRM</span>
+          </div>
+          <p className="text-xs text-neutral-400">© 2026 RoséCRM · Feito com ♥ para revendedoras.</p>
+        </div>
+      </footer>
+    </div>
+  );
+}
