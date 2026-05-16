@@ -23,7 +23,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex bg-white">
+    <div className="min-h-screen flex bg-white dark:bg-neutral-950">
       {/* Left branding panel */}
       <div className="hidden lg:flex w-110 xl:w-125 shrink-0 bg-linear-to-br from-rose-500 to-rose-600 flex-col p-10 relative overflow-hidden">
         {/* Decorative circles */}

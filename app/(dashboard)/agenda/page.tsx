@@ -91,7 +91,7 @@ export default function AgendaPage() {
     <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex bg-white border border-neutral-200 rounded-xl p-1 shadow-card">
+        <div className="flex bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-1 shadow-card">
           {[
             { value: "pending", label: `Pendentes (${pending})` },
             { value: "done", label: "Concluídos" },
@@ -104,7 +104,7 @@ export default function AgendaPage() {
                 "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all",
                 filter === tab.value
                   ? "bg-rose-500 text-white shadow-sm"
-                  : "text-neutral-500 hover:text-neutral-700"
+                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
               )}
             >
               {tab.label}
@@ -145,13 +145,13 @@ export default function AgendaPage() {
                       isToday
                         ? "bg-rose-500 text-white"
                         : isPast
-                        ? "bg-red-50 text-red-500"
-                        : "bg-neutral-100 text-neutral-600"
+                        ? "bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400"
+                        : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
                     )}
                   >
                     {isToday ? "Hoje" : formatDate(date)}
                   </div>
-                  <div className="flex-1 h-px bg-neutral-100" />
+                  <div className="flex-1 h-px bg-neutral-100 dark:bg-neutral-800" />
                 </div>
 
                 <div className="space-y-2.5">
@@ -174,8 +174,8 @@ export default function AgendaPage() {
                           </button>
 
                           {/* Type icon */}
-                          <div className="w-8 h-8 bg-neutral-50 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
-                            <Icon className="w-4 h-4 text-neutral-500" size={16} />
+                          <div className="w-8 h-8 bg-neutral-50 dark:bg-neutral-800 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                            <Icon className="w-4 h-4 text-neutral-500 dark:text-neutral-400" size={16} />
                           </div>
 
                           {/* Content */}
@@ -184,8 +184,8 @@ export default function AgendaPage() {
                               className={cn(
                                 "text-sm font-medium",
                                 event.completed
-                                  ? "text-neutral-400 line-through"
-                                  : "text-neutral-800"
+                                  ? "text-neutral-400 dark:text-neutral-500 line-through"
+                                  : "text-neutral-800 dark:text-neutral-100"
                               )}
                             >
                               {event.title}
@@ -198,7 +198,7 @@ export default function AgendaPage() {
                             <div className="flex items-center gap-2 mt-2 flex-wrap">
                               <div className="flex items-center gap-1.5">
                                 <Avatar name={event.client_name} size="sm" />
-                                <span className="text-xs text-neutral-500">
+                                <span className="text-xs text-neutral-500 dark:text-neutral-400">
                                   {event.client_name}
                                 </span>
                               </div>
@@ -256,13 +256,13 @@ export default function AgendaPage() {
             placeholder="Ex: Ligar para apresentar catálogo"
           />
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-neutral-700">Descrição</label>
+            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Descrição</label>
             <textarea
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               rows={2}
               placeholder="Detalhes do evento..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"
             />
           </div>
           <div className="flex gap-3 pt-1">

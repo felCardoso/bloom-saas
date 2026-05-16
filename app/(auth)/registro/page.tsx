@@ -182,9 +182,9 @@ export default function RegistroPage() {
       </form>
 
       <div className="flex items-center gap-3 my-5">
-        <div className="flex-1 h-px bg-neutral-100" />
-        <span className="text-xs text-neutral-400">ou continue com</span>
-        <div className="flex-1 h-px bg-neutral-100" />
+        <div className="flex-1 h-px bg-neutral-100 dark:bg-neutral-800" />
+        <span className="text-xs text-neutral-400 dark:text-neutral-500">ou continue com</span>
+        <div className="flex-1 h-px bg-neutral-100 dark:bg-neutral-800" />
       </div>
 
       <button

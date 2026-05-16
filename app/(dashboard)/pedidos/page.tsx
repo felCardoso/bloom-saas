@@ -114,14 +114,14 @@ export default function PedidosPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por cliente..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-700 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
+            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-700 dark:text-neutral-200 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
           />
         </div>
         <div className="flex gap-2">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="flex-1 sm:flex-none px-3.5 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-600 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
+            className="flex-1 sm:flex-none px-3.5 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-600 dark:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
           >
             <option value="all">Todos</option>
             <option value="pendente">Pendente</option>
@@ -186,23 +186,23 @@ export default function PedidosPage() {
                   <Avatar name={order.client_name} className="mt-0.5 sm:mt-0" />
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <p className="text-sm font-semibold text-neutral-800">
+                      <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
                         {order.client_name}
                       </p>
                       <Badge variant={status.variant}>{status.label}</Badge>
                     </div>
-                    <p className="text-xs text-neutral-400 truncate">
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500 truncate">
                       {order.items.map((i) => i.product_name).join(", ")}
                     </p>
-                    <p className="text-xs text-neutral-400 mt-0.5">
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">
                       {formatDate(order.created_at)}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-base font-bold text-neutral-800">
+                    <p className="text-base font-bold text-neutral-800 dark:text-neutral-100">
                       {formatCurrency(order.total)}
                     </p>
-                    <p className="text-xs text-neutral-400">
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500">
                       {order.items.length}{" "}
                       {order.items.length === 1 ? "item" : "itens"}
                     </p>
@@ -213,20 +213,20 @@ export default function PedidosPage() {
                 {(order.status === "pendente" ||
                   order.status === "confirmado") && (
                   <div
-                    className="border-t border-neutral-100 px-4 py-2.5 flex gap-2"
+                    className="border-t border-neutral-100 dark:border-neutral-800 px-4 py-2.5 flex gap-2"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {order.status === "pendente" && (
                       <>
                         <button
                           onClick={() => updateStatus(order.id, "cancelado")}
-                          className="flex-1 text-xs py-2 bg-neutral-50 text-neutral-500 rounded-lg hover:bg-neutral-100 font-medium transition-colors"
+                          className="flex-1 text-xs py-2 bg-neutral-50 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 font-medium transition-colors"
                         >
                           Cancelar
                         </button>
                         <button
                           onClick={() => updateStatus(order.id, "confirmado")}
-                          className="flex-1 text-xs py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-medium transition-colors"
+                          className="flex-1 text-xs py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 font-medium transition-colors"
                         >
                           Confirmar
                         </button>
@@ -235,7 +235,7 @@ export default function PedidosPage() {
                     {order.status === "confirmado" && (
                       <button
                         onClick={() => updateStatus(order.id, "entregue")}
-                        className="flex-1 text-xs py-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 font-medium transition-colors"
+                        className="flex-1 text-xs py-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 font-medium transition-colors"
                       >
                         Marcar como Entregue
                       </button>
@@ -288,8 +288,8 @@ export default function PedidosPage() {
           />
 
           {/* Add item */}
-          <div className="p-4 bg-neutral-50 rounded-2xl space-y-3">
-            <p className="text-sm font-medium text-neutral-700">
+          <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-2xl space-y-3">
+            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
               Adicionar Produto
             </p>
             <div className="flex gap-2">
@@ -298,7 +298,7 @@ export default function PedidosPage() {
                 onChange={(e) =>
                   setAddingItem((i) => ({ ...i, product_id: e.target.value }))
                 }
-                className="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
+                className="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
               >
                 <option value="">Selecione o produto</option>
                 {mockProducts.map((p) => (
@@ -317,7 +317,7 @@ export default function PedidosPage() {
                     quantity: Number(e.target.value),
                   }))
                 }
-                className="w-14 px-2 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-rose-400"
+                className="w-14 px-2 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-800 dark:text-neutral-100 text-center focus:outline-none focus:ring-2 focus:ring-rose-400"
               />
               <Button variant="secondary" size="sm" onClick={addItem}>
                 +
@@ -329,20 +329,20 @@ export default function PedidosPage() {
                 {newOrder.items.map((item, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between text-sm bg-white rounded-xl px-3 py-2.5 border border-neutral-100"
+                    className="flex items-center justify-between text-sm bg-white dark:bg-neutral-900 rounded-xl px-3 py-2.5 border border-neutral-100 dark:border-neutral-700"
                   >
-                    <span className="text-neutral-700 truncate flex-1 mr-2">
+                    <span className="text-neutral-700 dark:text-neutral-300 truncate flex-1 mr-2">
                       {item.product_name}
                     </span>
-                    <span className="text-neutral-400 mr-3">
+                    <span className="text-neutral-400 dark:text-neutral-500 mr-3">
                       ×{item.quantity}
                     </span>
-                    <span className="font-semibold text-neutral-800 whitespace-nowrap">
+                    <span className="font-semibold text-neutral-800 dark:text-neutral-100 whitespace-nowrap">
                       {formatCurrency(item.subtotal)}
                     </span>
                   </div>
                 ))}
-                <div className="flex justify-between pt-1 text-sm font-bold text-neutral-800 border-t border-neutral-200">
+                <div className="flex justify-between pt-1 text-sm font-bold text-neutral-800 dark:text-neutral-100 border-t border-neutral-200 dark:border-neutral-700">
                   <span>Total</span>
                   <span>
                     {formatCurrency(
@@ -355,7 +355,7 @@ export default function PedidosPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-neutral-700">
+            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
               Observações
             </label>
             <textarea
@@ -365,7 +365,7 @@ export default function PedidosPage() {
               }
               rows={2}
               placeholder="Forma de pagamento, endereço de entrega..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"
             />
           </div>
 
@@ -407,31 +407,31 @@ export default function PedidosPage() {
               </Badge>
             </div>
 
-            <div className="bg-neutral-50 rounded-2xl p-4 space-y-2.5">
+            <div className="bg-neutral-50 dark:bg-neutral-800 rounded-2xl p-4 space-y-2.5">
               {selected.items.map((item, i) => (
                 <div
                   key={i}
                   className="flex items-center justify-between text-sm"
                 >
-                  <span className="text-neutral-700 flex-1 mr-2 truncate">
+                  <span className="text-neutral-700 dark:text-neutral-300 flex-1 mr-2 truncate">
                     {item.product_name}
                   </span>
-                  <span className="text-neutral-400 mr-3">
+                  <span className="text-neutral-400 dark:text-neutral-500 mr-3">
                     ×{item.quantity}
                   </span>
-                  <span className="font-medium text-neutral-800 whitespace-nowrap">
+                  <span className="font-medium text-neutral-800 dark:text-neutral-100 whitespace-nowrap">
                     {formatCurrency(item.subtotal)}
                   </span>
                 </div>
               ))}
-              <div className="border-t border-neutral-200 pt-2.5 flex justify-between font-bold text-neutral-800">
+              <div className="border-t border-neutral-200 dark:border-neutral-700 pt-2.5 flex justify-between font-bold text-neutral-800 dark:text-neutral-100">
                 <span>Total</span>
                 <span>{formatCurrency(selected.total)}</span>
               </div>
             </div>
 
             {selected.notes && (
-              <p className="text-sm text-neutral-600 bg-neutral-50 rounded-xl px-4 py-3">
+              <p className="text-sm text-neutral-600 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-800 rounded-xl px-4 py-3">
                 {selected.notes}
               </p>
             )}

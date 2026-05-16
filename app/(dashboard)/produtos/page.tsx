@@ -82,14 +82,14 @@ export default function ProdutosPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar produto ou marca..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-700 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
+            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-700 dark:text-neutral-200 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
           />
         </div>
         <div className="flex gap-2">
           <select
             value={catFilter}
             onChange={(e) => setCatFilter(e.target.value)}
-            className="flex-1 sm:flex-none px-3.5 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-600 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
+            className="flex-1 sm:flex-none px-3.5 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-600 dark:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
           >
             <option value="all">Todas</option>
             {categories.map((c) => (
@@ -121,7 +121,7 @@ export default function ProdutosPage() {
             return (
               <Card key={product.id} className="hover:shadow-elevated transition-shadow">
                 <div className="flex items-start justify-between mb-3">
-                  <div className="w-9 h-9 lg:w-10 lg:h-10 bg-rose-50 rounded-xl flex items-center justify-center">
+                  <div className="w-9 h-9 lg:w-10 lg:h-10 bg-rose-50 dark:bg-rose-900/30 rounded-xl flex items-center justify-center">
                     <Package className="w-4 h-4 lg:w-5 lg:h-5 text-rose-400" />
                   </div>
                   <Badge variant="gray" className="text-[10px] lg:text-xs">
@@ -129,27 +129,27 @@ export default function ProdutosPage() {
                   </Badge>
                 </div>
 
-                <h3 className="text-sm font-semibold text-neutral-800 mb-0.5 line-clamp-2">
+                <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-0.5 line-clamp-2">
                   {product.name}
                 </h3>
-                <p className="text-xs text-neutral-400 mb-3">{product.brand}</p>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500 mb-3">{product.brand}</p>
 
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-sm">
-                    <span className="text-neutral-500">Venda</span>
-                    <span className="font-bold text-neutral-800">
+                    <span className="text-neutral-500 dark:text-neutral-400">Venda</span>
+                    <span className="font-bold text-neutral-800 dark:text-neutral-100">
                       {formatCurrency(product.sale_price)}
                     </span>
                   </div>
                   {m !== null && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-neutral-500">Margem</span>
+                      <span className="text-neutral-500 dark:text-neutral-400">Margem</span>
                       <span className="font-medium text-emerald-600">{m}%</span>
                     </div>
                   )}
                 </div>
 
-                <div className="mt-3 pt-3 border-t border-neutral-100 flex items-center justify-between">
+                <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
                   <div className="flex items-center gap-1">
                     {lowStock && hasFeature("stockAlerts") && (
                       <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />
@@ -233,8 +233,8 @@ export default function ProdutosPage() {
           </div>
 
           {form.cost_price && form.sale_price && Number(form.cost_price) > 0 && (
-            <div className="bg-emerald-50 rounded-xl px-4 py-3 text-sm">
-              <span className="text-neutral-600">Margem estimada: </span>
+            <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl px-4 py-3 text-sm">
+              <span className="text-neutral-600 dark:text-neutral-400">Margem estimada: </span>
               <span className="font-bold text-emerald-600">
                 {Math.round(
                   ((Number(form.sale_price) - Number(form.cost_price)) /

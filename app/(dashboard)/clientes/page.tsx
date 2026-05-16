@@ -519,13 +519,13 @@ export default function ClientesPage() {
                 </a>
               )}
               {selected.city && (
-                <div className="flex items-center gap-3 p-3 bg-neutral-50 rounded-xl">
-                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-card">
+                <div className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl">
+                  <div className="w-8 h-8 bg-white dark:bg-neutral-900 rounded-lg flex items-center justify-center shadow-card">
                     <MapPin className="w-4 h-4 text-rose-500" />
                   </div>
                   <div>
-                    <p className="text-xs text-neutral-500">Cidade</p>
-                    <p className="text-sm font-medium text-neutral-700">
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">Cidade</p>
+                    <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
                       {selected.city}
                     </p>
                   </div>
@@ -535,10 +535,10 @@ export default function ClientesPage() {
 
             {selected.notes && (
               <div>
-                <p className="text-xs text-neutral-400 uppercase tracking-wide mb-2">
+                <p className="text-xs text-neutral-400 dark:text-neutral-500 uppercase tracking-wide mb-2">
                   Observações
                 </p>
-                <p className="text-sm text-neutral-600 bg-neutral-50 rounded-xl px-4 py-3">
+                <p className="text-sm text-neutral-600 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-800 rounded-xl px-4 py-3">
                   {selected.notes}
                 </p>
               </div>

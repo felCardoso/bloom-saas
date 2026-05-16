@@ -95,7 +95,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-neutral-950/90 backdrop-blur-md border-b border-neutral-100">
+      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-neutral-950/90 backdrop-blur-md border-b border-neutral-100 dark:border-neutral-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">
@@ -111,7 +111,7 @@ export default function LandingPage() {
           <div className="hidden sm:flex items-center gap-3">
             <Link
               href="/login"
-              className="text-sm text-neutral-600 hover:text-neutral-800 font-medium px-4 py-2 rounded-xl hover:bg-neutral-50 transition-colors"
+              className="text-sm text-neutral-600 dark:text-neutral-300 hover:text-neutral-800 dark:hover:text-neutral-100 font-medium px-4 py-2 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
             >
               Entrar
             </Link>
@@ -126,7 +126,7 @@ export default function LandingPage() {
           {/* Mobile menu button */}
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="sm:hidden p-2 rounded-xl text-neutral-500 hover:bg-neutral-50 transition-colors"
+            className="sm:hidden p-2 rounded-xl text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
           >
             {menuOpen ? (
               <X className="w-5 h-5" />
@@ -138,11 +138,11 @@ export default function LandingPage() {
 
         {/* Mobile menu dropdown */}
         {menuOpen && (
-          <div className="sm:hidden border-t border-neutral-100 bg-white px-4 py-4 flex flex-col gap-2">
+          <div className="sm:hidden border-t border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-950 px-4 py-4 flex flex-col gap-2">
             <Link
               href="/login"
               onClick={() => setMenuOpen(false)}
-              className="w-full text-center py-3 text-sm font-medium text-neutral-700 bg-neutral-50 rounded-xl hover:bg-neutral-100 transition-colors"
+              className="w-full text-center py-3 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-800 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
             >
               Entrar
             </Link>
@@ -183,7 +183,7 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/login"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-neutral-700 border border-neutral-200 px-6 py-3.5 sm:py-3 rounded-xl font-semibold hover:bg-neutral-50 transition-all shadow-sm text-sm"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 px-6 py-3.5 sm:py-3 rounded-xl font-semibold hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all shadow-sm text-sm"
             >
               Já tenho conta
             </Link>
@@ -197,7 +197,7 @@ export default function LandingPage() {
       {/* Preview mockup */}
       <section className="px-4 sm:px-6 pb-16 sm:pb-24">
         <div className="max-w-5xl mx-auto">
-          <div className="bg-linear-to-br from-rose-50 to-neutral-50 border border-neutral-200 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-soft">
+          <div className="bg-linear-to-br from-rose-50 to-neutral-50 dark:from-rose-950/20 dark:to-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-soft">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
               {[
                 { label: "Clientes", value: "248", sub: "↑ 12%" },
@@ -207,12 +207,12 @@ export default function LandingPage() {
               ].map((s) => (
                 <div
                   key={s.label}
-                  className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-card"
+                  className="bg-white dark:bg-neutral-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-card"
                 >
-                  <p className="text-base sm:text-xl font-bold text-neutral-800">
+                  <p className="text-base sm:text-xl font-bold text-neutral-800 dark:text-neutral-100">
                     {s.value}
                   </p>
-                  <p className="text-[11px] sm:text-xs font-medium text-neutral-600 mt-0.5">
+                  <p className="text-[11px] sm:text-xs font-medium text-neutral-600 dark:text-neutral-400 mt-0.5">
                     {s.label}
                   </p>
                   <p className="text-[10px] sm:text-[11px] text-emerald-500 mt-1">
@@ -222,8 +222,8 @@ export default function LandingPage() {
               ))}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-              <div className="sm:col-span-2 bg-white rounded-xl sm:rounded-2xl p-4 shadow-card">
-                <p className="text-xs sm:text-sm font-semibold text-neutral-700 mb-3">
+              <div className="sm:col-span-2 bg-white dark:bg-neutral-800 rounded-xl sm:rounded-2xl p-4 shadow-card">
+                <p className="text-xs sm:text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
                   Receita dos Últimos 6 Meses
                 </p>
                 <div className="flex items-end gap-1.5 sm:gap-2 h-20 sm:h-24">
@@ -239,8 +239,8 @@ export default function LandingPage() {
                   ))}
                 </div>
               </div>
-              <div className="bg-white rounded-xl sm:rounded-2xl p-4 shadow-card">
-                <p className="text-xs sm:text-sm font-semibold text-neutral-700 mb-3">
+              <div className="bg-white dark:bg-neutral-800 rounded-xl sm:rounded-2xl p-4 shadow-card">
+                <p className="text-xs sm:text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
                   Por Status
                 </p>
                 <div className="space-y-2 sm:space-y-2">
@@ -250,11 +250,11 @@ export default function LandingPage() {
                     { label: "Prospects", pct: 12, color: "#F2C4D4" },
                   ].map((s) => (
                     <div key={s.label}>
-                      <div className="flex justify-between text-[10px] sm:text-[11px] text-neutral-500 mb-1">
+                      <div className="flex justify-between text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 mb-1">
                         <span>{s.label}</span>
                         <span>{s.pct}%</span>
                       </div>
-                      <div className="h-1.5 bg-neutral-100 rounded-full">
+                      <div className="h-1.5 bg-neutral-100 dark:bg-neutral-700 rounded-full">
                         <div
                           className="h-full rounded-full"
                           style={{ width: `${s.pct}%`, background: s.color }}
@@ -273,10 +273,10 @@ export default function LandingPage() {
       <section className="py-16 sm:py-24 px-4 sm:px-6 bg-neutral-50 dark:bg-neutral-900">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl font-bold text-neutral-800 mb-3 sm:mb-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-neutral-800 dark:text-neutral-100 mb-3 sm:mb-4">
               Tudo que você precisa para crescer
             </h2>
-            <p className="text-sm sm:text-base text-neutral-500 max-w-xl mx-auto">
+            <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400 max-w-xl mx-auto">
               Funcionalidades pensadas para o dia a dia da revendedora moderna.
             </p>
           </div>
@@ -286,13 +286,13 @@ export default function LandingPage() {
                 key={f.title}
                 className="bg-white dark:bg-neutral-800 rounded-2xl p-5 sm:p-6 border border-neutral-200 dark:border-neutral-700 shadow-card hover:shadow-elevated transition-shadow"
               >
-                <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center mb-4">
+                <div className="w-10 h-10 bg-rose-50 dark:bg-rose-900/30 rounded-xl flex items-center justify-center mb-4">
                   <f.icon className="w-5 h-5 text-rose-500" />
                 </div>
-                <h3 className="text-sm sm:text-base font-semibold text-neutral-800 mb-2">
+                <h3 className="text-sm sm:text-base font-semibold text-neutral-800 dark:text-neutral-100 mb-2">
                   {f.title}
                 </h3>
-                <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed">
+                <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
                   {f.desc}
                 </p>
               </div>
@@ -305,10 +305,10 @@ export default function LandingPage() {
       <section className="py-16 sm:py-24 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl font-bold text-neutral-800 mb-3 sm:mb-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-neutral-800 dark:text-neutral-100 mb-3 sm:mb-4">
               Planos simples e transparentes
             </h2>
-            <p className="text-sm sm:text-base text-neutral-500">
+            <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400">
               Comece grátis e escale conforme seu negócio cresce.
             </p>
           </div>
