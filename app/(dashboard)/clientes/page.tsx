@@ -376,7 +376,7 @@ export default function ClientesPage() {
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-neutral-700">
+            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
               Observações
             </label>
             <textarea
@@ -386,7 +386,7 @@ export default function ClientesPage() {
               }
               placeholder="Preferências, histórico, observações..."
               rows={3}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent resize-none"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent resize-none"
             />
           </div>
           <div className="flex gap-3 pt-1">
@@ -449,16 +449,16 @@ export default function ClientesPage() {
                     : "—",
                 },
               ].map((s) => (
-                <div key={s.label} className="bg-neutral-50 rounded-xl p-3">
+                <div key={s.label} className="bg-neutral-50 dark:bg-neutral-800 rounded-xl p-3">
                   <p
                     className={cn(
                       "text-base font-bold",
-                      s.highlight ? "text-rose-600" : "text-neutral-800",
+                      s.highlight ? "text-rose-600" : "text-neutral-800 dark:text-neutral-100",
                     )}
                   >
                     {s.value}
                   </p>
-                  <p className="text-xs text-neutral-500">{s.label}</p>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -468,14 +468,14 @@ export default function ClientesPage() {
                 <div className="flex gap-2">
                   <a
                     href={`tel:${selected.phone}`}
-                    className="flex-1 flex items-center gap-3 p-3 bg-neutral-50 rounded-xl hover:bg-neutral-100 transition-colors"
+                    className="flex-1 flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
                   >
-                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-card">
+                    <div className="w-8 h-8 bg-white dark:bg-neutral-900 rounded-lg flex items-center justify-center shadow-card">
                       <Phone className="w-4 h-4 text-rose-500" />
                     </div>
                     <div>
-                      <p className="text-xs text-neutral-500">Telefone</p>
-                      <p className="text-sm font-medium text-neutral-700">
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">Telefone</p>
+                      <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
                         {formatPhone(selected.phone)}
                       </p>
                     </div>
@@ -505,14 +505,14 @@ export default function ClientesPage() {
               {selected.email && (
                 <a
                   href={`mailto:${selected.email}`}
-                  className="flex items-center gap-3 p-3 bg-neutral-50 rounded-xl hover:bg-neutral-100 transition-colors"
+                  className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
                 >
-                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-card">
+                  <div className="w-8 h-8 bg-white dark:bg-neutral-900 rounded-lg flex items-center justify-center shadow-card">
                     <Mail className="w-4 h-4 text-rose-500" />
                   </div>
                   <div>
-                    <p className="text-xs text-neutral-500">Email</p>
-                    <p className="text-sm font-medium text-neutral-700">
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">Email</p>
+                    <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
                       {selected.email}
                     </p>
                   </div>
