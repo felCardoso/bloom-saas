@@ -46,16 +46,16 @@ export function UpgradeModal({ open, onClose, resource, feature }: UpgradeModalP
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-white w-full md:max-w-md rounded-t-3xl md:rounded-2xl shadow-elevated max-h-[92dvh] overflow-y-auto">
+      <div className="relative bg-white dark:bg-neutral-900 w-full md:max-w-md rounded-t-3xl md:rounded-2xl shadow-elevated max-h-[92dvh] overflow-y-auto">
         {/* Drag handle */}
         <div className="flex justify-center pt-3 pb-1 md:hidden">
-          <div className="w-10 h-1 bg-neutral-200 rounded-full" />
+          <div className="w-10 h-1 bg-neutral-200 dark:bg-neutral-700 rounded-full" />
         </div>
 
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-xl text-neutral-400 hover:bg-neutral-100 transition-colors z-10"
+          className="absolute top-4 right-4 p-2 rounded-xl text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors z-10"
         >
           <X className="w-4 h-4" />
         </button>
@@ -67,12 +67,12 @@ export function UpgradeModal({ open, onClose, resource, feature }: UpgradeModalP
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-neutral-800">
+              <h2 className="text-base font-bold text-neutral-800 dark:text-neutral-100">
                 Faça upgrade para continuar
               </h2>
-              <p className="text-sm text-neutral-500">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 Você atingiu o limite de{" "}
-                <span className="font-medium text-neutral-700">{blockedLabel}</span>{" "}
+                <span className="font-medium text-neutral-700 dark:text-neutral-300">{blockedLabel}</span>{" "}
                 no plano {PLANS[planId].name}.
               </p>
             </div>
@@ -131,7 +131,7 @@ export function UpgradeModal({ open, onClose, resource, feature }: UpgradeModalP
             </Link>
             <button
               onClick={onClose}
-              className="w-full py-3 text-sm font-medium text-neutral-500 hover:text-neutral-700 transition-colors"
+              className="w-full py-3 text-sm font-medium text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
             >
               Continuar no plano {PLANS[planId].name}
             </button>

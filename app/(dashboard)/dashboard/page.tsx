@@ -77,27 +77,27 @@ export default function DashboardPage() {
         </div>
 
         <Card padding="none">
-          <div className="px-5 py-4 border-b border-neutral-100">
-            <h3 className="text-base font-semibold text-neutral-800">
+          <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
+            <h3 className="text-base font-semibold text-neutral-800 dark:text-neutral-100">
               Próximos Eventos
             </h3>
           </div>
-          <div className="divide-y divide-neutral-100">
+          <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
             {upcoming.map((event) => {
               const type = eventTypeMap[event.type];
               return (
                 <div
                   key={event.id}
-                  className="px-4 py-3.5 flex items-start gap-3 hover:bg-neutral-50 transition-colors"
+                  className="px-4 py-3.5 flex items-start gap-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-colors"
                 >
-                  <div className="w-8 h-8 bg-rose-50 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                    <Calendar className="w-4 h-4 text-rose-400" />
+                  <div className="w-8 h-8 bg-rose-50 dark:bg-rose-900/30 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                    <Calendar className="w-4 h-4 text-rose-400 dark:text-rose-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-800 truncate">
+                    <p className="text-sm font-medium text-neutral-800 dark:text-neutral-100 truncate">
                       {event.title}
                     </p>
-                    <p className="text-xs text-neutral-400 mt-0.5">
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">
                       {new Date(event.date).toLocaleDateString("pt-BR", {
                         day: "2-digit",
                         month: "short",

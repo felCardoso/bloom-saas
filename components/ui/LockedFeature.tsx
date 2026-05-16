@@ -32,12 +32,12 @@ export function LockedFeature({
           </div>
           <button
             onClick={() => setOpen(true)}
-            className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/60 backdrop-blur-[1px] rounded-2xl hover:bg-white/70 transition-colors group"
+            className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-[1px] rounded-2xl hover:bg-white/70 dark:hover:bg-neutral-900/70 transition-colors group"
           >
             <div className="w-10 h-10 bg-neutral-800 rounded-xl flex items-center justify-center shadow-elevated group-hover:scale-105 transition-transform">
               <Lock className="w-5 h-5 text-white" />
             </div>
-            <p className="text-xs font-semibold text-neutral-700 bg-white px-3 py-1 rounded-full shadow-card">
+            <p className="text-xs font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 px-3 py-1 rounded-full shadow-card">
               {FEATURE_LABELS[feature]}
             </p>
           </button>

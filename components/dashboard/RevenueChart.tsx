@@ -23,9 +23,9 @@ interface RevenueChartProps {
 function CustomTooltip({ active, payload, label }: any) {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white border border-neutral-200 rounded-xl shadow-elevated px-3 py-2">
-        <p className="text-xs text-neutral-500 mb-0.5">{label}</p>
-        <p className="text-sm font-semibold text-neutral-800">
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-elevated px-3 py-2">
+        <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">{label}</p>
+        <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
           {new Intl.NumberFormat("pt-BR", {
             style: "currency",
             currency: "BRL",

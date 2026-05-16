@@ -17,7 +17,7 @@ export function Card({ children, className, padding = "md" }: CardProps) {
   return (
     <div
       className={cn(
-        "bg-white rounded-2xl border border-neutral-200 shadow-card",
+        "bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-card",
         paddingClasses[padding],
         className
       )}
@@ -54,7 +54,7 @@ export function CardTitle({
   className?: string;
 }) {
   return (
-    <h3 className={cn("text-base font-semibold text-neutral-800", className)}>
+    <h3 className={cn("text-base font-semibold text-neutral-800 dark:text-neutral-100", className)}>
       {children}
     </h3>
   );
