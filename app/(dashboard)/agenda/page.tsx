@@ -40,9 +40,8 @@ export default function AgendaPage() {
   });
 
   const grouped = filtered.reduce<Record<string, ScheduleEvent[]>>((acc, ev) => {
-    const date = ev.date;
-    if (!acc[date]) acc[date] = [];
-    acc[date].push(ev);
+    if (!acc[ev.date]) acc[ev.date] = [];
+    acc[ev.date].push(ev);
     return acc;
   }, {});
 
@@ -76,9 +75,9 @@ export default function AgendaPage() {
   const overdue = events.filter((e) => !e.completed && e.date < today).length;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <div className="flex bg-white border border-neutral-200 rounded-xl p-1 shadow-card">
           {[
             { value: "pending", label: `Pendentes (${pending})` },
@@ -89,7 +88,7 @@ export default function AgendaPage() {
               key={tab.value}
               onClick={() => setFilter(tab.value as typeof filter)}
               className={cn(
-                "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
+                "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all",
                 filter === tab.value
                   ? "bg-rose-500 text-white shadow-sm"
                   : "text-neutral-500 hover:text-neutral-700"
@@ -101,11 +100,13 @@ export default function AgendaPage() {
         </div>
         <div className="flex-1" />
         {overdue > 0 && (
-          <Badge variant="red">{overdue} atrasado{overdue > 1 ? "s" : ""}</Badge>
+          <Badge variant="red">
+            {overdue} atrasado{overdue > 1 ? "s" : ""}
+          </Badge>
         )}
-        <Button onClick={() => setAddOpen(true)}>
+        <Button onClick={() => setAddOpen(true)} size="sm">
           <Plus className="w-4 h-4" />
-          Novo Evento
+          <span className="hidden sm:inline">Novo Evento</span>
         </Button>
       </div>
 
@@ -125,10 +126,16 @@ export default function AgendaPage() {
             return (
               <div key={date}>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className={cn(
-                    "px-3 py-1 rounded-lg text-xs font-semibold",
-                    isToday ? "bg-rose-500 text-white" : isPast ? "bg-red-50 text-red-500" : "bg-neutral-100 text-neutral-600"
-                  )}>
+                  <div
+                    className={cn(
+                      "px-3 py-1 rounded-lg text-xs font-semibold",
+                      isToday
+                        ? "bg-rose-500 text-white"
+                        : isPast
+                        ? "bg-red-50 text-red-500"
+                        : "bg-neutral-100 text-neutral-600"
+                    )}
+                  >
                     {isToday ? "Hoje" : formatDate(date)}
                   </div>
                   <div className="flex-1 h-px bg-neutral-100" />
@@ -140,10 +147,11 @@ export default function AgendaPage() {
                     const Icon = type.icon;
                     return (
                       <Card key={event.id} padding="none">
-                        <div className="flex items-center gap-4 px-5 py-4">
+                        <div className="flex items-start gap-3 px-4 py-3.5">
+                          {/* Checkbox */}
                           <button
                             onClick={() => toggle(event.id)}
-                            className="flex-shrink-0 text-neutral-300 hover:text-rose-400 transition-colors"
+                            className="flex-shrink-0 text-neutral-300 hover:text-rose-400 transition-colors mt-0.5"
                           >
                             {event.completed ? (
                               <CheckCircle2 className="w-5 h-5 text-emerald-500" />
@@ -152,26 +160,37 @@ export default function AgendaPage() {
                             )}
                           </button>
 
-                          <div className="w-9 h-9 bg-neutral-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <Icon className="w-4.5 h-4.5 text-neutral-500" size={18} />
+                          {/* Type icon */}
+                          <div className="w-8 h-8 bg-neutral-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <Icon className="w-4 h-4 text-neutral-500" size={16} />
                           </div>
 
+                          {/* Content */}
                           <div className="flex-1 min-w-0">
-                            <p className={cn(
-                              "text-sm font-medium",
-                              event.completed ? "text-neutral-400 line-through" : "text-neutral-800"
-                            )}>
+                            <p
+                              className={cn(
+                                "text-sm font-medium",
+                                event.completed
+                                  ? "text-neutral-400 line-through"
+                                  : "text-neutral-800"
+                              )}
+                            >
                               {event.title}
                             </p>
                             {event.description && (
-                              <p className="text-xs text-neutral-400 mt-0.5">{event.description}</p>
+                              <p className="text-xs text-neutral-400 mt-0.5 truncate">
+                                {event.description}
+                              </p>
                             )}
-                          </div>
-
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <Avatar name={event.client_name} size="sm" />
-                            <span className="text-xs text-neutral-500 hidden sm:block">{event.client_name}</span>
-                            <Badge variant={type.variant}>{type.label}</Badge>
+                            <div className="flex items-center gap-2 mt-2 flex-wrap">
+                              <div className="flex items-center gap-1.5">
+                                <Avatar name={event.client_name} size="sm" />
+                                <span className="text-xs text-neutral-500">
+                                  {event.client_name}
+                                </span>
+                              </div>
+                              <Badge variant={type.variant}>{type.label}</Badge>
+                            </div>
                           </div>
                         </div>
                       </Card>
@@ -198,7 +217,9 @@ export default function AgendaPage() {
             <Select
               label="Tipo"
               value={form.type}
-              onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as ScheduleEvent["type"] }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, type: e.target.value as ScheduleEvent["type"] }))
+              }
               options={[
                 { value: "follow_up", label: "Follow-up" },
                 { value: "entrega", label: "Entrega" },
@@ -229,9 +250,13 @@ export default function AgendaPage() {
               className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"
             />
           </div>
-          <div className="flex gap-3 pt-2">
-            <Button variant="secondary" className="flex-1" onClick={() => setAddOpen(false)}>Cancelar</Button>
-            <Button className="flex-1" onClick={handleAdd}>Salvar Evento</Button>
+          <div className="flex gap-3 pt-1">
+            <Button variant="secondary" className="flex-1" onClick={() => setAddOpen(false)}>
+              Cancelar
+            </Button>
+            <Button className="flex-1" onClick={handleAdd}>
+              Salvar
+            </Button>
           </div>
         </div>
       </Modal>

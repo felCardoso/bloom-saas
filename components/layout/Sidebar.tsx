@@ -27,7 +27,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-60 h-screen bg-white border-r border-neutral-200 flex flex-col fixed left-0 top-0 z-30">
+    <aside className="hidden lg:flex w-60 h-screen bg-white border-r border-neutral-200 flex-col fixed left-0 top-0 z-30">
       {/* Logo */}
       <div className="px-5 py-5 border-b border-neutral-100">
         <div className="flex items-center gap-2.5">
@@ -35,12 +35,8 @@ export function Sidebar() {
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div>
-            <span className="text-sm font-bold text-neutral-800 tracking-tight">
-              Rosé
-            </span>
-            <span className="text-sm font-bold text-rose-500 tracking-tight">
-              CRM
-            </span>
+            <span className="text-sm font-bold text-neutral-800 tracking-tight">Rosé</span>
+            <span className="text-sm font-bold text-rose-500 tracking-tight">CRM</span>
           </div>
         </div>
       </div>
@@ -61,10 +57,7 @@ export function Sidebar() {
               )}
             >
               <Icon
-                className={cn(
-                  "w-4.5 h-4.5 flex-shrink-0",
-                  active ? "text-rose-500" : "text-neutral-400"
-                )}
+                className={cn("flex-shrink-0", active ? "text-rose-500" : "text-neutral-400")}
                 size={18}
               />
               {label}
@@ -91,16 +84,13 @@ export function Sidebar() {
           Configurações
         </Link>
 
-        {/* User card */}
         <div className="mt-3 px-3 py-3 bg-neutral-50 rounded-xl">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 bg-rose-100 rounded-full flex items-center justify-center">
               <span className="text-xs font-semibold text-rose-600">AC</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-neutral-700 truncate">
-                Ana Consultora
-              </p>
+              <p className="text-xs font-medium text-neutral-700 truncate">Ana Consultora</p>
               <p className="text-[10px] text-neutral-400">Plano Pro</p>
             </div>
           </div>

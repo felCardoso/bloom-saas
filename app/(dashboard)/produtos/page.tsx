@@ -20,8 +20,12 @@ export default function ProdutosPage() {
   const [catFilter, setCatFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState({
-    name: "", brand: "", category: "Maquiagem",
-    cost_price: "", sale_price: "", stock: "",
+    name: "",
+    brand: "",
+    category: "Maquiagem",
+    cost_price: "",
+    sale_price: "",
+    stock: "",
   });
 
   const filtered = products.filter((p) => {
@@ -55,10 +59,10 @@ export default function ProdutosPage() {
       : null;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="relative flex-1 min-w-52">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
           <input
             value={search}
@@ -67,20 +71,24 @@ export default function ProdutosPage() {
             className="w-full pl-10 pr-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-700 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
           />
         </div>
-        <select
-          value={catFilter}
-          onChange={(e) => setCatFilter(e.target.value)}
-          className="px-3.5 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-600 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
-        >
-          <option value="all">Todas as categorias</option>
-          {categories.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-        <Button onClick={() => setAddOpen(true)}>
-          <Plus className="w-4 h-4" />
-          Novo Produto
-        </Button>
+        <div className="flex gap-2">
+          <select
+            value={catFilter}
+            onChange={(e) => setCatFilter(e.target.value)}
+            className="flex-1 sm:flex-none px-3.5 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-600 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
+          >
+            <option value="all">Todas</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+          <Button onClick={() => setAddOpen(true)}>
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Novo Produto</span>
+          </Button>
+        </div>
       </div>
 
       {/* Grid */}
@@ -92,35 +100,33 @@ export default function ProdutosPage() {
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4">
           {filtered.map((product) => {
             const m = margin(product);
             const lowStock = product.stock <= 5;
             return (
               <Card key={product.id} className="hover:shadow-elevated transition-shadow">
                 <div className="flex items-start justify-between mb-3">
-                  <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center">
-                    <Package className="w-5 h-5 text-rose-400" />
+                  <div className="w-9 h-9 lg:w-10 lg:h-10 bg-rose-50 rounded-xl flex items-center justify-center">
+                    <Package className="w-4 h-4 lg:w-5 lg:h-5 text-rose-400" />
                   </div>
-                  <Badge variant="gray">{product.category}</Badge>
+                  <Badge variant="gray" className="text-[10px] lg:text-xs">
+                    {product.category}
+                  </Badge>
                 </div>
 
                 <h3 className="text-sm font-semibold text-neutral-800 mb-0.5 line-clamp-2">
                   {product.name}
                 </h3>
-                <p className="text-xs text-neutral-400 mb-4">{product.brand}</p>
+                <p className="text-xs text-neutral-400 mb-3">{product.brand}</p>
 
-                <div className="space-y-2.5">
+                <div className="space-y-1.5">
                   <div className="flex justify-between text-sm">
                     <span className="text-neutral-500">Venda</span>
-                    <span className="font-bold text-neutral-800">{formatCurrency(product.sale_price)}</span>
+                    <span className="font-bold text-neutral-800">
+                      {formatCurrency(product.sale_price)}
+                    </span>
                   </div>
-                  {product.cost_price > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-neutral-500">Custo</span>
-                      <span className="text-neutral-600">{formatCurrency(product.cost_price)}</span>
-                    </div>
-                  )}
                   {m !== null && (
                     <div className="flex justify-between text-sm">
                       <span className="text-neutral-500">Margem</span>
@@ -129,16 +135,20 @@ export default function ProdutosPage() {
                   )}
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-neutral-100 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    {lowStock && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
-                    <span className={`text-xs font-medium ${lowStock ? "text-amber-600" : "text-neutral-600"}`}>
-                      {product.stock} em estoque
+                <div className="mt-3 pt-3 border-t border-neutral-100 flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    {lowStock && (
+                      <AlertTriangle className="w-3 h-3 text-amber-500 flex-shrink-0" />
+                    )}
+                    <span
+                      className={`text-xs font-medium ${
+                        lowStock ? "text-amber-600" : "text-neutral-500"
+                      }`}
+                    >
+                      {product.stock} un.
                     </span>
                   </div>
-                  {lowStock && (
-                    <Badge variant="yellow">Estoque baixo</Badge>
-                  )}
+                  {lowStock && <Badge variant="yellow">Baixo</Badge>}
                 </div>
               </Card>
             );
@@ -169,9 +179,9 @@ export default function ProdutosPage() {
               options={categories.map((c) => ({ value: c, label: c }))}
             />
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             <Input
-              label="Preço de custo"
+              label="Custo"
               value={form.cost_price}
               onChange={(e) => setForm((f) => ({ ...f, cost_price: e.target.value }))}
               placeholder="0,00"
@@ -180,7 +190,7 @@ export default function ProdutosPage() {
               step="0.01"
             />
             <Input
-              label="Preço de venda *"
+              label="Venda *"
               value={form.sale_price}
               onChange={(e) => setForm((f) => ({ ...f, sale_price: e.target.value }))}
               placeholder="0,00"
@@ -202,14 +212,23 @@ export default function ProdutosPage() {
             <div className="bg-emerald-50 rounded-xl px-4 py-3 text-sm">
               <span className="text-neutral-600">Margem estimada: </span>
               <span className="font-bold text-emerald-600">
-                {Math.round(((Number(form.sale_price) - Number(form.cost_price)) / Number(form.sale_price)) * 100)}%
+                {Math.round(
+                  ((Number(form.sale_price) - Number(form.cost_price)) /
+                    Number(form.sale_price)) *
+                    100
+                )}
+                %
               </span>
             </div>
           )}
 
-          <div className="flex gap-3 pt-2">
-            <Button variant="secondary" className="flex-1" onClick={() => setAddOpen(false)}>Cancelar</Button>
-            <Button className="flex-1" onClick={handleAdd}>Salvar Produto</Button>
+          <div className="flex gap-3 pt-1">
+            <Button variant="secondary" className="flex-1" onClick={() => setAddOpen(false)}>
+              Cancelar
+            </Button>
+            <Button className="flex-1" onClick={handleAdd}>
+              Salvar
+            </Button>
           </div>
         </div>
       </Modal>

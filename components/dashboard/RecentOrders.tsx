@@ -33,23 +33,17 @@ export function RecentOrders({ orders }: RecentOrdersProps) {
         {orders.map((order) => {
           const status = statusMap[order.status];
           return (
-            <div key={order.id} className="px-5 py-3.5 flex items-center gap-3 hover:bg-neutral-50 transition-colors">
+            <div key={order.id} className="px-4 lg:px-5 py-3.5 flex items-center gap-3 hover:bg-neutral-50 transition-colors">
               <Avatar name={order.client_name} size="sm" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-neutral-800 truncate">
-                  {order.client_name}
-                </p>
+                <p className="text-sm font-medium text-neutral-800 truncate">{order.client_name}</p>
                 <p className="text-xs text-neutral-400">
                   {order.items.length} {order.items.length === 1 ? "item" : "itens"} · {formatDate(order.created_at)}
                 </p>
               </div>
               <div className="text-right flex-shrink-0">
-                <p className="text-sm font-semibold text-neutral-800">
-                  {formatCurrency(order.total)}
-                </p>
-                <Badge variant={status.variant} className="mt-0.5">
-                  {status.label}
-                </Badge>
+                <p className="text-sm font-semibold text-neutral-800">{formatCurrency(order.total)}</p>
+                <Badge variant={status.variant} className="mt-0.5">{status.label}</Badge>
               </div>
             </div>
           );

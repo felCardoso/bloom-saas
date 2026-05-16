@@ -1,20 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Search, ShoppingBag, ChevronDown } from "lucide-react";
+import { Plus, Search, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
-import { Input } from "@/components/ui/Input";
 import { mockOrders, mockClients, mockProducts } from "@/lib/mock-data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Order, OrderStatus, OrderItem } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
-const statusMap: Record<OrderStatus, { label: string; variant: "rose" | "green" | "yellow" | "gray" | "red" | "blue" }> = {
+const statusMap: Record<
+  OrderStatus,
+  { label: string; variant: "rose" | "green" | "yellow" | "gray" | "red" | "blue" }
+> = {
   pendente: { label: "Pendente", variant: "yellow" },
   confirmado: { label: "Confirmado", variant: "blue" },
   entregue: { label: "Entregue", variant: "green" },
@@ -77,16 +78,19 @@ export default function PedidosPage() {
 
   function updateStatus(id: string, status: OrderStatus) {
     setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
-    if (selected?.id === id) setSelected((s) => s ? { ...s, status } : s);
+    if (selected?.id === id) setSelected((s) => (s ? { ...s, status } : s));
   }
 
-  const totalRevenue = filtered.reduce((s, o) => s + (o.status !== "cancelado" ? o.total : 0), 0);
+  const totalRevenue = filtered.reduce(
+    (s, o) => s + (o.status !== "cancelado" ? o.total : 0),
+    0
+  );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="relative flex-1 min-w-52">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
           <input
             value={search}
@@ -95,25 +99,27 @@ export default function PedidosPage() {
             className="w-full pl-10 pr-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-700 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
           />
         </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3.5 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-600 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
-        >
-          <option value="all">Todos</option>
-          <option value="pendente">Pendente</option>
-          <option value="confirmado">Confirmado</option>
-          <option value="entregue">Entregue</option>
-          <option value="cancelado">Cancelado</option>
-        </select>
-        <Button onClick={() => setAddOpen(true)}>
-          <Plus className="w-4 h-4" />
-          Novo Pedido
-        </Button>
+        <div className="flex gap-2">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="flex-1 sm:flex-none px-3.5 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-600 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
+          >
+            <option value="all">Todos</option>
+            <option value="pendente">Pendente</option>
+            <option value="confirmado">Confirmado</option>
+            <option value="entregue">Entregue</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+          <Button onClick={() => setAddOpen(true)}>
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Novo Pedido</span>
+          </Button>
+        </div>
       </div>
 
-      {/* Summary */}
-      <div className="grid grid-cols-4 gap-3">
+      {/* Summary — 2 cols on mobile, 4 on desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
           { label: "Pedidos", value: filtered.length },
           { label: "Pendentes", value: filtered.filter((o) => o.status === "pendente").length },
@@ -121,13 +127,13 @@ export default function PedidosPage() {
           { label: "Receita", value: formatCurrency(totalRevenue) },
         ].map((s) => (
           <Card key={s.label} padding="sm">
-            <p className="text-xl font-bold text-neutral-800">{s.value}</p>
+            <p className="text-lg lg:text-xl font-bold text-neutral-800">{s.value}</p>
             <p className="text-xs text-neutral-500">{s.label}</p>
           </Card>
         ))}
       </div>
 
-      {/* List */}
+      {/* Order list */}
       <div className="space-y-3">
         {filtered.length === 0 ? (
           <Card>
@@ -143,53 +149,67 @@ export default function PedidosPage() {
               <Card
                 key={order.id}
                 padding="none"
-                className="hover:shadow-elevated transition-shadow cursor-pointer"
+                className="hover:shadow-elevated transition-shadow"
               >
                 <div
-                  className="flex items-center gap-4 px-5 py-4"
+                  className="flex items-start sm:items-center gap-3 px-4 py-4 cursor-pointer"
                   onClick={() => setSelected(order)}
                 >
-                  <Avatar name={order.client_name} />
+                  <Avatar name={order.client_name} className="mt-0.5 sm:mt-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="text-sm font-semibold text-neutral-800">{order.client_name}</p>
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <p className="text-sm font-semibold text-neutral-800">
+                        {order.client_name}
+                      </p>
                       <Badge variant={status.variant}>{status.label}</Badge>
                     </div>
-                    <p className="text-xs text-neutral-400">
+                    <p className="text-xs text-neutral-400 truncate">
                       {order.items.map((i) => i.product_name).join(", ")}
                     </p>
                     <p className="text-xs text-neutral-400 mt-0.5">{formatDate(order.created_at)}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-base font-bold text-neutral-800">{formatCurrency(order.total)}</p>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-base font-bold text-neutral-800">
+                      {formatCurrency(order.total)}
+                    </p>
                     <p className="text-xs text-neutral-400">
                       {order.items.length} {order.items.length === 1 ? "item" : "itens"}
                     </p>
                   </div>
+                </div>
 
-                  {/* Quick status change */}
+                {/* Quick actions */}
+                {(order.status === "pendente" || order.status === "confirmado") && (
                   <div
-                    className="flex gap-1.5"
+                    className="border-t border-neutral-100 px-4 py-2.5 flex gap-2"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {order.status === "pendente" && (
-                      <button
-                        onClick={() => updateStatus(order.id, "confirmado")}
-                        className="text-[11px] px-2.5 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-medium transition-colors"
-                      >
-                        Confirmar
-                      </button>
+                      <>
+                        <button
+                          onClick={() => updateStatus(order.id, "cancelado")}
+                          className="flex-1 text-xs py-2 bg-neutral-50 text-neutral-500 rounded-lg hover:bg-neutral-100 font-medium transition-colors"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          onClick={() => updateStatus(order.id, "confirmado")}
+                          className="flex-1 text-xs py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-medium transition-colors"
+                        >
+                          Confirmar
+                        </button>
+                      </>
                     )}
                     {order.status === "confirmado" && (
                       <button
                         onClick={() => updateStatus(order.id, "entregue")}
-                        className="text-[11px] px-2.5 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 font-medium transition-colors"
+                        className="flex-1 text-xs py-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 font-medium transition-colors"
                       >
-                        Entregue
+                        Marcar como Entregue
                       </button>
                     )}
                   </div>
-                </div>
+                )}
               </Card>
             );
           })
@@ -207,9 +227,11 @@ export default function PedidosPage() {
             placeholder="Selecione a cliente"
           />
           <Select
-            label="Status"
+            label="Status inicial"
             value={newOrder.status}
-            onChange={(e) => setNewOrder((o) => ({ ...o, status: e.target.value as OrderStatus }))}
+            onChange={(e) =>
+              setNewOrder((o) => ({ ...o, status: e.target.value as OrderStatus }))
+            }
             options={[
               { value: "pendente", label: "Pendente" },
               { value: "confirmado", label: "Confirmado" },
@@ -218,13 +240,15 @@ export default function PedidosPage() {
           />
 
           {/* Add item */}
-          <div className="p-4 bg-neutral-50 rounded-xl space-y-3">
+          <div className="p-4 bg-neutral-50 rounded-2xl space-y-3">
             <p className="text-sm font-medium text-neutral-700">Adicionar Produto</p>
             <div className="flex gap-2">
               <select
                 value={addingItem.product_id}
-                onChange={(e) => setAddingItem((i) => ({ ...i, product_id: e.target.value }))}
-                className="flex-1 px-3 py-2 rounded-xl border border-neutral-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
+                onChange={(e) =>
+                  setAddingItem((i) => ({ ...i, product_id: e.target.value }))
+                }
+                className="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
               >
                 <option value="">Selecione o produto</option>
                 {mockProducts.map((p) => (
@@ -237,27 +261,37 @@ export default function PedidosPage() {
                 type="number"
                 min={1}
                 value={addingItem.quantity}
-                onChange={(e) => setAddingItem((i) => ({ ...i, quantity: Number(e.target.value) }))}
-                className="w-16 px-3 py-2 rounded-xl border border-neutral-200 bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-rose-400"
+                onChange={(e) =>
+                  setAddingItem((i) => ({ ...i, quantity: Number(e.target.value) }))
+                }
+                className="w-14 px-2 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-rose-400"
               />
               <Button variant="secondary" size="sm" onClick={addItem}>
-                Adicionar
+                +
               </Button>
             </div>
 
-            {/* Items list */}
             {newOrder.items.length > 0 && (
               <div className="space-y-2 pt-1">
                 {newOrder.items.map((item, i) => (
-                  <div key={i} className="flex items-center justify-between text-sm bg-white rounded-lg px-3 py-2 border border-neutral-100">
-                    <span className="text-neutral-700">{item.product_name}</span>
-                    <span className="text-neutral-500">×{item.quantity}</span>
-                    <span className="font-semibold text-neutral-800">{formatCurrency(item.subtotal)}</span>
+                  <div
+                    key={i}
+                    className="flex items-center justify-between text-sm bg-white rounded-xl px-3 py-2.5 border border-neutral-100"
+                  >
+                    <span className="text-neutral-700 truncate flex-1 mr-2">
+                      {item.product_name}
+                    </span>
+                    <span className="text-neutral-400 mr-3">×{item.quantity}</span>
+                    <span className="font-semibold text-neutral-800 whitespace-nowrap">
+                      {formatCurrency(item.subtotal)}
+                    </span>
                   </div>
                 ))}
                 <div className="flex justify-between pt-1 text-sm font-bold text-neutral-800 border-t border-neutral-200">
                   <span>Total</span>
-                  <span>{formatCurrency(newOrder.items.reduce((s, i) => s + i.subtotal, 0))}</span>
+                  <span>
+                    {formatCurrency(newOrder.items.reduce((s, i) => s + i.subtotal, 0))}
+                  </span>
                 </div>
               </div>
             )}
@@ -275,61 +309,80 @@ export default function PedidosPage() {
           </div>
 
           <div className="flex gap-3 pt-1">
-            <Button variant="secondary" className="flex-1" onClick={() => setAddOpen(false)}>Cancelar</Button>
-            <Button className="flex-1" onClick={handleCreate}>Criar Pedido</Button>
+            <Button variant="secondary" className="flex-1" onClick={() => setAddOpen(false)}>
+              Cancelar
+            </Button>
+            <Button className="flex-1" onClick={handleCreate}>
+              Criar Pedido
+            </Button>
           </div>
         </div>
       </Modal>
 
       {/* Detail modal */}
       {selected && (
-        <Modal open={!!selected} onClose={() => setSelected(null)} title={`Pedido #${selected.id}`} size="md">
+        <Modal
+          open={!!selected}
+          onClose={() => setSelected(null)}
+          title={`Pedido de ${selected.client_name}`}
+        >
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <Avatar name={selected.client_name} />
-              <div>
+              <div className="flex-1">
                 <p className="font-semibold text-neutral-800">{selected.client_name}</p>
                 <p className="text-xs text-neutral-400">{formatDate(selected.created_at)}</p>
               </div>
-              <Badge variant={statusMap[selected.status].variant} className="ml-auto">
+              <Badge variant={statusMap[selected.status].variant}>
                 {statusMap[selected.status].label}
               </Badge>
             </div>
 
-            <div className="bg-neutral-50 rounded-xl p-4 space-y-2">
+            <div className="bg-neutral-50 rounded-2xl p-4 space-y-2.5">
               {selected.items.map((item, i) => (
                 <div key={i} className="flex items-center justify-between text-sm">
-                  <span className="text-neutral-700">{item.product_name}</span>
-                  <div className="flex items-center gap-4 text-neutral-500">
-                    <span>×{item.quantity}</span>
-                    <span className="w-20 text-right font-medium text-neutral-800">{formatCurrency(item.subtotal)}</span>
-                  </div>
+                  <span className="text-neutral-700 flex-1 mr-2 truncate">
+                    {item.product_name}
+                  </span>
+                  <span className="text-neutral-400 mr-3">×{item.quantity}</span>
+                  <span className="font-medium text-neutral-800 whitespace-nowrap">
+                    {formatCurrency(item.subtotal)}
+                  </span>
                 </div>
               ))}
-              <div className="border-t border-neutral-200 pt-2 flex justify-between font-bold text-neutral-800">
+              <div className="border-t border-neutral-200 pt-2.5 flex justify-between font-bold text-neutral-800">
                 <span>Total</span>
                 <span>{formatCurrency(selected.total)}</span>
               </div>
             </div>
 
             {selected.notes && (
-              <p className="text-sm text-neutral-600 bg-neutral-50 rounded-xl px-4 py-3">{selected.notes}</p>
+              <p className="text-sm text-neutral-600 bg-neutral-50 rounded-xl px-4 py-3">
+                {selected.notes}
+              </p>
             )}
 
             {selected.status !== "entregue" && selected.status !== "cancelado" && (
               <div className="flex gap-2 pt-1">
                 {selected.status === "pendente" && (
-                  <Button variant="secondary" className="flex-1" onClick={() => updateStatus(selected.id, "cancelado")}>
-                    Cancelar
+                  <Button
+                    variant="secondary"
+                    className="flex-1"
+                    onClick={() => updateStatus(selected.id, "cancelado")}
+                  >
+                    Cancelar Pedido
                   </Button>
                 )}
                 <Button
                   className="flex-1"
                   onClick={() =>
-                    updateStatus(selected.id, selected.status === "pendente" ? "confirmado" : "entregue")
+                    updateStatus(
+                      selected.id,
+                      selected.status === "pendente" ? "confirmado" : "entregue"
+                    )
                   }
                 >
-                  {selected.status === "pendente" ? "Confirmar Pedido" : "Marcar como Entregue"}
+                  {selected.status === "pendente" ? "Confirmar" : "Marcar Entregue"}
                 </Button>
               </div>
             )}

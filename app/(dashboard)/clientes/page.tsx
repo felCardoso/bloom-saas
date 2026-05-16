@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Search, Filter, Phone, Mail, MapPin, MoreHorizontal, Users } from "lucide-react";
+import {
+  Plus, Search, Phone, Mail, MapPin, MoreHorizontal, Users, ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
@@ -14,7 +16,10 @@ import { formatCurrency, formatDate, formatPhone } from "@/lib/utils";
 import type { Client, ClientStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const statusMap: Record<ClientStatus, { label: string; variant: "green" | "gray" | "rose" }> = {
+const statusMap: Record<
+  ClientStatus,
+  { label: string; variant: "green" | "gray" | "rose" }
+> = {
   ativa: { label: "Ativa", variant: "green" },
   inativa: { label: "Inativa", variant: "gray" },
   prospect: { label: "Prospect", variant: "rose" },
@@ -27,7 +32,13 @@ export default function ClientesPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [selected, setSelected] = useState<Client | null>(null);
   const [form, setForm] = useState({
-    name: "", phone: "", email: "", city: "", status: "ativa" as ClientStatus, notes: "", birthday: "",
+    name: "",
+    phone: "",
+    email: "",
+    city: "",
+    status: "ativa" as ClientStatus,
+    notes: "",
+    birthday: "",
   });
 
   const filtered = clients.filter((c) => {
@@ -49,47 +60,63 @@ export default function ClientesPage() {
       total_spent: 0,
     };
     setClients((prev) => [newClient, ...prev]);
-    setForm({ name: "", phone: "", email: "", city: "", status: "ativa", notes: "", birthday: "" });
+    setForm({
+      name: "",
+      phone: "",
+      email: "",
+      city: "",
+      status: "ativa",
+      notes: "",
+      birthday: "",
+    });
     setAddOpen(false);
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="relative flex-1 min-w-52">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nome, telefone ou email..."
+            placeholder="Buscar por nome, telefone..."
             className="w-full pl-10 pr-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-700 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent shadow-card"
           />
         </div>
-
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3.5 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-600 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
-        >
-          <option value="all">Todos os status</option>
-          <option value="ativa">Ativa</option>
-          <option value="inativa">Inativa</option>
-          <option value="prospect">Prospect</option>
-        </select>
-
-        <Button onClick={() => setAddOpen(true)}>
-          <Plus className="w-4 h-4" />
-          Nova Cliente
-        </Button>
+        <div className="flex gap-2">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="flex-1 sm:flex-none px-3.5 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-600 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
+          >
+            <option value="all">Todos</option>
+            <option value="ativa">Ativa</option>
+            <option value="inativa">Inativa</option>
+            <option value="prospect">Prospect</option>
+          </select>
+          <Button onClick={() => setAddOpen(true)}>
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Nova Cliente</span>
+          </Button>
+        </div>
       </div>
 
-      {/* Summary */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* Summary chips */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {[
           { label: "Total", value: clients.length, color: "text-neutral-800" },
-          { label: "Ativas", value: clients.filter((c) => c.status === "ativa").length, color: "text-emerald-600" },
-          { label: "Prospects", value: clients.filter((c) => c.status === "prospect").length, color: "text-rose-500" },
+          {
+            label: "Ativas",
+            value: clients.filter((c) => c.status === "ativa").length,
+            color: "text-emerald-600",
+          },
+          {
+            label: "Prospects",
+            value: clients.filter((c) => c.status === "prospect").length,
+            color: "text-rose-500",
+          },
         ].map((s) => (
           <Card key={s.label} padding="sm">
             <p className={cn("text-xl font-bold", s.color)}>{s.value}</p>
@@ -98,25 +125,78 @@ export default function ClientesPage() {
         ))}
       </div>
 
-      {/* Table */}
-      <Card padding="none">
+      {/* Mobile card list */}
+      <div className="md:hidden space-y-2">
+        {filtered.length === 0 ? (
+          <Card>
+            <div className="py-12 text-center">
+              <Users className="w-8 h-8 mx-auto mb-2 text-neutral-300" />
+              <p className="text-neutral-400 text-sm">Nenhuma cliente encontrada</p>
+            </div>
+          </Card>
+        ) : (
+          filtered.map((client) => {
+            const status = statusMap[client.status];
+            return (
+              <button
+                key={client.id}
+                onClick={() => setSelected(client)}
+                className="w-full text-left bg-white rounded-2xl border border-neutral-200 shadow-card p-4 flex items-center gap-3 hover:shadow-elevated transition-shadow active:scale-[0.99]"
+              >
+                <Avatar name={client.name} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <p className="text-sm font-semibold text-neutral-800 truncate">
+                      {client.name}
+                    </p>
+                    <Badge variant={status.variant} className="flex-shrink-0">
+                      {status.label}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-neutral-500">{formatPhone(client.phone)}</p>
+                  {client.city && (
+                    <p className="text-xs text-neutral-400">{client.city}</p>
+                  )}
+                  <div className="flex items-center gap-3 mt-1.5">
+                    <span className="text-xs text-neutral-500">
+                      {client.total_orders} pedidos
+                    </span>
+                    <span className="text-xs font-semibold text-rose-500">
+                      {formatCurrency(client.total_spent)}
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-neutral-300 flex-shrink-0" />
+              </button>
+            );
+          })
+        )}
+      </div>
+
+      {/* Desktop table */}
+      <Card padding="none" className="hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-neutral-100">
-                {["Cliente", "Contato", "Cidade", "Status", "Pedidos", "Total Gasto", ""].map((h) => (
-                  <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wide">
-                    {h}
-                  </th>
-                ))}
+                {["Cliente", "Contato", "Cidade", "Status", "Pedidos", "Total Gasto", ""].map(
+                  (h) => (
+                    <th
+                      key={h}
+                      className="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wide whitespace-nowrap"
+                    >
+                      {h}
+                    </th>
+                  )
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-50">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-12 text-center text-neutral-400 text-sm">
+                  <td colSpan={7} className="px-5 py-12 text-center">
                     <Users className="w-8 h-8 mx-auto mb-2 text-neutral-300" />
-                    Nenhuma cliente encontrada
+                    <p className="text-neutral-400 text-sm">Nenhuma cliente encontrada</p>
                   </td>
                 </tr>
               ) : (
@@ -132,7 +212,9 @@ export default function ClientesPage() {
                         <div className="flex items-center gap-3">
                           <Avatar name={client.name} size="sm" />
                           <div>
-                            <p className="text-sm font-medium text-neutral-800">{client.name}</p>
+                            <p className="text-sm font-medium text-neutral-800">
+                              {client.name}
+                            </p>
                             <p className="text-xs text-neutral-400">
                               Desde {formatDate(client.created_at)}
                             </p>
@@ -221,22 +303,26 @@ export default function ClientesPage() {
             placeholder="email@exemplo.com"
             type="email"
           />
-          <Input
-            label="Cidade"
-            value={form.city}
-            onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
-            placeholder="Ex: São Paulo"
-          />
-          <Select
-            label="Status"
-            value={form.status}
-            onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as ClientStatus }))}
-            options={[
-              { value: "ativa", label: "Ativa" },
-              { value: "inativa", label: "Inativa" },
-              { value: "prospect", label: "Prospect" },
-            ]}
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Cidade"
+              value={form.city}
+              onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
+              placeholder="Ex: São Paulo"
+            />
+            <Select
+              label="Status"
+              value={form.status}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, status: e.target.value as ClientStatus }))
+              }
+              options={[
+                { value: "ativa", label: "Ativa" },
+                { value: "inativa", label: "Inativa" },
+                { value: "prospect", label: "Prospect" },
+              ]}
+            />
+          </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-neutral-700">Observações</label>
             <textarea
@@ -247,12 +333,12 @@ export default function ClientesPage() {
               className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent resize-none"
             />
           </div>
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-1">
             <Button variant="secondary" className="flex-1" onClick={() => setAddOpen(false)}>
               Cancelar
             </Button>
             <Button className="flex-1" onClick={handleAdd}>
-              Salvar Cliente
+              Salvar
             </Button>
           </div>
         </div>
@@ -260,64 +346,113 @@ export default function ClientesPage() {
 
       {/* Detail modal */}
       {selected && (
-        <Modal open={!!selected} onClose={() => setSelected(null)} title="Detalhes da Cliente" size="lg">
+        <Modal
+          open={!!selected}
+          onClose={() => setSelected(null)}
+          title={selected.name}
+          size="lg"
+        >
           <div className="space-y-5">
             <div className="flex items-center gap-4">
               <Avatar name={selected.name} size="lg" />
               <div>
-                <h3 className="text-lg font-bold text-neutral-800">{selected.name}</h3>
-                <Badge variant={statusMap[selected.status].variant} className="mt-1">
+                <Badge variant={statusMap[selected.status].variant}>
                   {statusMap[selected.status].label}
                 </Badge>
+                <p className="text-xs text-neutral-400 mt-1">
+                  Cliente desde {formatDate(selected.created_at)}
+                </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <p className="text-xs text-neutral-400 uppercase tracking-wide">Telefone</p>
-                <p className="text-sm font-medium text-neutral-700">{formatPhone(selected.phone)}</p>
-              </div>
-              {selected.email && (
-                <div className="space-y-1">
-                  <p className="text-xs text-neutral-400 uppercase tracking-wide">Email</p>
-                  <p className="text-sm font-medium text-neutral-700">{selected.email}</p>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: "Pedidos", value: String(selected.total_orders) },
+                {
+                  label: "Total gasto",
+                  value: formatCurrency(selected.total_spent),
+                  highlight: true,
+                },
+                {
+                  label: "Ticket médio",
+                  value:
+                    selected.total_orders > 0
+                      ? formatCurrency(selected.total_spent / selected.total_orders)
+                      : "—",
+                },
+                {
+                  label: "Último pedido",
+                  value: selected.last_order_date
+                    ? formatDate(selected.last_order_date)
+                    : "—",
+                },
+              ].map((s) => (
+                <div key={s.label} className="bg-neutral-50 rounded-xl p-3">
+                  <p
+                    className={cn(
+                      "text-base font-bold",
+                      s.highlight ? "text-rose-600" : "text-neutral-800"
+                    )}
+                  >
+                    {s.value}
+                  </p>
+                  <p className="text-xs text-neutral-500">{s.label}</p>
                 </div>
+              ))}
+            </div>
+
+            <div className="space-y-2">
+              {selected.phone && (
+                <a
+                  href={`tel:${selected.phone}`}
+                  className="flex items-center gap-3 p-3 bg-neutral-50 rounded-xl hover:bg-neutral-100 transition-colors"
+                >
+                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-card">
+                    <Phone className="w-4 h-4 text-rose-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-neutral-500">Telefone</p>
+                    <p className="text-sm font-medium text-neutral-700">
+                      {formatPhone(selected.phone)}
+                    </p>
+                  </div>
+                </a>
+              )}
+              {selected.email && (
+                <a
+                  href={`mailto:${selected.email}`}
+                  className="flex items-center gap-3 p-3 bg-neutral-50 rounded-xl hover:bg-neutral-100 transition-colors"
+                >
+                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-card">
+                    <Mail className="w-4 h-4 text-rose-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-neutral-500">Email</p>
+                    <p className="text-sm font-medium text-neutral-700">{selected.email}</p>
+                  </div>
+                </a>
               )}
               {selected.city && (
-                <div className="space-y-1">
-                  <p className="text-xs text-neutral-400 uppercase tracking-wide">Cidade</p>
-                  <p className="text-sm font-medium text-neutral-700">{selected.city}</p>
+                <div className="flex items-center gap-3 p-3 bg-neutral-50 rounded-xl">
+                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-card">
+                    <MapPin className="w-4 h-4 text-rose-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-neutral-500">Cidade</p>
+                    <p className="text-sm font-medium text-neutral-700">{selected.city}</p>
+                  </div>
                 </div>
               )}
-              {selected.birthday && (
-                <div className="space-y-1">
-                  <p className="text-xs text-neutral-400 uppercase tracking-wide">Aniversário</p>
-                  <p className="text-sm font-medium text-neutral-700">{formatDate(selected.birthday)}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <Card padding="sm" className="text-center">
-                <p className="text-lg font-bold text-neutral-800">{selected.total_orders}</p>
-                <p className="text-xs text-neutral-500">Pedidos</p>
-              </Card>
-              <Card padding="sm" className="text-center">
-                <p className="text-lg font-bold text-rose-600">{formatCurrency(selected.total_spent)}</p>
-                <p className="text-xs text-neutral-500">Total gasto</p>
-              </Card>
-              <Card padding="sm" className="text-center">
-                <p className="text-lg font-bold text-neutral-800">
-                  {selected.total_orders > 0 ? formatCurrency(selected.total_spent / selected.total_orders) : "—"}
-                </p>
-                <p className="text-xs text-neutral-500">Ticket médio</p>
-              </Card>
             </div>
 
             {selected.notes && (
               <div>
-                <p className="text-xs text-neutral-400 uppercase tracking-wide mb-1.5">Observações</p>
-                <p className="text-sm text-neutral-600 bg-neutral-50 rounded-xl px-4 py-3">{selected.notes}</p>
+                <p className="text-xs text-neutral-400 uppercase tracking-wide mb-2">
+                  Observações
+                </p>
+                <p className="text-sm text-neutral-600 bg-neutral-50 rounded-xl px-4 py-3">
+                  {selected.notes}
+                </p>
               </div>
             )}
           </div>
