@@ -66,13 +66,13 @@ export default function LandingPage() {
           {/* Desktop links */}
           <div className="hidden sm:flex items-center gap-3">
             <Link
-              href="/dashboard"
+              href="/login"
               className="text-sm text-neutral-600 hover:text-neutral-800 font-medium px-4 py-2 rounded-xl hover:bg-neutral-50 transition-colors"
             >
               Entrar
             </Link>
             <Link
-              href="/dashboard"
+              href="/registro"
               className="text-sm font-medium bg-rose-500 text-white px-4 py-2 rounded-xl hover:bg-rose-600 transition-colors shadow-sm"
             >
               Começar grátis
@@ -92,14 +92,14 @@ export default function LandingPage() {
         {menuOpen && (
           <div className="sm:hidden border-t border-neutral-100 bg-white px-4 py-4 flex flex-col gap-2">
             <Link
-              href="/dashboard"
+              href="/login"
               onClick={() => setMenuOpen(false)}
               className="w-full text-center py-3 text-sm font-medium text-neutral-700 bg-neutral-50 rounded-xl hover:bg-neutral-100 transition-colors"
             >
               Entrar
             </Link>
             <Link
-              href="/dashboard"
+              href="/registro"
               onClick={() => setMenuOpen(false)}
               className="w-full text-center py-3 text-sm font-semibold text-white bg-rose-500 rounded-xl hover:bg-rose-600 transition-colors"
             >
@@ -126,17 +126,17 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
-              href="/dashboard"
+              href="/registro"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-rose-500 text-white px-6 py-3.5 sm:py-3 rounded-xl font-semibold hover:bg-rose-600 transition-all shadow-sm text-sm"
             >
               Experimentar gratuitamente
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
-              href="/dashboard"
+              href="/login"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-neutral-700 border border-neutral-200 px-6 py-3.5 sm:py-3 rounded-xl font-semibold hover:bg-neutral-50 transition-all shadow-sm text-sm"
             >
-              Ver demonstração
+              Já tenho conta
             </Link>
           </div>
           <p className="text-xs text-neutral-400 mt-4">Sem cartão de crédito · Cancele quando quiser</p>
