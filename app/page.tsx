@@ -311,12 +311,24 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="py-8 sm:py-10 px-4 sm:px-6 border-t border-neutral-100">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 bg-rose-500 rounded-lg flex items-center justify-center">
               <Sparkles className="w-3 h-3 text-white" />
             </div>
             <span className="text-sm font-bold text-neutral-600">RoséCRM</span>
+          </div>
+          <div className="flex flex-wrap justify-center gap-4">
+            {[
+              { href: "/sobre", label: "Sobre" },
+              { href: "/suporte", label: "Suporte" },
+              { href: "/termos", label: "Termos de Uso" },
+              { href: "/privacidade", label: "Privacidade" },
+            ].map((l) => (
+              <Link key={l.href} href={l.href} className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors">
+                {l.label}
+              </Link>
+            ))}
           </div>
           <p className="text-xs text-neutral-400">© 2026 RoséCRM · Feito com ♥ para revendedoras.</p>
         </div>
