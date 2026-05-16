@@ -179,16 +179,16 @@ export default function PrivacidadePage() {
         {highlights.map((h) => (
           <div
             key={h.label}
-            className="flex items-start gap-3 p-4 bg-rose-50 rounded-2xl border border-rose-100"
+            className="flex items-start gap-3 p-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900"
           >
-            <div className="w-8 h-8 bg-rose-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-8 h-8 bg-rose-100 dark:bg-rose-900/40 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
               <h.icon className="w-4 h-4 text-rose-500" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-neutral-800">
+              <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
                 {h.label}
               </p>
-              <p className="text-xs text-neutral-500 mt-0.5 leading-relaxed">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 leading-relaxed">
                 {h.desc}
               </p>
             </div>
@@ -200,7 +200,7 @@ export default function PrivacidadePage() {
       <div className="space-y-10">
         {sections.map((section) => (
           <section key={section.title}>
-            <h2 className="text-base font-bold text-neutral-800 dark:text-neutral-200 mb-3 pb-2 border-b border-neutral-100">
+            <h2 className="text-base font-bold text-neutral-800 dark:text-neutral-200 mb-3 pb-2 border-b border-neutral-100 dark:border-neutral-800">
               {section.title}
             </h2>
             <div className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-line">
@@ -214,32 +214,32 @@ export default function PrivacidadePage() {
       <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <a
           href="mailto:privacidade@rosecrm.com.br"
-          className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 transition-colors"
+          className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
         >
-          <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-sm">
+          <div className="w-9 h-9 bg-white dark:bg-neutral-800 rounded-xl flex items-center justify-center shadow-sm">
             <Mail className="w-4 h-4 text-rose-500" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-neutral-800">
+            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
               DPO / Privacidade
             </p>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
               privacidade@rosecrm.com.br
             </p>
           </div>
         </a>
         <a
           href="/suporte"
-          className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 transition-colors"
+          className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
         >
-          <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-sm">
+          <div className="w-9 h-9 bg-white dark:bg-neutral-800 rounded-xl flex items-center justify-center shadow-sm">
             <FileText className="w-4 h-4 text-rose-500" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-neutral-800">
+            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
               Central de Suporte
             </p>
-            <p className="text-xs text-neutral-500">Dúvidas e solicitações</p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">Dúvidas e solicitações</p>
           </div>
         </a>
       </div>

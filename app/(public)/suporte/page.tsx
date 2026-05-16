@@ -93,9 +93,9 @@ const supportChannels = [
     action: "Iniciar conversa",
     href: "https://wa.me/5511999999999",
     plans: ["Pro", "Premium"],
-    color: "bg-emerald-50 border-emerald-100",
-    iconColor: "text-emerald-600",
-    iconBg: "bg-emerald-100",
+    color: "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-900",
+    iconColor: "text-emerald-600 dark:text-emerald-400",
+    iconBg: "bg-emerald-100 dark:bg-emerald-900/40",
   },
   {
     icon: Mail,
@@ -104,9 +104,9 @@ const supportChannels = [
     action: "Enviar e-mail",
     href: "mailto:suporte@rosecrm.com.br",
     plans: ["Grátis", "Pro", "Premium"],
-    color: "bg-blue-50 border-blue-100",
-    iconColor: "text-blue-600",
-    iconBg: "bg-blue-100",
+    color: "bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-900",
+    iconColor: "text-blue-600 dark:text-blue-400",
+    iconBg: "bg-blue-100 dark:bg-blue-900/40",
   },
 ];
 
@@ -134,7 +134,7 @@ const slaTable = [
 function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-neutral-100 last:border-0">
+    <div className="border-b border-neutral-100 dark:border-neutral-800 last:border-0">
       <button
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-start gap-3 py-4 text-left group"
@@ -201,22 +201,22 @@ export default function SuportePage() {
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-0.5">
-                <p className="text-sm font-semibold text-neutral-800">
+                <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
                   {ch.title}
                 </p>
                 <div className="flex gap-1">
                   {ch.plans.map((p) => (
                     <span
                       key={p}
-                      className="text-[10px] bg-white/70 text-neutral-500 px-1.5 py-0.5 rounded-md font-medium"
+                      className="text-[10px] bg-white/70 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 px-1.5 py-0.5 rounded-md font-medium"
                     >
                       {p}
                     </span>
                   ))}
                 </div>
               </div>
-              <p className="text-xs text-neutral-500">{ch.desc}</p>
-              <p className="text-xs font-semibold text-neutral-700 mt-2 underline">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">{ch.desc}</p>
+              <p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mt-2 underline">
                 {ch.action} →
               </p>
             </div>
@@ -226,36 +226,36 @@ export default function SuportePage() {
 
       {/* SLA table */}
       <div className="bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden mb-10">
-        <div className="px-5 py-3.5 border-b border-neutral-200 flex items-center gap-2">
-          <Clock className="w-4 h-4 text-neutral-400" />
-          <p className="text-sm font-semibold text-neutral-700">
+        <div className="px-5 py-3.5 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-2">
+          <Clock className="w-4 h-4 text-neutral-400 dark:text-neutral-500" />
+          <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
             Tempo de resposta por plano
           </p>
         </div>
         <table className="w-full">
           <thead>
-            <tr className="border-b border-neutral-200">
-              <th className="px-5 py-2.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+            <tr className="border-b border-neutral-200 dark:border-neutral-800">
+              <th className="px-5 py-2.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
                 Plano
               </th>
-              <th className="px-5 py-2.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+              <th className="px-5 py-2.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
                 Canal
               </th>
-              <th className="px-5 py-2.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+              <th className="px-5 py-2.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
                 SLA
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100">
+          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
             {slaTable.map((row) => (
               <tr
                 key={row.plan}
-                className="hover:bg-neutral-100/50 transition-colors"
+                className="hover:bg-neutral-100/50 dark:hover:bg-neutral-800/40 transition-colors"
               >
-                <td className="px-5 py-3 text-sm font-semibold text-neutral-800">
+                <td className="px-5 py-3 text-sm font-semibold text-neutral-800 dark:text-neutral-200">
                   {row.plan}
                 </td>
-                <td className="px-5 py-3 text-sm text-neutral-600">
+                <td className="px-5 py-3 text-sm text-neutral-600 dark:text-neutral-400">
                   {row.channel}
                 </td>
                 <td className={`px-5 py-3 text-sm font-medium ${row.color}`}>
@@ -265,8 +265,8 @@ export default function SuportePage() {
             ))}
           </tbody>
         </table>
-        <div className="px-5 py-3 bg-neutral-100/50">
-          <p className="text-xs text-neutral-400">
+        <div className="px-5 py-3 bg-neutral-100/50 dark:bg-neutral-800/40">
+          <p className="text-xs text-neutral-400 dark:text-neutral-500">
             Horário de atendimento: seg–sex, 9h–18h (horário de Brasília).
           </p>
         </div>
@@ -319,15 +319,15 @@ export default function SuportePage() {
       </div>
 
       {/* Still need help */}
-      <div className="mt-10 p-5 bg-rose-50 rounded-2xl border border-rose-100 flex flex-col sm:flex-row items-center gap-4">
-        <div className="w-10 h-10 bg-rose-100 rounded-xl flex items-center justify-center shrink-0">
+      <div className="mt-10 p-5 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900 flex flex-col sm:flex-row items-center gap-4">
+        <div className="w-10 h-10 bg-rose-100 dark:bg-rose-900/40 rounded-xl flex items-center justify-center shrink-0">
           <MessageCircle className="w-5 h-5 text-rose-500" />
         </div>
         <div className="flex-1 text-center sm:text-left">
-          <p className="text-sm font-semibold text-neutral-800">
+          <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
             Não encontrou o que precisava?
           </p>
-          <p className="text-xs text-neutral-500 mt-0.5">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
             Nossa equipe responde em até 48h no e-mail.
           </p>
         </div>

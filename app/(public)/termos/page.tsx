@@ -125,7 +125,7 @@ export default function TermosPage() {
       <div className="space-y-10">
         {sections.map((section) => (
           <section key={section.title}>
-            <h2 className="text-base font-bold text-neutral-800 dark:text-neutral-200 mb-3 pb-2 border-b border-neutral-100">
+            <h2 className="text-base font-bold text-neutral-800 dark:text-neutral-200 mb-3 pb-2 border-b border-neutral-100 dark:border-neutral-800">
               {section.title}
             </h2>
             <div className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-line">
@@ -137,8 +137,8 @@ export default function TermosPage() {
 
       {/* Contact */}
       <div className="mt-12 p-5 bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800">
-        <p className="text-sm font-semibold text-neutral-800 mb-1">Dúvidas sobre os Termos?</p>
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-1">Dúvidas sobre os Termos?</p>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
           Entre em contato pelo e-mail{" "}
           <a href="mailto:juridico@rosecrm.com.br" className="text-rose-500 hover:underline font-medium">
             juridico@rosecrm.com.br
