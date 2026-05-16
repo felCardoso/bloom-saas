@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTransition } from "react";
 import {
   LayoutDashboard, Users, ShoppingBag, Package,
-  Calendar, BarChart3, Settings, Sparkles, Zap,
+  Calendar, BarChart3, Settings, Sparkles, Zap, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePlan } from "@/lib/plan-context";
 import { PLAN_ORDER } from "@/lib/plans";
+import { signOut } from "@/lib/actions/auth";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -29,6 +31,7 @@ const PLAN_COLORS: Record<string, string> = {
 export function Sidebar() {
   const pathname = usePathname();
   const { planId, plan, usage, usagePercent } = usePlan();
+  const [, startTransition] = useTransition();
 
   const isFreePlan = planId === "free";
   const clientPct = usagePercent("clients");
@@ -117,16 +120,23 @@ export function Sidebar() {
           </div>
         )}
 
-        {/* User card */}
+        {/* User card + logout */}
         <div className="mt-1 px-3 py-3 bg-neutral-50 dark:bg-neutral-900 rounded-xl">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 bg-rose-100 dark:bg-rose-900/40 rounded-full flex items-center justify-center">
-              <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">AC</span>
+              <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">B</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">Ana Consultora</p>
+              <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">Minha Conta</p>
               <p className="text-[10px] text-neutral-400 dark:text-neutral-500">Plano {plan.name}</p>
             </div>
+            <button
+              onClick={() => startTransition(() => signOut())}
+              className="p-1.5 rounded-lg text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              title="Sair"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </div>
