@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import {
   Check, X, Sparkles, Users, ShoppingBag, Package, Calendar,
   BarChart3, MessageCircle, Bell, Download, UsersRound, HeadphonesIcon,
@@ -377,8 +377,8 @@ export default function PricingPage() {
             </thead>
             <tbody>
               {FEATURES_TABLE.map((section) => (
-                <>
-                  <tr key={section.group} className="bg-neutral-50">
+                <Fragment key={section.group}>
+                  <tr className="bg-neutral-50">
                     <td
                       colSpan={4}
                       className="px-5 py-2.5 text-xs font-bold text-neutral-500 uppercase tracking-wide"
@@ -416,7 +416,7 @@ export default function PricingPage() {
                       ))}
                     </tr>
                   ))}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>
