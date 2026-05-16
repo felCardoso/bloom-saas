@@ -62,7 +62,7 @@ const faqItems = [
       },
       {
         q: "É possível usar em mais de um dispositivo?",
-        a: "Sim! O RoséCRM funciona em qualquer dispositivo com navegador — computador, tablet ou celular. O design é mobile-first, então a experiência no celular é completa.",
+        a: "Sim! O Bloom funciona em qualquer dispositivo com navegador — computador, tablet ou celular. O design é mobile-first, então a experiência no celular é completa.",
       },
     ],
   },
@@ -120,7 +120,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-start gap-3 py-4 text-left group"
       >
-        <span className="flex-1 text-sm font-medium text-neutral-800 group-hover:text-rose-600 transition-colors">
+        <span className="flex-1 text-sm font-medium text-neutral-800 dark:text-neutral-200 group-hover:text-rose-600 transition-colors">
           {q}
         </span>
         {open ? (
@@ -130,7 +130,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
         )}
       </button>
       {open && (
-        <p className="text-sm text-neutral-500 leading-relaxed pb-4 -mt-1">{a}</p>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed pb-4 -mt-1">{a}</p>
       )}
     </div>
   );
@@ -155,10 +155,10 @@ export default function SuportePage() {
     <div className="max-w-3xl">
       {/* Header */}
       <div className="mb-10">
-        <h1 className="text-3xl sm:text-4xl font-bold text-neutral-900 mb-3">
+        <h1 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">
           Central de Suporte
         </h1>
-        <p className="text-neutral-500 text-sm">
+        <p className="text-neutral-500 dark:text-neutral-400 text-sm">
           Encontre respostas rápidas ou fale com nossa equipe.
         </p>
       </div>
@@ -195,7 +195,7 @@ export default function SuportePage() {
       </div>
 
       {/* SLA table */}
-      <div className="bg-neutral-50 rounded-2xl border border-neutral-200 overflow-hidden mb-10">
+      <div className="bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden mb-10">
         <div className="px-5 py-3.5 border-b border-neutral-200 flex items-center gap-2">
           <Clock className="w-4 h-4 text-neutral-400" />
           <p className="text-sm font-semibold text-neutral-700">Tempo de resposta por plano</p>
@@ -225,8 +225,8 @@ export default function SuportePage() {
 
       {/* FAQ */}
       <div className="mb-4">
-        <h2 className="text-xl font-bold text-neutral-800 mb-1">Perguntas frequentes</h2>
-        <p className="text-sm text-neutral-500 mb-5">
+        <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200 mb-1">Perguntas frequentes</h2>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-5">
           {faqItems.reduce((s, c) => s + c.questions.length, 0)} respostas para as dúvidas mais comuns.
         </p>
 
@@ -238,7 +238,7 @@ export default function SuportePage() {
             placeholder="Buscar nas perguntas..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-700 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent shadow-sm"
+            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-700 dark:text-neutral-200 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent shadow-sm"
           />
         </div>
 
@@ -253,7 +253,7 @@ export default function SuportePage() {
                 <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 px-1">
                   {cat.category}
                 </h3>
-                <div className="bg-white rounded-2xl border border-neutral-200 px-5 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 px-5 shadow-sm">
                   {cat.questions.map((item) => (
                     <FAQItem key={item.q} q={item.q} a={item.a} />
                   ))}

@@ -57,8 +57,8 @@ export default function RegistroPage() {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           autoComplete="new-password"
-          className={`w-full px-3.5 py-2.5 pr-11 rounded-xl border text-sm text-neutral-800 placeholder:text-neutral-400 hover:border-neutral-300 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all ${
-            error ? "border-red-300 bg-red-50" : "border-neutral-200 bg-white"
+          className={`w-full px-3.5 py-2.5 pr-11 rounded-xl border text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 hover:border-neutral-300 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all ${
+            error ? "border-red-300 bg-red-50" : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
           }`}
         />
         <button
@@ -80,12 +80,11 @@ export default function RegistroPage() {
         <div className="w-8 h-8 bg-rose-500 rounded-xl flex items-center justify-center shadow-sm">
           <Sparkles className="w-4 h-4 text-white" />
         </div>
-        <span className="text-sm font-bold text-neutral-800">Rosé</span>
-        <span className="text-sm font-bold text-rose-500">CRM</span>
+        <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">Bloom</span>
       </Link>
 
-      <h1 className="text-2xl font-bold text-neutral-900 mb-1">Crie sua conta grátis</h1>
-      <p className="text-sm text-neutral-500 mb-4">Comece a organizar seu negócio hoje.</p>
+      <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-1">Crie sua conta grátis</h1>
+      <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">Comece a organizar seu negócio hoje.</p>
 
       <div className="flex flex-wrap gap-1.5 mb-7">
         {perks.map((p) => (
@@ -121,7 +120,7 @@ export default function RegistroPage() {
         />
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-neutral-700">Senha</label>
+          <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Senha</label>
           {pwField(
             showPw,
             () => setShowPw((v) => !v),
@@ -133,7 +132,7 @@ export default function RegistroPage() {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-neutral-700">Confirmar senha</label>
+          <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Confirmar senha</label>
           {pwField(
             showPw2,
             () => setShowPw2((v) => !v),
@@ -152,7 +151,7 @@ export default function RegistroPage() {
               onChange={(e) => setTerms(e.target.checked)}
               className="w-4 h-4 mt-0.5 accent-rose-500 rounded flex-shrink-0"
             />
-            <span className="text-sm text-neutral-600 leading-snug">
+            <span className="text-sm text-neutral-600 dark:text-neutral-400 leading-snug">
               Concordo com os{" "}
               <Link href="/termos" target="_blank" className="text-rose-500 hover:underline font-medium">
                 Termos de Uso
@@ -190,7 +189,7 @@ export default function RegistroPage() {
 
       <button
         type="button"
-        className="w-full flex items-center justify-center gap-2.5 py-3 bg-white border border-neutral-200 rounded-xl text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors shadow-sm"
+        className="w-full flex items-center justify-center gap-2.5 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors shadow-sm"
       >
         <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden>
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -201,7 +200,7 @@ export default function RegistroPage() {
         Continuar com Google
       </button>
 
-      <p className="text-sm text-center text-neutral-500 mt-8">
+      <p className="text-sm text-center text-neutral-500 dark:text-neutral-400 mt-8">
         Já tem uma conta?{" "}
         <Link href="/login" className="text-rose-500 hover:text-rose-600 font-semibold transition-colors">
           Entrar

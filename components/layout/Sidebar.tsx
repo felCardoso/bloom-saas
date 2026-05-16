@@ -21,9 +21,9 @@ const navItems = [
 ];
 
 const PLAN_COLORS: Record<string, string> = {
-  free: "bg-neutral-100 text-neutral-600",
-  pro: "bg-rose-100 text-rose-600",
-  premium: "bg-violet-100 text-violet-600",
+  free: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300",
+  pro: "bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400",
+  premium: "bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400",
 };
 
 export function Sidebar() {
@@ -34,16 +34,15 @@ export function Sidebar() {
   const clientPct = usagePercent("clients");
 
   return (
-    <aside className="hidden lg:flex w-60 h-screen bg-white border-r border-neutral-200 flex-col fixed left-0 top-0 z-30">
-      {/* Logo */}
-      <div className="px-5 py-5 border-b border-neutral-100">
-        <div className="flex items-center gap-2.5">
+    <aside className="hidden lg:flex w-60 h-screen bg-white dark:bg-neutral-950 border-r border-neutral-200 dark:border-neutral-800 flex-col fixed left-0 top-0 z-30">
+      {/* Logo → /dashboard */}
+      <div className="px-5 py-5 border-b border-neutral-100 dark:border-neutral-800">
+        <Link href="/dashboard" className="flex items-center gap-2.5">
           <div className="w-8 h-8 bg-rose-500 rounded-xl flex items-center justify-center shadow-sm">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div>
-            <span className="text-sm font-bold text-neutral-800 tracking-tight">Rosé</span>
-            <span className="text-sm font-bold text-rose-500 tracking-tight">CRM</span>
+            <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100 tracking-tight">Bloom</span>
           </div>
           <span className={cn(
             "ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full",
@@ -51,7 +50,7 @@ export function Sidebar() {
           )}>
             {plan.name}
           </span>
-        </div>
+        </Link>
       </div>
 
       {/* Nav */}
@@ -65,12 +64,12 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
                 active
-                  ? "bg-rose-50 text-rose-600"
-                  : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700"
+                  ? "bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
+                  : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 hover:text-neutral-700 dark:hover:text-neutral-200"
               )}
             >
               <Icon
-                className={cn("flex-shrink-0", active ? "text-rose-500" : "text-neutral-400")}
+                className={cn("flex-shrink-0", active ? "text-rose-500 dark:text-rose-400" : "text-neutral-400 dark:text-neutral-500")}
                 size={18}
               />
               {label}
@@ -81,29 +80,28 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom */}
-      <div className="px-3 py-4 border-t border-neutral-100 space-y-1">
+      <div className="px-3 py-4 border-t border-neutral-100 dark:border-neutral-800 space-y-1">
         <Link
           href="/configuracoes"
           className={cn(
             "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
             pathname === "/configuracoes"
-              ? "bg-rose-50 text-rose-600"
-              : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700"
+              ? "bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
+              : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 hover:text-neutral-700 dark:hover:text-neutral-200"
           )}
         >
-          <Settings size={18} className="text-neutral-400" />
+          <Settings size={18} className="text-neutral-400 dark:text-neutral-500" />
           Configurações
         </Link>
-
 
         {/* Usage bar (free & pro only) */}
         {clientPct !== null && (
           <div className="px-3 pt-2 pb-1">
-            <div className="flex justify-between text-[11px] text-neutral-400 mb-1">
+            <div className="flex justify-between text-[11px] text-neutral-400 dark:text-neutral-500 mb-1">
               <span>Clientes</span>
               <span>{usage.clients} / {plan.limits.clients}</span>
             </div>
-            <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
               <div
                 className={cn(
                   "h-full rounded-full transition-all",
@@ -120,14 +118,14 @@ export function Sidebar() {
         )}
 
         {/* User card */}
-        <div className="mt-1 px-3 py-3 bg-neutral-50 rounded-xl">
+        <div className="mt-1 px-3 py-3 bg-neutral-50 dark:bg-neutral-900 rounded-xl">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-rose-100 rounded-full flex items-center justify-center">
-              <span className="text-xs font-semibold text-rose-600">AC</span>
+            <div className="w-7 h-7 bg-rose-100 dark:bg-rose-900/40 rounded-full flex items-center justify-center">
+              <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">AC</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-neutral-700 truncate">Ana Consultora</p>
-              <p className="text-[10px] text-neutral-400">Plano {plan.name}</p>
+              <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">Ana Consultora</p>
+              <p className="text-[10px] text-neutral-400 dark:text-neutral-500">Plano {plan.name}</p>
             </div>
           </div>
         </div>

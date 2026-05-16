@@ -1,25 +1,25 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Termos de Uso — RoséCRM",
+  title: "Termos de Uso — Bloom",
 };
 
 const sections = [
   {
     title: "1. Aceitação dos Termos",
-    content: `Ao criar uma conta ou utilizar o RoséCRM, você concorda com estes Termos de Uso. Se não concordar com qualquer parte destes termos, não utilize a plataforma.
+    content: `Ao criar uma conta ou utilizar o Bloom, você concorda com estes Termos de Uso. Se não concordar com qualquer parte destes termos, não utilize a plataforma.
 
 Estes termos se aplicam a todos os usuários da plataforma, incluindo visitantes, usuários do plano gratuito e assinantes de planos pagos.`,
   },
   {
     title: "2. Descrição do Serviço",
-    content: `O RoséCRM é uma plataforma de gestão de relacionamento com clientes (CRM) desenvolvida para revendedoras de cosméticos. A plataforma oferece funcionalidades para gerenciamento de clientes, pedidos, produtos, agenda e relatórios de desempenho.
+    content: `O Bloom é uma plataforma de gestão de relacionamento com clientes (CRM) desenvolvida para revendedoras de cosméticos. A plataforma oferece funcionalidades para gerenciamento de clientes, pedidos, produtos, agenda e relatórios de desempenho.
 
 O serviço é oferecido em três modalidades: plano Grátis, plano Pro e plano Premium, cada um com limites e funcionalidades distintos conforme descritos na página de Planos.`,
   },
   {
     title: "3. Cadastro e Conta",
-    content: `Para utilizar o RoséCRM, você deve criar uma conta fornecendo informações verdadeiras, precisas e atualizadas. Você é responsável por:
+    content: `Para utilizar o Bloom, você deve criar uma conta fornecendo informações verdadeiras, precisas e atualizadas. Você é responsável por:
 
 • Manter a confidencialidade de suas credenciais de acesso
 • Todas as atividades realizadas sob sua conta
@@ -29,7 +29,7 @@ O serviço é oferecido em três modalidades: plano Grátis, plano Pro e plano P
   },
   {
     title: "4. Uso Permitido",
-    content: `Você pode utilizar o RoséCRM exclusivamente para fins legítimos de gestão do seu negócio de revenda de cosméticos. São exemplos de uso permitido:
+    content: `Você pode utilizar o Bloom exclusivamente para fins legítimos de gestão do seu negócio de revenda de cosméticos. São exemplos de uso permitido:
 
 • Cadastrar e gerenciar sua carteira de clientes
 • Registrar e acompanhar pedidos e entregas
@@ -57,7 +57,7 @@ O serviço é oferecido em três modalidades: plano Grátis, plano Pro e plano P
 • É o responsável pelo tratamento desses dados perante seus clientes
 • Utilizará os dados exclusivamente para os fins de gestão do seu negócio
 
-O RoséCRM atua como operador dos dados que você, como controlador, insere na plataforma.`,
+O Bloom atua como operador dos dados que você, como controlador, insere na plataforma.`,
   },
   {
     title: "7. Planos e Pagamento",
@@ -76,13 +76,13 @@ O suporte é oferecido conforme o plano contratado: comunidade (Grátis), e-mail
   },
   {
     title: "9. Propriedade Intelectual",
-    content: `Todo o conteúdo da plataforma — incluindo software, design, textos, logotipos e funcionalidades — é de propriedade exclusiva do RoséCRM ou de seus licenciantes, protegido pelas leis de propriedade intelectual aplicáveis.
+    content: `Todo o conteúdo da plataforma — incluindo software, design, textos, logotipos e funcionalidades — é de propriedade exclusiva do Bloom ou de seus licenciantes, protegido pelas leis de propriedade intelectual aplicáveis.
 
 Os dados que você insere na plataforma continuam sendo de sua propriedade. Você pode exportar seus dados a qualquer momento (plano Premium) ou solicitar por e-mail.`,
   },
   {
     title: "10. Limitação de Responsabilidade",
-    content: `O RoséCRM não se responsabiliza por perdas ou danos resultantes de:
+    content: `O Bloom não se responsabiliza por perdas ou danos resultantes de:
 
 • Uso inadequado da plataforma
 • Falhas de conexão à internet fora do nosso controle
@@ -110,14 +110,14 @@ export default function TermosPage() {
     <div className="max-w-3xl">
       {/* Header */}
       <div className="mb-10">
-        <h1 className="text-3xl sm:text-4xl font-bold text-neutral-900 mb-3">
+        <h1 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">
           Termos de Uso
         </h1>
-        <p className="text-neutral-500 text-sm">
+        <p className="text-neutral-500 dark:text-neutral-400 text-sm">
           Última atualização: 1º de maio de 2026 · Vigência imediata
         </p>
-        <p className="mt-4 text-neutral-600 text-sm leading-relaxed">
-          Leia estes termos com atenção antes de utilizar o RoséCRM. Eles definem seus direitos e obrigações ao usar nossa plataforma.
+        <p className="mt-4 text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed">
+          Leia estes termos com atenção antes de utilizar o Bloom. Eles definem seus direitos e obrigações ao usar nossa plataforma.
         </p>
       </div>
 
@@ -125,10 +125,10 @@ export default function TermosPage() {
       <div className="space-y-10">
         {sections.map((section) => (
           <section key={section.title}>
-            <h2 className="text-base font-bold text-neutral-800 mb-3 pb-2 border-b border-neutral-100">
+            <h2 className="text-base font-bold text-neutral-800 dark:text-neutral-200 mb-3 pb-2 border-b border-neutral-100">
               {section.title}
             </h2>
-            <div className="text-sm text-neutral-600 leading-relaxed whitespace-pre-line">
+            <div className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-line">
               {section.content}
             </div>
           </section>
@@ -136,7 +136,7 @@ export default function TermosPage() {
       </div>
 
       {/* Contact */}
-      <div className="mt-12 p-5 bg-neutral-50 rounded-2xl border border-neutral-200">
+      <div className="mt-12 p-5 bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800">
         <p className="text-sm font-semibold text-neutral-800 mb-1">Dúvidas sobre os Termos?</p>
         <p className="text-sm text-neutral-500">
           Entre em contato pelo e-mail{" "}

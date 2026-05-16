@@ -11,7 +11,7 @@ export default function DashboardLayout({
 }) {
   return (
     <PlanProvider>
-      <div className="flex min-h-screen bg-neutral-50">
+      <div className="flex min-h-screen bg-neutral-50 dark:bg-neutral-950">
         <Sidebar />
         <div className="flex-1 flex flex-col min-h-screen lg:ml-60">
           <Header />

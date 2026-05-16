@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { Sparkles, Star } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "RoséCRM",
+  title: "Bloom",
 };
 
 const testimonial = {
-  text: "Antes eu perdia clientes por falta de organização. Com o RoséCRM, minhas vendas subiram 40% em 3 meses.",
+  text: "Antes eu perdia clientes por falta de organização. Com o Bloom, minhas vendas subiram 40% em 3 meses.",
   name: "Ana Clara S.",
   role: "Revendedora Mary Kay · SP",
 };
@@ -32,7 +32,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
             <Sparkles className="w-4.5 h-4.5 text-white" />
           </div>
-          <span className="text-lg font-bold text-white tracking-tight">RoséCRM</span>
+          <span className="text-lg font-bold text-white tracking-tight">Bloom</span>
         </div>
 
         {/* Center content */}
@@ -74,7 +74,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* Right form panel */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 overflow-y-auto">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 overflow-y-auto bg-white dark:bg-neutral-950">
         {children}
       </div>
     </div>

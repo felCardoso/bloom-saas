@@ -50,17 +50,16 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-neutral-950">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-neutral-100">
+      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-neutral-950/90 backdrop-blur-md border-b border-neutral-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 sm:w-8 sm:h-8 bg-rose-500 rounded-xl flex items-center justify-center shadow-sm">
               <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
             </div>
-            <span className="text-sm font-bold text-neutral-800">Rosé</span>
-            <span className="text-sm font-bold text-rose-500">CRM</span>
+            <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">Bloom</span>
           </div>
 
           {/* Desktop links */}
@@ -116,12 +115,12 @@ export default function LandingPage() {
             <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
             CRM feito para revendedoras de cosméticos
           </div>
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-neutral-900 leading-tight mb-4 sm:mb-6">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-neutral-900 dark:text-neutral-100 leading-tight mb-4 sm:mb-6">
             Organize seu negócio{" "}
             <span className="text-rose-500">de beleza</span>{" "}
             com elegância
           </h1>
-          <p className="text-base sm:text-lg text-neutral-500 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed">
+          <p className="text-base sm:text-lg text-neutral-500 dark:text-neutral-400 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed">
             Gerencie clientes, pedidos e produtos em um único lugar. Feito especialmente para revendedoras de Mary Kay, Avon, Natura e similares.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -203,7 +202,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6 bg-neutral-50">
+      <section className="py-16 sm:py-24 px-4 sm:px-6 bg-neutral-50 dark:bg-neutral-900">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl font-bold text-neutral-800 mb-3 sm:mb-4">
@@ -217,7 +216,7 @@ export default function LandingPage() {
             {features.map((f) => (
               <div
                 key={f.title}
-                className="bg-white rounded-2xl p-5 sm:p-6 border border-neutral-200 shadow-card hover:shadow-elevated transition-shadow"
+                className="bg-white dark:bg-neutral-800 rounded-2xl p-5 sm:p-6 border border-neutral-200 dark:border-neutral-700 shadow-card hover:shadow-elevated transition-shadow"
               >
                 <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center mb-4">
                   <f.icon className="w-5 h-5 text-rose-500" />
@@ -248,12 +247,12 @@ export default function LandingPage() {
                 className={`rounded-2xl border p-5 sm:p-6 ${
                   plan.primary
                     ? "border-rose-300 bg-rose-500 text-white shadow-elevated"
-                    : "border-neutral-200 bg-white shadow-card"
+                    : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-card"
                 }`}
               >
                 <p
                   className={`text-sm font-semibold mb-1 ${
-                    plan.primary ? "text-rose-100" : "text-neutral-500"
+                    plan.primary ? "text-rose-100" : "text-neutral-500 dark:text-neutral-400"
                   }`}
                 >
                   {plan.name}
@@ -261,20 +260,20 @@ export default function LandingPage() {
                 <div className="flex items-baseline gap-1 mb-1">
                   <span
                     className={`text-3xl font-bold ${
-                      plan.primary ? "text-white" : "text-neutral-800"
+                      plan.primary ? "text-white" : "text-neutral-800 dark:text-neutral-100"
                     }`}
                   >
                     {plan.price}
                   </span>
                   <span
-                    className={`text-sm ${plan.primary ? "text-rose-200" : "text-neutral-400"}`}
+                    className={`text-sm ${plan.primary ? "text-rose-200" : "text-neutral-400 dark:text-neutral-500"}`}
                   >
                     {plan.period}
                   </span>
                 </div>
                 <p
                   className={`text-xs mb-5 sm:mb-6 ${
-                    plan.primary ? "text-rose-100" : "text-neutral-400"
+                    plan.primary ? "text-rose-100" : "text-neutral-400 dark:text-neutral-500"
                   }`}
                 >
                   {plan.desc}
@@ -287,7 +286,7 @@ export default function LandingPage() {
                           plan.primary ? "text-rose-200" : "text-rose-500"
                         }`}
                       />
-                      <span className={plan.primary ? "text-white" : "text-neutral-600"}>
+                      <span className={plan.primary ? "text-white" : "text-neutral-600 dark:text-neutral-300"}>
                         {feat}
                       </span>
                     </li>
@@ -310,13 +309,13 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 sm:py-10 px-4 sm:px-6 border-t border-neutral-100">
+      <footer className="py-8 sm:py-10 px-4 sm:px-6 border-t border-neutral-100 dark:border-neutral-800">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 bg-rose-500 rounded-lg flex items-center justify-center">
               <Sparkles className="w-3 h-3 text-white" />
             </div>
-            <span className="text-sm font-bold text-neutral-600">RoséCRM</span>
+            <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">Bloom</span>
           </div>
           <div className="flex flex-wrap justify-center gap-4">
             {[
@@ -330,7 +329,7 @@ export default function LandingPage() {
               </Link>
             ))}
           </div>
-          <p className="text-xs text-neutral-400">© 2026 RoséCRM · Feito com ♥ para revendedoras.</p>
+          <p className="text-xs text-neutral-400">© 2026 Bloom · Feito com ♥ para revendedoras.</p>
         </div>
       </footer>
     </div>

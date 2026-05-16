@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Shield, Lock, Eye, Trash2, Mail, FileText } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Política de Privacidade — RoséCRM",
+  title: "Política de Privacidade — Bloom",
 };
 
 const highlights = [
@@ -15,7 +15,7 @@ const highlights = [
 const sections = [
   {
     title: "1. Quem somos",
-    content: `O RoséCRM é uma plataforma de CRM desenvolvida para revendedoras de cosméticos, operada por RoséCRM LTDA, inscrita no CNPJ XX.XXX.XXX/0001-XX, com sede em São Paulo — SP.
+    content: `O Bloom é uma plataforma de CRM desenvolvida para revendedoras de cosméticos, operada por Bloom LTDA, inscrita no CNPJ XX.XXX.XXX/0001-XX, com sede em São Paulo — SP.
 
 Para fins da Lei Geral de Proteção de Dados (LGPD), atuamos como controlador dos dados pessoais dos usuários da plataforma e como operador dos dados de clientes inseridos pelas revendedoras.
 
@@ -75,7 +75,7 @@ Processador de pagamentos (ex: Stripe/PagSeguro): apenas dados de cobrança, par
 
 Serviços de infraestrutura (ex: Supabase/AWS): para hospedagem segura dos dados, com contratos de processamento conforme a LGPD.
 
-Autoridades competentes: quando exigido por lei, ordem judicial ou para proteger direitos do RoséCRM.
+Autoridades competentes: quando exigido por lei, ordem judicial ou para proteger direitos do Bloom.
 
 Não vendemos, alugamos ou comercializamos seus dados com nenhuma outra empresa.`,
   },
@@ -145,13 +145,13 @@ export default function PrivacidadePage() {
     <div className="max-w-3xl">
       {/* Header */}
       <div className="mb-10">
-        <h1 className="text-3xl sm:text-4xl font-bold text-neutral-900 mb-3">
+        <h1 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">
           Política de Privacidade
         </h1>
-        <p className="text-neutral-500 text-sm">
+        <p className="text-neutral-500 dark:text-neutral-400 text-sm">
           Última atualização: 1º de maio de 2026 · Em conformidade com a LGPD
         </p>
-        <p className="mt-4 text-neutral-600 text-sm leading-relaxed">
+        <p className="mt-4 text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed">
           Sua privacidade é fundamental para nós. Este documento explica de forma clara quais dados coletamos, como os utilizamos e quais são seus direitos.
         </p>
       </div>
@@ -178,10 +178,10 @@ export default function PrivacidadePage() {
       <div className="space-y-10">
         {sections.map((section) => (
           <section key={section.title}>
-            <h2 className="text-base font-bold text-neutral-800 mb-3 pb-2 border-b border-neutral-100">
+            <h2 className="text-base font-bold text-neutral-800 dark:text-neutral-200 mb-3 pb-2 border-b border-neutral-100">
               {section.title}
             </h2>
-            <div className="text-sm text-neutral-600 leading-relaxed whitespace-pre-line">
+            <div className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-line">
               {section.content}
             </div>
           </section>
@@ -192,7 +192,7 @@ export default function PrivacidadePage() {
       <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <a
           href="mailto:privacidade@rosecrm.com.br"
-          className="flex items-center gap-3 p-4 bg-neutral-50 rounded-2xl border border-neutral-200 hover:bg-neutral-100 transition-colors"
+          className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 transition-colors"
         >
           <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-sm">
             <Mail className="w-4 h-4 text-rose-500" />
@@ -204,7 +204,7 @@ export default function PrivacidadePage() {
         </a>
         <a
           href="/suporte"
-          className="flex items-center gap-3 p-4 bg-neutral-50 rounded-2xl border border-neutral-200 hover:bg-neutral-100 transition-colors"
+          className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 transition-colors"
         >
           <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-sm">
             <FileText className="w-4 h-4 text-rose-500" />
