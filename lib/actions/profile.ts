@@ -50,7 +50,7 @@ export async function getProfile() {
 
   const { data } = await supabase
     .from("perfis_usuarios")
-    .select("nome_completo, email, telefone, nome_marca")
+    .select("nome_completo, email, telefone, nome_marca, avatar_url")
     .eq("id", user.id)
     .single();
 
@@ -59,7 +59,22 @@ export async function getProfile() {
     email: data?.email ?? user.email ?? "",
     phone: data?.telefone ?? "",
     brand: data?.nome_marca ?? "",
+    avatarUrl: (data?.avatar_url as string | null) ?? null,
   };
+}
+
+export async function updateAvatar(url: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { error } = await supabase
+    .from("perfis_usuarios")
+    .update({ avatar_url: url, updated_at: new Date().toISOString() })
+    .eq("id", user.id);
+
+  if (error) return { error: error.message };
+  return { success: true };
 }
 
 export async function updateProfile(profile: {
