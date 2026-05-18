@@ -1,8 +1,22 @@
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const FROM = process.env.RESEND_FROM_EMAIL ?? "Bloom <onboarding@resend.dev>";
+const API_URL = "https://api.resend.com/emails";
+
+async function sendEmail(payload: {
+  from: string;
+  to: string;
+  subject: string;
+  html: string;
+}) {
+  if (!process.env.RESEND_API_KEY) return;
+  await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  }).catch(() => {});
+}
 
 function baseTemplate(content: string) {
   return `<!DOCTYPE html>
@@ -18,15 +32,7 @@ function baseTemplate(content: string) {
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
         <!-- Header -->
         <tr><td style="background:#f43f5e;border-radius:16px 16px 0 0;padding:24px 32px;">
-          <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-              <td>
-                <span style="display:inline-flex;align-items:center;gap:8px;">
-                  <span style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;">Bloom</span>
-                </span>
-              </td>
-            </tr>
-          </table>
+          <span style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;">Bloom</span>
         </td></tr>
         <!-- Body -->
         <tr><td style="background:#fff;padding:32px;border-radius:0 0 16px 16px;">
@@ -47,11 +53,10 @@ function baseTemplate(content: string) {
 }
 
 export async function sendWelcomeEmail(to: string, name: string) {
-  if (!process.env.RESEND_API_KEY) return;
-
   const firstName = name.split(" ")[0];
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://usebloom.app";
 
-  await resend.emails.send({
+  await sendEmail({
     from: FROM,
     to,
     subject: "Bem-vinda ao Bloom! 🌸",
@@ -76,20 +81,16 @@ export async function sendWelcomeEmail(to: string, name: string) {
         </td></tr>
       </table>
 
-      <table width="100%" cellpadding="0" cellspacing="0">
-        <tr><td>
-          <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "https://usebloom.app"}/dashboard"
-             style="display:inline-block;background:#f43f5e;color:#fff;font-weight:600;font-size:14px;padding:12px 28px;border-radius:10px;text-decoration:none;">
-            Acessar meu dashboard →
-          </a>
-        </td></tr>
-      </table>
+      <a href="${appUrl}/dashboard"
+         style="display:inline-block;background:#f43f5e;color:#fff;font-weight:600;font-size:14px;padding:12px 28px;border-radius:10px;text-decoration:none;">
+        Acessar meu dashboard →
+      </a>
 
       <p style="margin:28px 0 0;font-size:13px;color:#9ca3af;line-height:1.5;">
         Se tiver dúvidas, responda este e-mail. Estamos aqui para ajudar!
       </p>
     `),
-  }).catch(() => {});
+  });
 }
 
 export async function sendOrderConfirmationEmail(
@@ -101,7 +102,7 @@ export async function sendOrderConfirmationEmail(
     total: number;
   }
 ) {
-  if (!process.env.RESEND_API_KEY) return;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://usebloom.app";
 
   const itemRows = data.items
     .map(
@@ -116,7 +117,7 @@ export async function sendOrderConfirmationEmail(
     )
     .join("");
 
-  await resend.emails.send({
+  await sendEmail({
     from: FROM,
     to,
     subject: `Pedido registrado — ${data.clientName}`,
@@ -142,10 +143,10 @@ export async function sendOrderConfirmationEmail(
         </tr>
       </table>
 
-      <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "https://usebloom.app"}/pedidos"
+      <a href="${appUrl}/pedidos"
          style="display:inline-block;background:#f43f5e;color:#fff;font-weight:600;font-size:14px;padding:12px 28px;border-radius:10px;text-decoration:none;">
         Ver pedidos →
       </a>
     `),
-  }).catch(() => {});
+  });
 }
