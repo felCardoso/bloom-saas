@@ -154,6 +154,31 @@ export async function updateNotificationPrefs(prefs: NotificationPrefs) {
   return { success: true };
 }
 
+export async function getOnboardingStatus(): Promise<boolean> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return true;
+
+  const { data } = await supabase
+    .from("perfis_usuarios")
+    .select("onboarding_completo")
+    .eq("id", user.id)
+    .single();
+
+  return (data?.onboarding_completo as boolean | null) ?? false;
+}
+
+export async function completeOnboarding() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  await supabase
+    .from("perfis_usuarios")
+    .update({ onboarding_completo: true })
+    .eq("id", user.id);
+}
+
 export async function updatePlan(planId: PlanId) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

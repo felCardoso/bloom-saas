@@ -4,11 +4,15 @@ import { RecentOrders } from "@/components/dashboard/RecentOrders";
 import { getDashboardStats, getRecentVendas } from "@/lib/actions/dashboard";
 import { formatCurrency } from "@/lib/utils";
 import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
+import { getOnboardingStatus, getProfile } from "@/lib/actions/profile";
+import { OnboardingWelcome } from "@/components/dashboard/OnboardingWelcome";
 
 export default async function DashboardPage() {
-  const [stats, recentOrders] = await Promise.all([
+  const [stats, recentOrders, onboardingDone, profile] = await Promise.all([
     getDashboardStats(),
     getRecentVendas(),
+    getOnboardingStatus(),
+    getProfile(),
   ]);
 
   const trend =
@@ -22,6 +26,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-4 lg:space-y-6">
+      {/* Onboarding */}
+      {!onboardingDone && <OnboardingWelcome userName={profile.name} />}
+
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         <StatCard
