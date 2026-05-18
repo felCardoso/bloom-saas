@@ -192,7 +192,7 @@ function ManageSubscriptionButton() {
   };
 
   return (
-    <div className="flex items-center justify-between p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900">
       <div>
         <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Gerenciar assinatura</p>
         <p className="text-xs text-neutral-400 mt-0.5">Altere o método de pagamento, veja faturas ou cancele.</p>
@@ -200,7 +200,7 @@ function ManageSubscriptionButton() {
       <button
         onClick={handleClick}
         disabled={loading}
-        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-rose-500 hover:bg-rose-600 rounded-xl transition-colors disabled:opacity-60"
+        className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-rose-500 hover:bg-rose-600 rounded-xl transition-colors disabled:opacity-60 sm:shrink-0"
       >
         {loading ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : "Gerenciar pagamento"}
       </button>
@@ -263,14 +263,14 @@ function AssinaturaTab() {
       )}
 
       {planId === "free" && (
-        <div className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900 flex items-center justify-between gap-3">
+        <div className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">Experimente o plano Pro grátis</p>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">14 dias, sem cartão de crédito.</p>
           </div>
           <Link
             href="/pricing"
-            className="shrink-0 px-4 py-2 bg-rose-500 text-white text-sm font-semibold rounded-xl hover:bg-rose-600 transition-colors"
+            className="self-start sm:self-auto px-4 py-2 bg-rose-500 text-white text-sm font-semibold rounded-xl hover:bg-rose-600 transition-colors"
           >
             Testar Pro
           </Link>

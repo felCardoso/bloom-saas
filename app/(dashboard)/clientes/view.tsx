@@ -122,21 +122,21 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
       {/* Summary chips */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {[
-          { label: "Total", value: clients.length, color: "text-neutral-800" },
+          { label: "Total", value: clients.length, color: "text-neutral-800 dark:text-neutral-100" },
           {
             label: "Ativas",
             value: clients.filter((c) => c.status === "ativa").length,
-            color: "text-emerald-600",
+            color: "text-emerald-600 dark:text-emerald-400",
           },
           {
             label: "Prospects",
             value: clients.filter((c) => c.status === "prospect").length,
-            color: "text-rose-500",
+            color: "text-rose-500 dark:text-rose-400",
           },
         ].map((s) => (
           <Card key={s.label} padding="sm">
             <p className={cn("text-xl font-bold", s.color)}>{s.value}</p>
-            <p className="text-xs text-neutral-500">{s.label}</p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">{s.label}</p>
           </Card>
         ))}
       </div>
@@ -413,7 +413,7 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
                 <Badge variant={statusMap[selected.status].variant}>
                   {statusMap[selected.status].label}
                 </Badge>
-                <p className="text-xs text-neutral-400 mt-1">
+                <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
                   Cliente desde {formatDate(selected.created_at)}
                 </p>
               </div>
