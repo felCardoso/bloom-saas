@@ -1,6 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const PROTECTED_PATHS = [
+  "/dashboard",
+  "/clientes",
+  "/pedidos",
+  "/produtos",
+  "/agenda",
+  "/relatorios",
+  "/configuracoes",
+  "/pricing",
+];
+
+const AUTH_PATHS = ["/login", "/registro"];
+
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -25,31 +38,34 @@ export async function proxy(request: NextRequest) {
     }
   );
 
+  // Refreshes the session and persists updated cookies
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
 
-  const isDashboard =
-    pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/clientes") ||
-    pathname.startsWith("/produtos") ||
-    pathname.startsWith("/pedidos") ||
-    pathname.startsWith("/agenda") ||
-    pathname.startsWith("/relatorios") ||
-    pathname.startsWith("/configuracoes") ||
-    pathname.startsWith("/pricing");
+  const isProtected = PROTECTED_PATHS.some(
+    (path) => pathname === path || pathname.startsWith(path + "/")
+  );
+  const isAuthPage = AUTH_PATHS.some((path) => pathname === path);
 
-  if (isDashboard && !user) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  if (isProtected && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("next", pathname);
+    return NextResponse.redirect(url);
   }
 
-  if (
-    user &&
-    (pathname === "/login" || pathname === "/registro")
-  ) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  if (isAuthPage && user) {
+    const next = request.nextUrl.searchParams.get("next");
+    const url = request.nextUrl.clone();
+    url.pathname =
+      next && PROTECTED_PATHS.some((p) => next.startsWith(p))
+        ? next
+        : "/dashboard";
+    url.searchParams.delete("next");
+    return NextResponse.redirect(url);
   }
 
   return supabaseResponse;
@@ -57,6 +73,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
