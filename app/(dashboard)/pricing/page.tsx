@@ -1,57 +1,37 @@
 "use client";
 
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect } from "react";
 import {
-  Check,
-  X,
-  Users,
-  ShoppingBag,
-  Package,
-  Calendar,
-  BarChart3,
-  MessageCircle,
-  Bell,
-  Download,
-  UsersRound,
-  HeadphonesIcon,
-  Zap,
+  Check, X, Users, ShoppingBag, Package, Calendar,
+  BarChart3, MessageCircle, Bell, Download, UsersRound, HeadphonesIcon,
 } from "lucide-react";
 import { usePlan } from "@/lib/plan-context";
 import { PLANS, PLAN_ORDER, PlanId } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
-// All rose-* classes automatically follow the primary color chosen in
-// settings, because theme-context.tsx remaps --color-rose-* CSS variables.
-
 const FEATURES_TABLE = [
-  {
-    group: "Limites",
-    rows: [
-      { label: "Clientes", icon: Users, values: { free: "até 30", pro: "até 200", premium: "Ilimitado" } },
-      { label: "Pedidos por mês", icon: ShoppingBag, values: { free: "até 20", pro: "até 150", premium: "Ilimitado" } },
-      { label: "Produtos", icon: Package, values: { free: "até 20", pro: "até 100", premium: "Ilimitado" } },
-      { label: "Eventos na agenda", icon: Calendar, values: { free: "até 15", pro: "Ilimitado", premium: "Ilimitado" } },
-    ],
-  },
-  {
-    group: "Recursos",
-    rows: [
-      { label: "Gráfico de receita", icon: BarChart3, values: { free: false, pro: true, premium: true } },
-      { label: "Relatórios avançados", icon: BarChart3, values: { free: false, pro: false, premium: true } },
-      { label: "Lembretes de aniversário", icon: Bell, values: { free: false, pro: true, premium: true } },
-      { label: "Link rápido WhatsApp", icon: MessageCircle, values: { free: false, pro: true, premium: true } },
-      { label: "Alertas de estoque", icon: Package, values: { free: false, pro: true, premium: true } },
-      { label: "Exportar CSV", icon: Download, values: { free: false, pro: false, premium: true } },
-      { label: "Múltiplos usuários", icon: UsersRound, values: { free: false, pro: false, premium: "até 3" } },
-      { label: "Suporte", icon: HeadphonesIcon, values: { free: "Comunidade", pro: "E-mail (48h)", premium: "Prioritário" } },
-    ],
-  },
+  { group: "Limites", rows: [
+    { label: "Clientes", icon: Users, values: { free: "até 30", pro: "até 200", premium: "Ilimitado" } },
+    { label: "Pedidos/mês", icon: ShoppingBag, values: { free: "até 20", pro: "até 150", premium: "Ilimitado" } },
+    { label: "Produtos", icon: Package, values: { free: "até 20", pro: "até 100", premium: "Ilimitado" } },
+    { label: "Eventos", icon: Calendar, values: { free: "até 15", pro: "Ilimitado", premium: "Ilimitado" } },
+  ]},
+  { group: "Recursos", rows: [
+    { label: "Gráficos e relatórios", icon: BarChart3, values: { free: false, pro: true, premium: true } },
+    { label: "Relatórios avançados", icon: BarChart3, values: { free: false, pro: false, premium: true } },
+    { label: "Lembretes aniversário", icon: Bell, values: { free: false, pro: true, premium: true } },
+    { label: "Link WhatsApp", icon: MessageCircle, values: { free: false, pro: true, premium: true } },
+    { label: "Alertas estoque", icon: Package, values: { free: false, pro: true, premium: true } },
+    { label: "Exportar CSV", icon: Download, values: { free: false, pro: false, premium: true } },
+    { label: "Múltiplos usuários", icon: UsersRound, values: { free: false, pro: false, premium: "até 3" } },
+    { label: "Suporte", icon: HeadphonesIcon, values: { free: "Comunidade", pro: "E-mail", premium: "Prioritário" } },
+  ]},
 ];
 
 function FeatureValue({ value }: { value: boolean | string }) {
-  if (value === true) return <Check className="w-4 h-4 text-emerald-500 mx-auto" />;
+  if (value === true)  return <Check className="w-4 h-4 text-emerald-500 mx-auto" />;
   if (value === false) return <X className="w-4 h-4 text-neutral-300 dark:text-neutral-600 mx-auto" />;
-  return <span className="text-xs text-neutral-700 dark:text-neutral-300 font-medium">{value}</span>;
+  return <span className="text-[11px] text-neutral-700 dark:text-neutral-300 font-medium leading-tight">{value}</span>;
 }
 
 function planKey(p: (typeof PLANS)[PlanId]) {
@@ -252,79 +232,47 @@ export default function PricingPage() {
         })}
       </div>
 
-      {/* Comparison table */}
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-card overflow-hidden">
-        <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 flex items-center gap-2">
-          <Zap className="w-4 h-4 text-rose-500" />
-          <h2 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
-            Comparação de planos
-          </h2>
+      {/* Comparação — div grid sem min-width, não causa overflow */}
+      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-card">
+        <div className="grid grid-cols-[2fr_1fr_1fr_1fr] border-b border-neutral-100 dark:border-neutral-800 px-4 py-2.5">
+          <span className="text-xs font-semibold text-neutral-400 dark:text-neutral-500">Recurso</span>
+          {PLAN_ORDER.map((id) => (
+            <span key={id} className={cn(
+              "text-xs font-bold text-center",
+              id === planId ? "text-rose-500" : "text-neutral-500 dark:text-neutral-400",
+            )}>
+              {PLANS[id].name}
+              {id === planId && (
+                <span className="ml-1 text-[9px] bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 px-1 py-0.5 rounded-full">
+                  atual
+                </span>
+              )}
+            </span>
+          ))}
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[360px]">
-            <thead>
-              <tr className="border-b border-neutral-100 dark:border-neutral-800">
-                <th className="text-left px-4 py-2.5 text-xs font-semibold text-neutral-400 dark:text-neutral-500 w-[44%]">
-                  Recurso
-                </th>
+        {FEATURES_TABLE.map((section) => (
+          <div key={section.group}>
+            <div className="px-4 py-2 text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider bg-neutral-50 dark:bg-neutral-800/50 border-t border-neutral-100 dark:border-neutral-800">
+              {section.group}
+            </div>
+            {section.rows.map((row) => (
+              <div key={row.label} className="grid grid-cols-[2fr_1fr_1fr_1fr] border-t border-neutral-50 dark:border-neutral-800/60 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/20 transition-colors">
+                <div className="px-4 py-2.5 flex items-center gap-1.5 min-w-0">
+                  <row.icon className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500 shrink-0" />
+                  <span className="text-xs text-neutral-700 dark:text-neutral-300 truncate">{row.label}</span>
+                </div>
                 {PLAN_ORDER.map((id) => (
-                  <th
-                    key={id}
-                    className={cn(
-                      "px-3 py-2.5 text-xs font-bold text-center",
-                      id === planId ? "text-rose-500" : "text-neutral-500 dark:text-neutral-400",
-                    )}
-                  >
-                    {PLANS[id].name}
-                    {id === planId && (
-                      <span className="ml-1 text-[9px] bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 px-1 py-0.5 rounded-full font-semibold">
-                        atual
-                      </span>
-                    )}
-                  </th>
+                  <div key={id} className={cn(
+                    "py-2.5 flex items-center justify-center",
+                    id === planId ? "bg-rose-50/50 dark:bg-rose-900/10" : "",
+                  )}>
+                    <FeatureValue value={row.values[id as keyof typeof row.values]} />
+                  </div>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {FEATURES_TABLE.map((section) => (
-                <Fragment key={section.group}>
-                  <tr className="bg-neutral-50 dark:bg-neutral-800/50">
-                    <td
-                      colSpan={4}
-                      className="px-4 py-2 text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider"
-                    >
-                      {section.group}
-                    </td>
-                  </tr>
-                  {section.rows.map((row) => (
-                    <tr
-                      key={row.label}
-                      className="border-t border-neutral-50 dark:border-neutral-800/60 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/20 transition-colors"
-                    >
-                      <td className="px-4 py-2.5">
-                        <div className="flex items-center gap-1.5">
-                          <row.icon className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500 shrink-0" />
-                          <span className="text-xs text-neutral-700 dark:text-neutral-300">{row.label}</span>
-                        </div>
-                      </td>
-                      {PLAN_ORDER.map((id) => (
-                        <td
-                          key={id}
-                          className={cn(
-                            "px-3 py-2.5 text-center",
-                            id === planId ? "bg-rose-50/50 dark:bg-rose-900/10" : "",
-                          )}
-                        >
-                          <FeatureValue value={row.values[id as keyof typeof row.values]} />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
 
       {/* Confirm switch modal */}
