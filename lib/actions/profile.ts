@@ -43,6 +43,102 @@ export async function getUsageCounts(): Promise<Partial<Usage>> {
   };
 }
 
+export async function getProfile() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { data } = await supabase
+    .from("perfis_usuarios")
+    .select("nome_completo, email, telefone, nome_marca")
+    .eq("id", user.id)
+    .single();
+
+  return {
+    name: data?.nome_completo ?? "",
+    email: data?.email ?? user.email ?? "",
+    phone: data?.telefone ?? "",
+    brand: data?.nome_marca ?? "",
+  };
+}
+
+export async function updateProfile(profile: {
+  name: string;
+  email: string;
+  phone: string;
+  brand: string;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const updates: Record<string, unknown> = {
+    nome_completo: profile.name,
+    email: profile.email,
+    telefone: profile.phone,
+    nome_marca: profile.brand,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { error } = await supabase
+    .from("perfis_usuarios")
+    .update(updates)
+    .eq("id", user.id);
+
+  if (error) return { error: error.message };
+
+  if (profile.email !== user.email) {
+    const { error: authError } = await supabase.auth.updateUser({ email: profile.email });
+    if (authError) return { error: authError.message };
+  }
+
+  return { success: true };
+}
+
+export type NotificationPrefs = {
+  birthdays: boolean;
+  pendingOrders: boolean;
+  stockAlerts: boolean;
+  newsletter: boolean;
+  push: boolean;
+};
+
+const DEFAULT_NOTIF_PREFS: NotificationPrefs = {
+  birthdays: false,
+  pendingOrders: true,
+  stockAlerts: false,
+  newsletter: false,
+  push: false,
+};
+
+export async function getNotificationPrefs(): Promise<NotificationPrefs> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return DEFAULT_NOTIF_PREFS;
+
+  const { data } = await supabase
+    .from("perfis_usuarios")
+    .select("preferencias_notificacoes")
+    .eq("id", user.id)
+    .single();
+
+  return { ...DEFAULT_NOTIF_PREFS, ...(data?.preferencias_notificacoes ?? {}) };
+}
+
+export async function updateNotificationPrefs(prefs: NotificationPrefs) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { error } = await supabase
+    .from("perfis_usuarios")
+    .update({ preferencias_notificacoes: prefs, updated_at: new Date().toISOString() })
+    .eq("id", user.id);
+
+  if (error) return { error: error.message };
+  return { success: true };
+}
+
 export async function updatePlan(planId: PlanId) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
