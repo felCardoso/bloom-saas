@@ -67,3 +67,29 @@ export async function deleteEvento(id: string): Promise<{ error?: string }> {
   revalidatePath("/agenda");
   return {};
 }
+
+export async function updateEvento(
+  id: string,
+  form: {
+    client_name: string;
+    type: ScheduleEvent["type"];
+    title: string;
+    description: string;
+    date: string;
+  }
+): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("eventos_agenda")
+    .update({
+      client_name: form.client_name,
+      type: form.type,
+      title: form.title,
+      description: form.description || null,
+      date: form.date,
+    })
+    .eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/agenda");
+  return {};
+}

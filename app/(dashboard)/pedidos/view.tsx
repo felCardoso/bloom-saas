@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { addVenda, updateVendaStatus } from "@/lib/actions/vendas";
-import { Plus, Search, ShoppingBag } from "lucide-react";
+import { addVenda, updateVendaStatus, deleteVenda } from "@/lib/actions/vendas";
+import { Plus, Search, ShoppingBag, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
@@ -46,6 +46,7 @@ export function PedidosView({
   const [addOpen, setAddOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [selected, setSelected] = useState<Order | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [newOrder, setNewOrder] = useState({
     client_id: "",
     status: "pendente" as OrderStatus,
@@ -104,6 +105,22 @@ export function PedidosView({
     startTransition(async () => {
       await updateVendaStatus(id, status);
     });
+  }
+
+  function handleDelete() {
+    if (!selected) return;
+    const id = selected.id;
+    startTransition(async () => {
+      await deleteVenda(id);
+      setOrders((prev) => prev.filter((o) => o.id !== id));
+      setSelected(null);
+      setConfirmDelete(false);
+    });
+  }
+
+  function handleCloseDetail() {
+    setSelected(null);
+    setConfirmDelete(false);
   }
 
   const totalRevenue = filtered.reduce(
@@ -395,7 +412,7 @@ export function PedidosView({
       {selected && (
         <Modal
           open={!!selected}
-          onClose={() => setSelected(null)}
+          onClose={handleCloseDetail}
           title={`Pedido de ${selected.client_name}`}
         >
           <div className="space-y-4">
@@ -445,7 +462,7 @@ export function PedidosView({
 
             {selected.status !== "entregue" &&
               selected.status !== "cancelado" && (
-                <div className="flex gap-2 pt-1">
+                <div className="flex gap-2">
                   {selected.status === "pendente" && (
                     <Button
                       variant="secondary"
@@ -472,6 +489,41 @@ export function PedidosView({
                   </Button>
                 </div>
               )}
+
+            {/* Delete section */}
+            <div className="pt-1 border-t border-neutral-100 dark:border-neutral-800">
+              {confirmDelete ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-center text-neutral-600 dark:text-neutral-300">
+                    Excluir este pedido? Esta ação não pode ser desfeita.
+                  </p>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="secondary"
+                      className="flex-1"
+                      onClick={() => setConfirmDelete(false)}
+                    >
+                      Cancelar
+                    </Button>
+                    <button
+                      onClick={handleDelete}
+                      disabled={isPending}
+                      className="flex-1 py-2.5 px-4 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+                    >
+                      {isPending ? "Excluindo..." : "Excluir"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmDelete(true)}
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Excluir pedido
+                </button>
+              )}
+            </div>
           </div>
         </Modal>
       )}

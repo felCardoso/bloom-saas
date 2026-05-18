@@ -98,3 +98,33 @@ export async function deleteCliente(id: string): Promise<{ error?: string }> {
   revalidatePath("/clientes");
   return {};
 }
+
+export async function updateCliente(
+  id: string,
+  form: {
+    name: string;
+    phone: string;
+    email: string;
+    city: string;
+    status: ClientStatus;
+    notes: string;
+    birthday: string;
+  }
+): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("clientes")
+    .update({
+      nome: form.name,
+      telefone: form.phone || null,
+      email: form.email || null,
+      bairro_cidade: form.city || null,
+      status: form.status,
+      observacoes: form.notes || null,
+      data_nascimento: form.birthday || null,
+    })
+    .eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/clientes");
+  return {};
+}
