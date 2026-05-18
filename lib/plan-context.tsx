@@ -8,6 +8,7 @@ import {
   ReactNode,
 } from "react";
 import { PLANS, PlanId, Plan, PlanFeatures } from "./plans";
+import { updatePlan } from "@/lib/actions/profile";
 
 export interface Usage {
   clients: number;
@@ -51,7 +52,12 @@ export function PlanProvider({
   initialPlan?: PlanId;
   initialUsage?: Partial<Usage>;
 }) {
-  const [planId, setPlanId] = useState<PlanId>(initialPlan);
+  const [planId, _setPlanId] = useState<PlanId>(initialPlan);
+
+  const setPlanId = useCallback((id: PlanId) => {
+    _setPlanId(id);
+    updatePlan(id);
+  }, []);
   const [usage, setUsageState] = useState<Usage>({
     clients: 6,
     ordersPerMonth: 5,
