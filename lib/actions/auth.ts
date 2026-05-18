@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -29,4 +30,14 @@ export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/login");
+}
+
+export async function resetPassword(email: string) {
+  const supabase = await createClient();
+  const origin = (await headers()).get("origin") ?? "http://localhost:3000";
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/recuperar-senha/confirmar`,
+  });
+  if (error) return { error: error.message };
+  return { success: true };
 }
