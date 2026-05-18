@@ -193,8 +193,75 @@ export default function PricingPage() {
         </div>
       )}
 
-      {/* Plan cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Plan cards — compact rows on mobile */}
+      <div className="space-y-2 sm:hidden">
+        {PLAN_ORDER.map((id) => {
+          const p = PLANS[id];
+          const idx = PLAN_ORDER.indexOf(id);
+          const isCurrent = id === planId;
+          const isDowngrade = idx < currentIdx;
+          const isPro = id === "pro";
+
+          return (
+            <div
+              key={id}
+              className={cn(
+                "flex items-center gap-3 p-3.5 rounded-2xl border",
+                isCurrent
+                  ? "border-rose-300 bg-rose-50 dark:bg-rose-900/20"
+                  : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900",
+              )}
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <p className={cn(
+                    "text-sm font-bold",
+                    isCurrent ? "text-rose-600 dark:text-rose-400" : "text-neutral-800 dark:text-neutral-100",
+                  )}>
+                    {p.name}
+                  </p>
+                  {isCurrent && (
+                    <span className="text-[10px] bg-rose-500 text-white px-1.5 py-0.5 rounded-full font-semibold">
+                      atual
+                    </span>
+                  )}
+                  {p.badge && (
+                    <span className="text-[10px] bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 px-1.5 py-0.5 rounded-full font-semibold">
+                      {p.badge}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  {p.price === 0 ? "Grátis" : `R$ ${p.price}/mês`}
+                  {" · "}
+                  {p.limits.clients === -1 ? "Clientes ilimitados" : `até ${p.limits.clients} clientes`}
+                </p>
+              </div>
+              <button
+                onClick={() => selectPlan(id)}
+                disabled={isCurrent || checkoutLoading === id}
+                className={cn(
+                  "shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1",
+                  isCurrent
+                    ? "bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-default"
+                    : isPro || (!isDowngrade && id !== "free")
+                      ? "bg-rose-500 text-white hover:bg-rose-600"
+                      : isDowngrade
+                        ? "border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                        : "bg-rose-500 text-white hover:bg-rose-600",
+                )}
+              >
+                {checkoutLoading === id ? (
+                  <span className="w-3 h-3 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                ) : isCurrent ? "Atual" : isDowngrade ? "Downgrade" : id === "free" ? "Grátis" : "Assinar"}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Plan cards — full cards on desktop */}
+      <div className="hidden sm:grid sm:grid-cols-3 gap-4 mt-2">
         {PLAN_ORDER.map((id) => {
           const p = PLANS[id];
           const idx = PLAN_ORDER.indexOf(id);
@@ -213,7 +280,6 @@ export default function PricingPage() {
                 isPro ? "bg-rose-500 text-white" : "bg-white dark:bg-neutral-900",
               )}
             >
-              {/* Popular badge */}
               {p.badge && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="bg-neutral-900 text-white text-[11px] font-bold px-3 py-1 rounded-full whitespace-nowrap">
@@ -221,125 +287,66 @@ export default function PricingPage() {
                   </span>
                 </div>
               )}
-
               {isCurrent && (
                 <div className="absolute -top-3 right-4">
-                  <span
-                    className={cn(
-                      "text-[11px] font-bold px-3 py-1 rounded-full",
-                      isPro
-                        ? "bg-white text-rose-600"
-                        : "bg-rose-500 text-white",
-                    )}
-                  >
+                  <span className={cn(
+                    "text-[11px] font-bold px-3 py-1 rounded-full",
+                    isPro ? "bg-white text-rose-600" : "bg-rose-500 text-white",
+                  )}>
                     Plano atual
                   </span>
                 </div>
               )}
-
               <div className="mb-4">
-                <p
-                  className={cn(
-                    "text-sm font-semibold mb-1",
-                    isPro ? "text-rose-100" : "text-neutral-500 dark:text-neutral-400",
-                  )}
-                >
+                <p className={cn("text-sm font-semibold mb-1", isPro ? "text-rose-100" : "text-neutral-500 dark:text-neutral-400")}>
                   {p.name}
                 </p>
                 <div className="flex items-baseline gap-1">
-                  <span
-                    className={cn(
-                      "text-3xl font-bold",
-                      isPro ? "text-white" : "text-neutral-800 dark:text-neutral-100",
-                    )}
-                  >
+                  <span className={cn("text-3xl font-bold", isPro ? "text-white" : "text-neutral-800 dark:text-neutral-100")}>
                     {p.price === 0 ? "Grátis" : `R$ ${p.price}`}
                   </span>
                   {p.period && (
-                    <span
-                      className={cn(
-                        "text-sm",
-                        isPro ? "text-rose-200" : "text-neutral-400",
-                      )}
-                    >
+                    <span className={cn("text-sm", isPro ? "text-rose-200" : "text-neutral-400")}>
                       {p.period}
                     </span>
                   )}
                 </div>
-                <p
-                  className={cn(
-                    "text-xs mt-1",
-                    isPro ? "text-rose-100" : "text-neutral-400",
-                  )}
-                >
+                <p className={cn("text-xs mt-1", isPro ? "text-rose-100" : "text-neutral-400")}>
                   {p.description}
                 </p>
               </div>
-
-              {/* Key limits */}
               <ul className="space-y-2 flex-1 mb-6">
                 {[
-                  p.limits.clients === -1
-                    ? "Clientes ilimitados"
-                    : `${p.limits.clients} clientes`,
-                  p.limits.ordersPerMonth === -1
-                    ? "Pedidos ilimitados"
-                    : `${p.limits.ordersPerMonth} pedidos/mês`,
-                  p.limits.products === -1
-                    ? "Produtos ilimitados"
-                    : `${p.limits.products} produtos`,
+                  p.limits.clients === -1 ? "Clientes ilimitados" : `${p.limits.clients} clientes`,
+                  p.limits.ordersPerMonth === -1 ? "Pedidos ilimitados" : `${p.limits.ordersPerMonth} pedidos/mês`,
+                  p.limits.products === -1 ? "Produtos ilimitados" : `${p.limits.products} produtos`,
                   p.features.revenueChart && "Gráficos e relatórios",
                   p.features.whatsappLink && "Link WhatsApp",
                   p.features.stockAlerts && "Alertas de estoque",
                   p.features.csvExport && "Exportar CSV",
-                  p.features.multipleUsers > 0 &&
-                    `Até ${p.features.multipleUsers} usuários`,
-                ]
-                  .filter(Boolean)
-                  .map((f) => (
-                    <li
-                      key={String(f)}
-                      className={cn(
-                        "flex items-center gap-2 text-sm",
-                        isPro ? "text-white" : "text-neutral-600",
-                      )}
-                    >
-                      <Check
-                        className={cn(
-                          "w-4 h-4 shrink-0",
-                          isPro ? "text-rose-200" : "text-rose-500",
-                        )}
-                      />
-                      {String(f)}
-                    </li>
-                  ))}
+                  p.features.multipleUsers > 0 && `Até ${p.features.multipleUsers} usuários`,
+                ].filter(Boolean).map((f) => (
+                  <li key={String(f)} className={cn("flex items-center gap-2 text-sm", isPro ? "text-white" : "text-neutral-600 dark:text-neutral-300")}>
+                    <Check className={cn("w-4 h-4 shrink-0", isPro ? "text-rose-200" : "text-rose-500")} />
+                    {String(f)}
+                  </li>
+                ))}
               </ul>
-
               <button
                 onClick={() => selectPlan(id)}
                 disabled={isCurrent || checkoutLoading === id}
                 className={cn(
                   "w-full py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2",
                   isCurrent
-                    ? isPro
-                      ? "bg-white/20 text-white cursor-default"
-                      : "bg-neutral-100 text-neutral-400 cursor-default"
-                    : isPro
-                      ? "bg-white text-rose-600 hover:bg-rose-50"
-                      : isDowngrade
-                        ? "border border-neutral-200 text-neutral-600 hover:bg-neutral-50"
-                        : "bg-rose-500 text-white hover:bg-rose-600",
+                    ? isPro ? "bg-white/20 text-white cursor-default" : "bg-neutral-100 text-neutral-400 cursor-default"
+                    : isPro ? "bg-white text-rose-600 hover:bg-rose-50"
+                    : isDowngrade ? "border border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-400"
+                    : "bg-rose-500 text-white hover:bg-rose-600",
                 )}
               >
                 {checkoutLoading === id ? (
                   <span className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
-                ) : isCurrent
-                  ? "Plano atual"
-                  : isDowngrade
-                    ? "Fazer downgrade"
-                    : id === "free"
-                      ? "Usar grátis"
-                      : `Assinar ${p.name}`}
+                ) : isCurrent ? "Plano atual" : isDowngrade ? "Fazer downgrade" : id === "free" ? "Usar grátis" : `Assinar ${p.name}`}
               </button>
             </div>
           );
@@ -383,8 +390,8 @@ export default function PricingPage() {
         </div>
       )}
 
-      {/* Feature comparison table */}
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-card">
+      {/* Feature comparison table — desktop only */}
+      <div className="hidden sm:block bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-card">
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h2 className="text-base font-semibold text-neutral-800 dark:text-neutral-100">
             Comparação completa
@@ -462,8 +469,8 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {/* FAQ mini */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* FAQ mini — desktop only */}
+      <div className="hidden sm:grid sm:grid-cols-2 gap-4">
         {[
           {
             q: "Posso cancelar quando quiser?",
