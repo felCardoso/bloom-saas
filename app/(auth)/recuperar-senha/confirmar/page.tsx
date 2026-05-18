@@ -1,2 +1,7 @@
+import ConfirmarSenhaClient from "./_client";
+
 export const dynamic = "force-dynamic";
-export { default } from "./_client";
+
+export default function Page() {
+  return <ConfirmarSenhaClient />;
+}

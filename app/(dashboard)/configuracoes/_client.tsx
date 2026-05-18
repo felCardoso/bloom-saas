@@ -622,7 +622,7 @@ export default function ConfiguracoesClient({ initialProfile, initialNotifs }: C
   };
 
   return (
-    <div className="max-w-3xl">
+    <div className="w-full max-w-3xl lg:max-w-none">
       <div className="mb-6">
         <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">Configurações</h1>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">Gerencie sua conta e preferências.</p>
