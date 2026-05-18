@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Fragment } from "react";
+import { useState, useEffect, Fragment } from "react";
 import {
   Check,
   X,
@@ -129,15 +129,43 @@ function FeatureValue({ value }: { value: boolean | string }) {
 export default function PricingPage() {
   const { planId, setPlanId } = usePlan();
   const [confirming, setConfirming] = useState<PlanId | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState<PlanId | null>(null);
+  const [flash, setFlash] = useState<"success" | "canceled" | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("success")) setFlash("success");
+    else if (params.get("canceled")) setFlash("canceled");
+    window.history.replaceState({}, "", "/pricing");
+  }, []);
 
   function selectPlan(id: PlanId) {
     if (id === planId) return;
     setConfirming(id);
   }
 
-  function confirmSwitch() {
+  async function confirmSwitch() {
     if (!confirming) return;
-    setPlanId(confirming);
+    // Paid plans go to Stripe
+    if (confirming !== "free") {
+      setCheckoutLoading(confirming);
+      setConfirming(null);
+      try {
+        const res = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ planId: confirming }),
+        });
+        const { url, error } = await res.json();
+        if (url) window.location.href = url;
+        else console.error(error);
+      } finally {
+        setCheckoutLoading(null);
+      }
+      return;
+    }
+    // Downgrade to free — just update in DB
+    setPlanId("free");
     setConfirming(null);
   }
 
@@ -168,6 +196,18 @@ export default function PricingPage() {
           </p>
         )}
       </div>
+
+      {/* Flash messages */}
+      {flash === "success" && (
+        <div className="px-4 py-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl text-sm text-emerald-700 dark:text-emerald-400 text-center">
+          🎉 Assinatura ativada com sucesso! Bem-vinda ao plano premium.
+        </div>
+      )}
+      {flash === "canceled" && (
+        <div className="px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-600 dark:text-neutral-400 text-center">
+          Checkout cancelado. Você pode tentar novamente quando quiser.
+        </div>
+      )}
 
       {/* Plan cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -293,9 +333,9 @@ export default function PricingPage() {
 
               <button
                 onClick={() => selectPlan(id)}
-                disabled={isCurrent}
+                disabled={isCurrent || checkoutLoading === id}
                 className={cn(
-                  "w-full py-2.5 rounded-xl text-sm font-semibold transition-all",
+                  "w-full py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2",
                   isCurrent
                     ? isPro
                       ? "bg-white/20 text-white cursor-default"
@@ -307,10 +347,12 @@ export default function PricingPage() {
                         : "bg-rose-500 text-white hover:bg-rose-600",
                 )}
               >
-                {isCurrent
+                {checkoutLoading === id ? (
+                  <span className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                ) : isCurrent
                   ? "Plano atual"
                   : isDowngrade
-                    ? `Fazer downgrade`
+                    ? "Fazer downgrade"
                     : id === "free"
                       ? "Usar grátis"
                       : `Assinar ${p.name}`}
