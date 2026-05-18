@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import {
   User,
   CreditCard,
@@ -413,12 +413,51 @@ function AparenciaTab() {
 }
 
 /* ── Segurança ── */
+type SessionInfo = { label: string; since: string; Icon: React.ElementType };
+
+function parseUserAgent(ua: string): Pick<SessionInfo, "label" | "Icon"> {
+  let browser = "Navegador";
+  if (ua.includes("Edg/")) browser = "Edge";
+  else if (ua.includes("OPR/") || ua.includes("Opera/")) browser = "Opera";
+  else if (ua.includes("Firefox/")) browser = "Firefox";
+  else if (ua.includes("Chrome/")) browser = "Chrome";
+  else if (ua.includes("Safari/")) browser = "Safari";
+
+  let device = "Desktop";
+  let Icon: React.ElementType = Monitor;
+  if (/iPad/.test(ua)) { device = "iPad"; Icon = Smartphone; }
+  else if (/iPhone|iPod/.test(ua)) { device = "iPhone"; Icon = Smartphone; }
+  else if (/Android/.test(ua)) { device = "Android"; Icon = Smartphone; }
+  else if (/Windows/.test(ua)) device = "Windows";
+  else if (/Macintosh|Mac OS X/.test(ua)) device = "Mac";
+  else if (/Linux/.test(ua)) device = "Linux";
+
+  return { label: `${browser} · ${device}`, Icon };
+}
+
+function formatSince(dateStr: string): string {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+}
+
 function SegurancaTab() {
   const [showNew, setShowNew] = useState(false);
   const [pw, setPw] = useState({ next: "", confirm: "" });
   const [pwError, setPwError] = useState("");
   const [pwSaved, setPwSaved] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
+  const [session, setSession] = useState<SessionInfo | null>(null);
+  const [revokeLoading, setRevokeLoading] = useState(false);
+  const [revokeMsg, setRevokeMsg] = useState<"success" | "error" | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      if (!s) return;
+      const { label, Icon } = parseUserAgent(navigator.userAgent);
+      setSession({ label, Icon, since: formatSince(s.user.last_sign_in_at ?? s.user.created_at) });
+    });
+  }, []);
 
   const handleChangePw = async () => {
     if (pw.next.length < 8) { setPwError("Nova senha precisa ter ao menos 8 caracteres."); return; }
@@ -437,10 +476,15 @@ function SegurancaTab() {
     }
   };
 
-  const sessions = [
-    { device: "Chrome · MacBook Pro", location: "São Paulo, SP", lastSeen: "Agora", current: true, Icon: Monitor },
-    { device: "Safari · iPhone 15", location: "São Paulo, SP", lastSeen: "Há 2 horas", current: false, Icon: Smartphone },
-  ];
+  const handleRevokeOthers = async () => {
+    setRevokeLoading(true);
+    setRevokeMsg(null);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signOut({ scope: "others" });
+    setRevokeLoading(false);
+    setRevokeMsg(error ? "error" : "success");
+    setTimeout(() => setRevokeMsg(null), 4000);
+  };
 
   const pwInputClass =
     "w-full px-3.5 py-2.5 pr-11 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 hover:border-neutral-300 dark:hover:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all";
@@ -477,35 +521,55 @@ function SegurancaTab() {
         </div>
       </div>
 
-      <div className="border-t border-neutral-100 dark:border-neutral-800 pt-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">Sessões ativas</h3>
-        </div>
-        <div className="space-y-2">
-          {sessions.map((s) => (
-            <div key={s.device} className="flex items-center gap-4 p-4 bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800">
-              <div className="w-9 h-9 bg-white dark:bg-neutral-800 rounded-xl flex items-center justify-center shadow-sm shrink-0">
-                <s.Icon className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200 truncate">{s.device}</p>
-                  {s.current && (
-                    <span className="text-[10px] bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-md font-semibold shrink-0">
-                      Este dispositivo
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-neutral-400 mt-0.5">{s.location} · {s.lastSeen}</p>
-              </div>
-              {!s.current && (
-                <button className="text-xs text-neutral-400 hover:text-red-500 transition-colors shrink-0">
-                  <LogOut className="w-4 h-4" />
-                </button>
-              )}
+      <div className="border-t border-neutral-100 dark:border-neutral-800 pt-6 space-y-4">
+        <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">Sessões ativas</h3>
+
+        {/* Current device */}
+        <div className="flex items-center gap-4 p-4 bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800">
+          <div className="w-9 h-9 bg-white dark:bg-neutral-800 rounded-xl flex items-center justify-center shadow-sm shrink-0">
+            {session ? <session.Icon className="w-4 h-4 text-neutral-500 dark:text-neutral-400" /> : <Monitor className="w-4 h-4 text-neutral-300" />}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200 truncate">
+                {session?.label ?? "Carregando…"}
+              </p>
+              <span className="text-[10px] bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-md font-semibold shrink-0">
+                Este dispositivo
+              </span>
             </div>
-          ))}
+            <p className="text-xs text-neutral-400 mt-0.5">
+              {session ? `Último acesso: ${session.since}` : "—"}
+            </p>
+          </div>
         </div>
+
+        {/* Revoke others */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900">
+          <div>
+            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Encerrar outras sessões</p>
+            <p className="text-xs text-neutral-400 mt-0.5">Desconecta todos os outros dispositivos onde sua conta está ativa.</p>
+          </div>
+          <button
+            onClick={handleRevokeOthers}
+            disabled={revokeLoading}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-800 transition-colors disabled:opacity-50 shrink-0"
+          >
+            {revokeLoading
+              ? <span className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+              : <LogOut className="w-3.5 h-3.5" />}
+            Encerrar outras sessões
+          </button>
+        </div>
+
+        {revokeMsg === "success" && (
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+            <Check className="w-3.5 h-3.5" /> Outras sessões encerradas com sucesso.
+          </p>
+        )}
+        {revokeMsg === "error" && (
+          <p className="text-xs text-red-500">Não foi possível encerrar as sessões. Tente novamente.</p>
+        )}
       </div>
     </div>
   );
