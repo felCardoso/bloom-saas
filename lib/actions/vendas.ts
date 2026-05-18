@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Order, OrderStatus, OrderItem } from "@/lib/types";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 
 type VendaRow = {
   id: string;
@@ -88,6 +89,26 @@ export async function addVenda(form: {
 
   const { error: itensError } = await supabase.from("itens_venda").insert(itens);
   if (itensError) return { error: itensError.message };
+
+  const { data: authUser } = await supabase.auth.getUser();
+  if (authUser.user?.email) {
+    const { data: cliente } = await supabase
+      .from("clientes")
+      .select("nome")
+      .eq("id", form.client_id)
+      .single();
+
+    void sendOrderConfirmationEmail(authUser.user.email, {
+      clientName: cliente?.nome ?? "Cliente",
+      orderId: venda.id,
+      items: form.items.map((i) => ({
+        name: i.product_name,
+        quantity: i.quantity,
+        unitPrice: i.unit_price,
+      })),
+      total,
+    });
+  }
 
   revalidatePath("/pedidos");
   revalidatePath("/dashboard");

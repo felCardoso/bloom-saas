@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function signIn(formData: { email: string; password: string }) {
   const supabase = await createClient();
@@ -23,6 +24,7 @@ export async function signUp(formData: {
     options: { data: { nome_completo: formData.name } },
   });
   if (error) return { error: error.message };
+  void sendWelcomeEmail(formData.email, formData.name);
   redirect("/dashboard");
 }
 
