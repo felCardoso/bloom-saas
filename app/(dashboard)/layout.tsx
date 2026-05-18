@@ -3,14 +3,20 @@ import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { PlanProvider } from "@/lib/plan-context";
 import { UsageBanner } from "@/components/ui/UsageBanner";
+import { getUserPlan, getUsageCounts } from "@/lib/actions/profile";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [initialPlan, initialUsage] = await Promise.all([
+    getUserPlan(),
+    getUsageCounts(),
+  ]);
+
   return (
-    <PlanProvider>
+    <PlanProvider initialPlan={initialPlan} initialUsage={initialUsage}>
       <div className="flex min-h-screen bg-neutral-50 dark:bg-neutral-950">
         <Sidebar />
         <div className="flex-1 flex flex-col min-h-screen lg:ml-60">
