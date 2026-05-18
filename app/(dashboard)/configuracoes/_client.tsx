@@ -24,10 +24,11 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/Input";
 import { usePlan } from "@/lib/plan-context";
-import { getInitials } from "@/lib/utils";
 import { useTheme, type PrimaryColor } from "@/lib/theme-context";
+
 import { updateProfile, updateNotificationPrefs, type NotificationPrefs } from "@/lib/actions/profile";
 import { createClient } from "@/lib/supabase/client";
+import { AvatarUpload } from "@/components/ui/AvatarUpload";
 
 type Tab = "perfil" | "assinatura" | "notificacoes" | "aparencia" | "seguranca" | "conta";
 
@@ -107,7 +108,7 @@ function SaveButton({ saved, loading, onClick }: { saved: boolean; loading: bool
 
 /* ── Perfil ── */
 function PerfilTab({ initialProfile }: {
-  initialProfile: { name: string; email: string; phone: string; brand: string };
+  initialProfile: { name: string; email: string; phone: string; brand: string; avatarUrl: string | null };
 }) {
   const [form, setForm] = useState(initialProfile);
   const [isPending, startTransition] = useTransition();
@@ -129,17 +130,11 @@ function PerfilTab({ initialProfile }: {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-5">
-        <div className="w-16 h-16 bg-rose-100 dark:bg-rose-900/40 rounded-full flex items-center justify-center">
-          <span className="text-xl font-bold text-rose-600 dark:text-rose-400">
-            {getInitials(form.name || "?")}
-          </span>
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">{form.name}</p>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{form.email}</p>
-        </div>
-      </div>
+      <AvatarUpload
+        name={form.name}
+        avatarUrl={form.avatarUrl}
+        onUpdate={(url) => setForm((f) => ({ ...f, avatarUrl: url }))}
+      />
 
       {error && (
         <div className="px-4 py-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">
@@ -578,7 +573,7 @@ function ContaTab({ userEmail }: { userEmail: string }) {
 
 /* ── Main ── */
 export interface ConfiguracoesClientProps {
-  initialProfile: { name: string; email: string; phone: string; brand: string };
+  initialProfile: { name: string; email: string; phone: string; brand: string; avatarUrl: string | null };
   initialNotifs: NotificationPrefs;
 }
 
