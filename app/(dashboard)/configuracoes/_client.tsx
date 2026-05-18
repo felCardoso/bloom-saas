@@ -180,6 +180,34 @@ function PerfilTab({ initialProfile }: {
   );
 }
 
+function ManageSubscriptionButton() {
+  const [loading, setLoading] = useState(false);
+
+  const handleClick = async () => {
+    setLoading(true);
+    const res = await fetch("/api/stripe/portal", { method: "POST" });
+    const { url, error } = await res.json();
+    if (url) window.location.href = url;
+    else { console.error(error); setLoading(false); }
+  };
+
+  return (
+    <div className="flex items-center justify-between p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900">
+      <div>
+        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Gerenciar assinatura</p>
+        <p className="text-xs text-neutral-400 mt-0.5">Altere o método de pagamento, veja faturas ou cancele.</p>
+      </div>
+      <button
+        onClick={handleClick}
+        disabled={loading}
+        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-rose-500 hover:bg-rose-600 rounded-xl transition-colors disabled:opacity-60"
+      >
+        {loading ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : "Portal Stripe"}
+      </button>
+    </div>
+  );
+}
+
 /* ── Assinatura ── */
 function AssinaturaTab() {
   const { planId, plan } = usePlan();
@@ -229,6 +257,10 @@ function AssinaturaTab() {
           </ul>
         </div>
       </div>
+
+      {plan.price > 0 && (
+        <ManageSubscriptionButton />
+      )}
 
       {planId === "free" && (
         <div className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900 flex items-center justify-between gap-3">
