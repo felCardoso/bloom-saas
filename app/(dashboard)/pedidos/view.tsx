@@ -158,10 +158,10 @@ export function PedidosView({
           { label: "Receita", value: formatCurrency(totalRevenue) },
         ].map((s) => (
           <Card key={s.label} padding="sm">
-            <p className="text-lg lg:text-xl font-bold text-neutral-800">
+            <p className="text-lg lg:text-xl font-bold text-neutral-800 dark:text-neutral-100">
               {s.value}
             </p>
-            <p className="text-xs text-neutral-500">{s.label}</p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">{s.label}</p>
           </Card>
         ))}
       </div>
@@ -402,10 +402,10 @@ export function PedidosView({
             <div className="flex items-center gap-3">
               <Avatar name={selected.client_name} />
               <div className="flex-1">
-                <p className="font-semibold text-neutral-800">
+                <p className="font-semibold text-neutral-800 dark:text-neutral-100">
                   {selected.client_name}
                 </p>
-                <p className="text-xs text-neutral-400">
+                <p className="text-xs text-neutral-400 dark:text-neutral-500">
                   {formatDate(selected.created_at)}
                 </p>
               </div>
