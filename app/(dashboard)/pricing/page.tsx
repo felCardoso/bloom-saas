@@ -400,15 +400,15 @@ export default function PricingPage() {
       )}
 
       {/* Feature comparison table */}
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-card overflow-hidden">
+      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-card">
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h2 className="text-base font-semibold text-neutral-800 dark:text-neutral-100">
             Comparação completa
           </h2>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-130">
+        <div className="overflow-x-auto rounded-b-2xl">
+          <table className="w-full min-w-[480px]">
             <thead>
               <tr className="border-b border-neutral-100 dark:border-neutral-800">
                 <th className="text-left px-5 py-3 text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide w-[40%]">
