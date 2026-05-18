@@ -185,7 +185,7 @@ function ManageSubscriptionButton() {
 
   const handleClick = async () => {
     setLoading(true);
-    const res = await fetch("/api/stripe/portal", { method: "POST" });
+    const res = await fetch("/api/asaas/portal", { method: "POST" });
     const { url, error } = await res.json();
     if (url) window.location.href = url;
     else { console.error(error); setLoading(false); }
@@ -202,7 +202,7 @@ function ManageSubscriptionButton() {
         disabled={loading}
         className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-rose-500 hover:bg-rose-600 rounded-xl transition-colors disabled:opacity-60"
       >
-        {loading ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : "Portal Stripe"}
+        {loading ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : "Gerenciar pagamento"}
       </button>
     </div>
   );
