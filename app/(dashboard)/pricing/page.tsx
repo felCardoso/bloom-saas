@@ -172,7 +172,7 @@ export default function PricingPage() {
   const currentIdx = PLAN_ORDER.indexOf(planId);
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
+    <div className="space-y-4 lg:space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
         <div className="inline-flex items-center gap-2 bg-rose-50 text-rose-600 text-xs font-semibold px-4 py-1.5 rounded-full border border-rose-100 mb-2">

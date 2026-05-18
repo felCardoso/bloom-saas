@@ -51,7 +51,7 @@ export interface Order {
 
 export interface ScheduleEvent {
   id: string;
-  client_id: string;
+  client_id?: string;
   client_name: string;
   type: "follow_up" | "entrega" | "aniversario" | "outro";
   title: string;
