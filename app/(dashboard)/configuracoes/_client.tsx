@@ -622,31 +622,26 @@ export default function ConfiguracoesClient({ initialProfile, initialNotifs }: C
   };
 
   return (
-    <div className="w-full max-w-3xl lg:max-w-none">
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">Configurações</h1>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">Gerencie sua conta e preferências.</p>
-      </div>
-
-      <div className="flex gap-1 overflow-x-auto pb-1 mb-6 -mx-1 px-1">
+    <div className="space-y-4">
+      <div className="flex gap-1 overflow-x-auto pb-1 -mx-1 px-1">
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => setActiveTab(id)}
             className={cn(
-              "flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all shrink-0",
+              "flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all shrink-0",
               activeTab === id
                 ? "bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
                 : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 hover:text-neutral-700 dark:hover:text-neutral-200",
             )}
           >
-            <Icon className="w-4 h-4" />
-            {label}
+            <Icon className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">{label}</span>
           </button>
         ))}
       </div>
 
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 sm:p-6 shadow-sm">
+      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4 sm:p-5 shadow-card">
         {content[activeTab]}
       </div>
     </div>

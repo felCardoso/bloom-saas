@@ -4,7 +4,6 @@ import { useState, useEffect, Fragment } from "react";
 import {
   Check,
   X,
-  Sparkles,
   Users,
   ShoppingBag,
   Package,
@@ -172,30 +171,15 @@ export default function PricingPage() {
   const currentIdx = PLAN_ORDER.indexOf(planId);
 
   return (
-    <div className="space-y-4 lg:space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <div className="inline-flex items-center gap-2 bg-rose-50 text-rose-600 text-xs font-semibold px-4 py-1.5 rounded-full border border-rose-100 mb-2">
-          <Sparkles className="w-3.5 h-3.5" />
-          Planos e preços
-        </div>
-        <h1 className="text-2xl lg:text-3xl font-bold text-neutral-800 dark:text-neutral-100">
-          Escolha o plano ideal para você
-        </h1>
-        <p className="text-neutral-500 dark:text-neutral-400 text-sm lg:text-base max-w-lg mx-auto">
-          Comece grátis e faça upgrade conforme seu negócio cresce. Sem
-          surpresas.
+    <div className="space-y-4">
+      {/* Current plan indicator */}
+      {planId !== "free" && (
+        <p className="text-xs text-neutral-400 dark:text-neutral-500">
+          Plano atual:{" "}
+          <span className="font-semibold text-rose-500">{PLANS[planId].name}</span>
+          {" "}— selecione outro plano para mudar.
         </p>
-        {planId !== "free" && (
-          <p className="text-xs text-neutral-400">
-            Você está no plano{" "}
-            <span className="font-semibold text-rose-500">
-              {PLANS[planId].name}
-            </span>{" "}
-            — altere abaixo para simular outros planos.
-          </p>
-        )}
-      </div>
+      )}
 
       {/* Flash messages */}
       {flash === "success" && (
@@ -479,7 +463,7 @@ export default function PricingPage() {
       </div>
 
       {/* FAQ mini */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[
           {
             q: "Posso cancelar quando quiser?",
