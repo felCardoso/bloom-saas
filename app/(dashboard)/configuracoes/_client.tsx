@@ -30,6 +30,7 @@ import { updateProfile, updateNotificationPrefs, type NotificationPrefs } from "
 import { savePushSubscription, deletePushSubscription } from "@/lib/actions/push";
 import { createClient } from "@/lib/supabase/client";
 import { AvatarUpload } from "@/components/ui/AvatarUpload";
+import { useProfile } from "@/lib/profile-context";
 
 type Tab = "perfil" | "assinatura" | "notificacoes" | "aparencia" | "seguranca" | "conta";
 
@@ -115,6 +116,7 @@ function PerfilTab({ initialProfile }: {
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const { setAvatarUrl } = useProfile();
 
   const handleSave = () => {
     setError("");
@@ -134,7 +136,10 @@ function PerfilTab({ initialProfile }: {
       <AvatarUpload
         name={form.name}
         avatarUrl={form.avatarUrl}
-        onUpdate={(url) => setForm((f) => ({ ...f, avatarUrl: url }))}
+        onUpdate={(url) => {
+          setForm((f) => ({ ...f, avatarUrl: url }));
+          setAvatarUrl(url);
+        }}
       />
 
       {error && (

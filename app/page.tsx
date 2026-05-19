@@ -99,9 +99,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-rose-500 rounded-xl flex items-center justify-center shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
-            </div>
+            <img src="/logo.svg" className="w-7 h-7 sm:w-8 sm:h-8" alt="Bloom" />
             <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">
               Bloom
             </span>
@@ -396,9 +394,7 @@ export default function LandingPage() {
       <footer className="py-8 sm:py-10 px-4 sm:px-6 border-t border-neutral-100 dark:border-neutral-800">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-rose-500 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-3 h-3 text-white" />
-            </div>
+            <img src="/logo.svg" className="w-6 h-6" alt="Bloom" />
             <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">
               Bloom
             </span>

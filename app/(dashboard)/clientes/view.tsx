@@ -66,6 +66,7 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
   const [selected, setSelected] = useState<Client | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [importOpen, setImportOpen] = useState(false);
@@ -106,6 +107,7 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
   }
 
   function openEdit(client: Client) {
+    setEditingId(client.id);
     setEditForm({
       name: client.name,
       phone: client.phone,
@@ -115,20 +117,18 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
       notes: client.notes ?? "",
       birthday: client.birthday ?? "",
     });
+    setSelected(null);
     setEditOpen(true);
   }
 
   function handleEdit() {
-    if (!selected || !editForm.name || !editForm.phone) return;
-    const id = selected.id;
+    if (!editingId || !editForm.name || !editForm.phone) return;
+    const id = editingId;
     startTransition(async () => {
       await updateCliente(id, editForm);
       setClients((prev) =>
-        prev.map((c) =>
-          c.id === id ? { ...c, ...editForm } : c
-        )
+        prev.map((c) => (c.id === id ? { ...c, ...editForm } : c))
       );
-      setSelected((s) => (s ? { ...s, ...editForm } : s));
       setEditOpen(false);
       router.refresh();
     });
@@ -872,7 +872,7 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setConfirmDelete(true)}
-                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                     Excluir

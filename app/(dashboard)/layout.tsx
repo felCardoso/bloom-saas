@@ -2,30 +2,34 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { PlanProvider } from "@/lib/plan-context";
+import { ProfileProvider } from "@/lib/profile-context";
 import { UsageBanner } from "@/components/ui/UsageBanner";
-import { getUserPlan, getUsageCounts } from "@/lib/actions/profile";
+import { getUserPlan, getUsageCounts, getProfile } from "@/lib/actions/profile";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [initialPlan, initialUsage] = await Promise.all([
+  const [initialPlan, initialUsage, profile] = await Promise.all([
     getUserPlan(),
     getUsageCounts(),
+    getProfile(),
   ]);
 
   return (
     <PlanProvider initialPlan={initialPlan} initialUsage={initialUsage}>
-      <div className="flex min-h-screen bg-neutral-50 dark:bg-neutral-950">
-        <Sidebar />
-        <div className="flex-1 flex flex-col min-h-screen lg:ml-60">
-          <Header />
-          <UsageBanner />
-          <main className="flex-1 p-4 lg:p-6 pb-24 lg:pb-6">{children}</main>
+      <ProfileProvider initialName={profile.name} initialAvatarUrl={profile.avatarUrl}>
+        <div className="flex min-h-screen bg-neutral-50 dark:bg-neutral-950">
+          <Sidebar />
+          <div className="flex-1 flex flex-col min-h-screen lg:ml-60">
+            <Header />
+            <UsageBanner />
+            <main className="flex-1 p-4 lg:p-6 pb-24 lg:pb-6">{children}</main>
+          </div>
+          <BottomNav />
         </div>
-        <BottomNav />
-      </div>
+      </ProfileProvider>
     </PlanProvider>
   );
 }

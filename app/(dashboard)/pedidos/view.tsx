@@ -517,7 +517,7 @@ export function PedidosView({
               ) : (
                 <button
                   onClick={() => setConfirmDelete(true)}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                   Excluir pedido

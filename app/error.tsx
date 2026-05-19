@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { Sparkles, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 export default function Error({
   error,
@@ -18,9 +18,7 @@ export default function Error({
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-neutral-50 dark:bg-neutral-950 p-6 text-center">
       <Link href="/" className="flex items-center gap-2 mb-10">
-        <div className="w-8 h-8 bg-rose-500 rounded-xl flex items-center justify-center shadow-sm">
-          <Sparkles className="w-4 h-4 text-white" />
-        </div>
+        <img src="/logo.svg" className="w-8 h-8" alt="Bloom" />
         <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">Bloom</span>
       </Link>
 
