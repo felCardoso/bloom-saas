@@ -915,93 +915,90 @@ function CategoriasTab({ initialCategorias }: { initialCategorias: Categoria[] }
         <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-1">
           Categorias de produto
         </h3>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
+        <p className="text-xs text-neutral-500 dark:text-neutral-400">
           Personalize as categorias usadas para organizar seu catálogo de produtos.
         </p>
-
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-50 dark:divide-neutral-800">
-          {categorias.map((cat) => (
-            <div
-              key={cat.id}
-              className="flex items-center gap-3 px-5 py-3.5"
-            >
-              {editingId === cat.id ? (
-                <>
-                  <input
-                    value={editNome}
-                    onChange={(e) => setEditNome(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") handleRename(cat.id); if (e.key === "Escape") setEditingId(null); }}
-                    autoFocus
-                    className="flex-1 px-2.5 py-1.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
-                  />
-                  {editError && <p className="text-xs text-red-500 shrink-0">{editError}</p>}
-                  <button
-                    onClick={() => handleRename(cat.id)}
-                    disabled={editLoading}
-                    className="px-3 py-1.5 text-xs font-semibold bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:opacity-60 shrink-0"
-                  >
-                    {editLoading ? "..." : "Salvar"}
-                  </button>
-                  <button
-                    onClick={() => setEditingId(null)}
-                    className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors shrink-0"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Tag className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-                  <span className="flex-1 text-sm text-neutral-700 dark:text-neutral-200">
-                    {cat.nome}
-                  </span>
-                  <button
-                    onClick={() => startEdit(cat)}
-                    className="p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(cat.id)}
-                    disabled={deleteLoading === cat.id}
-                    className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </>
-              )}
-            </div>
-          ))}
-          {categorias.length === 0 && (
-            <div className="px-5 py-8 text-center text-sm text-neutral-400">
-              Nenhuma categoria cadastrada.
-            </div>
-          )}
-        </div>
-
-        <div className="mt-4 flex gap-2">
-          <input
-            value={newNome}
-            onChange={(e) => { setNewNome(e.target.value); setAddError(""); }}
-            onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
-            placeholder="Nova categoria..."
-            className="flex-1 px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 transition-all"
-          />
-          <button
-            onClick={handleAdd}
-            disabled={addLoading || !newNome.trim()}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-60"
-          >
-            {addLoading ? (
-              <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Plus className="w-4 h-4" />
-            )}
-            Adicionar
-          </button>
-        </div>
-        {addError && <p className="mt-1.5 text-xs text-red-500">{addError}</p>}
       </div>
+
+      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-50 dark:divide-neutral-800">
+        {categorias.map((cat) => (
+          <div key={cat.id} className="flex items-center gap-3 px-5 py-4">
+            {editingId === cat.id ? (
+              <>
+                <input
+                  value={editNome}
+                  onChange={(e) => setEditNome(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleRename(cat.id); if (e.key === "Escape") setEditingId(null); }}
+                  autoFocus
+                  className="flex-1 min-w-0 px-2.5 py-1.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
+                />
+                {editError && <p className="text-xs text-red-500 shrink-0">{editError}</p>}
+                <button
+                  onClick={() => handleRename(cat.id)}
+                  disabled={editLoading}
+                  className="shrink-0 px-3 py-1.5 text-xs font-semibold bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:opacity-60"
+                >
+                  {editLoading ? "..." : "Salvar"}
+                </button>
+                <button
+                  onClick={() => setEditingId(null)}
+                  className="shrink-0 p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </>
+            ) : (
+              <>
+                <Tag className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                <span className="flex-1 min-w-0 text-sm text-neutral-700 dark:text-neutral-200 truncate">
+                  {cat.nome}
+                </span>
+                <button
+                  onClick={() => startEdit(cat)}
+                  className="shrink-0 p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => handleDelete(cat.id)}
+                  disabled={deleteLoading === cat.id}
+                  className="shrink-0 p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </>
+            )}
+          </div>
+        ))}
+        {categorias.length === 0 && (
+          <div className="px-5 py-8 text-center text-sm text-neutral-400">
+            Nenhuma categoria cadastrada.
+          </div>
+        )}
+      </div>
+
+      <div className="flex gap-2">
+        <input
+          value={newNome}
+          onChange={(e) => { setNewNome(e.target.value); setAddError(""); }}
+          onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
+          placeholder="Nova categoria..."
+          className="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 transition-all"
+        />
+        <button
+          onClick={handleAdd}
+          disabled={addLoading || !newNome.trim()}
+          className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-60"
+        >
+          {addLoading ? (
+            <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+          ) : (
+            <Plus className="w-4 h-4" />
+          )}
+          Adicionar
+        </button>
+      </div>
+      {addError && <p className="text-xs text-red-500">{addError}</p>}
     </div>
   );
 }
