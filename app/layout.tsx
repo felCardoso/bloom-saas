@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { PwaUpdateBanner } from "@/components/PwaUpdateBanner";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -30,6 +31,7 @@ export default function RootLayout({
     <html lang="pt-BR" className={`${inter.variable} h-full`}>
       <body className="min-h-full">
         <Providers>{children}</Providers>
+        <PwaUpdateBanner />
       </body>
     </html>
   );
