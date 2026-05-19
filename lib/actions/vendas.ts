@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { Order, OrderStatus, OrderItem } from "@/lib/types";
+import type { Order, OrderStatus, OrderItem, PaymentMethod } from "@/lib/types";
 import { sendOrderConfirmationEmail } from "@/lib/email";
+import { checkPlanLimit } from "@/lib/actions/plan-limit";
+import { logMovimento } from "@/lib/stock-utils";
 
 type VendaRow = {
   id: string;
@@ -11,6 +13,8 @@ type VendaRow = {
   data_venda: string;
   valor_total: number;
   status: string;
+  payment_method: string;
+  paid_at: string | null;
   created_at: string;
   clientes: { nome: string } | null;
   itens_venda: {
@@ -36,6 +40,8 @@ function rowToOrder(row: VendaRow): Order {
     items,
     total: Number(row.valor_total),
     status: row.status as OrderStatus,
+    payment_method: (row.payment_method ?? "dinheiro") as PaymentMethod,
+    paid_at: row.paid_at ?? undefined,
     created_at: row.data_venda ?? row.created_at,
   };
 }
@@ -45,7 +51,8 @@ type StockItem = { product_id: string; quantity: number };
 async function adjustStock(
   supabase: Awaited<ReturnType<typeof createClient>>,
   items: StockItem[],
-  delta: 1 | -1
+  delta: 1 | -1,
+  opts?: { userId?: string; motivo?: string; vendaId?: string }
 ): Promise<void> {
   for (const item of items) {
     const { data } = await supabase
@@ -60,6 +67,17 @@ async function adjustStock(
         .from("produtos")
         .update({ estoque_atual: newStock })
         .eq("id", item.product_id);
+
+      if (opts?.userId) {
+        await logMovimento(supabase, {
+          user_id: opts.userId,
+          produto_id: item.product_id,
+          tipo: delta === -1 ? "saida" : "entrada",
+          quantidade: item.quantity,
+          motivo: opts.motivo,
+          venda_id: opts.vendaId,
+        });
+      }
     }
   }
 }
@@ -84,7 +102,7 @@ export async function getVendas(): Promise<Order[]> {
   const { data, error } = await supabase
     .from("vendas")
     .select(
-      "id, cliente_id, data_venda, valor_total, status, created_at, clientes(nome), itens_venda(quantidade, preco_unitario_no_momento, produtos(id, nome))"
+      "id, cliente_id, data_venda, valor_total, status, payment_method, paid_at, created_at, clientes(nome), itens_venda(quantidade, preco_unitario_no_momento, produtos(id, nome))"
     )
     .order("created_at", { ascending: false });
 
@@ -97,12 +115,16 @@ export async function addVenda(form: {
   status: OrderStatus;
   notes: string;
   items: OrderItem[];
+  payment_method: PaymentMethod;
 }): Promise<{ error?: string }> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Não autenticado" };
+
+  const limitCheck = await checkPlanLimit(supabase, user.id, "ordersPerMonth");
+  if (limitCheck.error) return limitCheck;
 
   const total = form.items.reduce((s, i) => s + i.subtotal, 0);
 
@@ -113,6 +135,7 @@ export async function addVenda(form: {
       cliente_id: form.client_id,
       valor_total: total,
       status: form.status,
+      payment_method: form.payment_method,
     })
     .select("id")
     .single();
@@ -129,12 +152,12 @@ export async function addVenda(form: {
   const { error: itensError } = await supabase.from("itens_venda").insert(itens);
   if (itensError) return { error: itensError.message };
 
-  // Decrement stock for non-cancelled orders
   if (form.status !== "cancelado") {
     await adjustStock(
       supabase,
       form.items.map((i) => ({ product_id: i.product_id, quantity: i.quantity })),
-      -1
+      -1,
+      { userId: user.id, motivo: "Pedido criado", vendaId: venda.id }
     );
   }
 
@@ -169,6 +192,9 @@ export async function updateVendaStatus(
   status: OrderStatus
 ): Promise<{ error?: string }> {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { data: current } = await supabase
     .from("vendas")
@@ -178,22 +204,24 @@ export async function updateVendaStatus(
 
   const oldStatus = current?.status as OrderStatus | undefined;
 
-  const { error } = await supabase
-    .from("vendas")
-    .update({ status })
-    .eq("id", id);
+  const { error } = await supabase.from("vendas").update({ status }).eq("id", id);
   if (error) return { error: error.message };
 
-  // Adjust stock when cancellation state changes
   if (oldStatus && oldStatus !== status) {
     const itens = await getItensVenda(supabase, id);
     if (itens.length > 0) {
       if (status === "cancelado" && oldStatus !== "cancelado") {
-        // Restore stock
-        await adjustStock(supabase, itens, 1);
+        await adjustStock(supabase, itens, 1, {
+          userId: user?.id,
+          motivo: "Pedido cancelado",
+          vendaId: id,
+        });
       } else if (status !== "cancelado" && oldStatus === "cancelado") {
-        // Re-decrement stock
-        await adjustStock(supabase, itens, -1);
+        await adjustStock(supabase, itens, -1, {
+          userId: user?.id,
+          motivo: "Pedido reativado",
+          vendaId: id,
+        });
       }
     }
   }
@@ -204,10 +232,23 @@ export async function updateVendaStatus(
   return {};
 }
 
+export async function confirmPayment(id: string): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("vendas")
+    .update({ paid_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/pedidos");
+  return {};
+}
+
 export async function deleteVenda(id: string): Promise<{ error?: string }> {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  // Restore stock before deleting (only if not already cancelled)
   const { data: current } = await supabase
     .from("vendas")
     .select("status")
@@ -217,7 +258,11 @@ export async function deleteVenda(id: string): Promise<{ error?: string }> {
   if (current?.status !== "cancelado") {
     const itens = await getItensVenda(supabase, id);
     if (itens.length > 0) {
-      await adjustStock(supabase, itens, 1);
+      await adjustStock(supabase, itens, 1, {
+        userId: user?.id,
+        motivo: "Pedido excluído",
+        vendaId: id,
+      });
     }
   }
 
@@ -229,4 +274,3 @@ export async function deleteVenda(id: string): Promise<{ error?: string }> {
   revalidatePath("/dashboard");
   return {};
 }
-

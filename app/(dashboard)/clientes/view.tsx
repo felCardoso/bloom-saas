@@ -30,6 +30,7 @@ import { Select } from "@/components/ui/Select";
 import { Card } from "@/components/ui/Card";
 import { UpgradeModal } from "@/components/ui/UpgradeModal";
 import { LockedFeature } from "@/components/ui/LockedFeature";
+import { Toast } from "@/components/ui/Toast";
 import { formatCurrency, formatDate, formatPhone } from "@/lib/utils";
 import type { Client, ClientStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -74,6 +75,7 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
   const [importResult, setImportResult] = useState<{ imported: number; skipped: number } | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [importLoading, setImportLoading] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     setClients(initialClients);
@@ -138,11 +140,25 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
     if (!selected) return;
     const id = selected.id;
     startTransition(async () => {
-      await deleteCliente(id);
+      const result = await deleteCliente(id);
+      if (result.error) {
+        setToast("Não foi possível excluir esta cliente.");
+        setConfirmDelete(false);
+        return;
+      }
       setClients((prev) => prev.filter((c) => c.id !== id));
       setSelected(null);
       setConfirmDelete(false);
     });
+  }
+
+  function handleDeleteClick() {
+    if (!selected) return;
+    if (selected.total_orders > 0) {
+      setToast(`"${selected.name}" possui ${selected.total_orders} pedido${selected.total_orders !== 1 ? "s" : ""} vinculado${selected.total_orders !== 1 ? "s" : ""} e não pode ser excluída.`);
+      return;
+    }
+    setConfirmDelete(true);
   }
 
   function handleCloseDetail() {
@@ -704,6 +720,9 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
         </div>
       </Modal>
 
+      {/* Toast */}
+      {toast && <Toast message={toast} variant="warning" onClose={() => setToast(null)} />}
+
       {/* Detail modal */}
       {selected && (
         <Modal
@@ -871,7 +890,7 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
               ) : (
                 <div className="flex gap-3">
                   <button
-                    onClick={() => setConfirmDelete(true)}
+                    onClick={handleDeleteClick}
                     className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />

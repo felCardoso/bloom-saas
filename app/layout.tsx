@@ -11,8 +11,36 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Bloom — CRM para Revendedoras de Cosméticos",
-  description: "Gerencie seus clientes, pedidos e produtos de cosméticos com facilidade.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://bloomcrm.com.br"),
+  title: {
+    default: "Bloom — CRM para Revendedoras de Cosméticos",
+    template: "%s — Bloom",
+  },
+  description:
+    "Organize clientes, pedidos, estoque e agenda do seu negócio de cosméticos. CRM simples e bonito feito para revendedoras de Avon, Mary Kay, Natura e mais.",
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: "Bloom",
+    title: "Bloom — CRM para Revendedoras de Cosméticos",
+    description:
+      "Organize clientes, pedidos, estoque e agenda do seu negócio de cosméticos. CRM simples e bonito feito para revendedoras.",
+    images: [
+      {
+        url: "/icons/icon-512.png",
+        width: 512,
+        height: 512,
+        alt: "Bloom CRM",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "Bloom — CRM para Revendedoras de Cosméticos",
+    description:
+      "Organize clientes, pedidos, estoque e agenda do seu negócio de cosméticos.",
+    images: ["/icons/icon-512.png"],
+  },
   icons: {
     icon: [
       { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },

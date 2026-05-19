@@ -172,6 +172,7 @@ export const mockOrders: Order[] = [
     ],
     total: 161.0,
     status: "entregue",
+    payment_method: "pix",
     created_at: "2026-05-14",
   },
   {
@@ -184,6 +185,7 @@ export const mockOrders: Order[] = [
     ],
     total: 153.0,
     status: "confirmado",
+    payment_method: "dinheiro",
     created_at: "2026-05-10",
   },
   {
@@ -195,6 +197,7 @@ export const mockOrders: Order[] = [
     ],
     total: 72.0,
     status: "pendente",
+    payment_method: "dinheiro",
     created_at: "2026-05-12",
   },
   {
@@ -207,6 +210,7 @@ export const mockOrders: Order[] = [
     ],
     total: 168.0,
     status: "entregue",
+    payment_method: "cartao_credito",
     created_at: "2026-04-28",
   },
   {
@@ -218,6 +222,7 @@ export const mockOrders: Order[] = [
     ],
     total: 84.0,
     status: "pendente",
+    payment_method: "fiado",
     created_at: "2026-05-15",
   },
 ];

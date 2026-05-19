@@ -8,7 +8,7 @@ import {
   Users,
   ShoppingBag,
   Package,
-  Calendar,
+  MessageCircle,
   BarChart3,
   Settings,
   Zap,
@@ -25,7 +25,7 @@ const navItems = [
   { href: "/clientes", icon: Users, label: "Clientes" },
   { href: "/pedidos", icon: ShoppingBag, label: "Pedidos" },
   { href: "/produtos", icon: Package, label: "Produtos" },
-  { href: "/agenda", icon: Calendar, label: "Agenda" },
+  { href: "/mensagens", icon: MessageCircle, label: "Mensagens" },
   { href: "/relatorios", icon: BarChart3, label: "Relatórios" },
   { href: "/pricing", icon: Zap, label: "Planos" },
 ];

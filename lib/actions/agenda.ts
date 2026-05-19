@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { checkPlanLimit } from "@/lib/actions/plan-limit";
 import type { ScheduleEvent } from "@/lib/types";
 
 export async function getEventos(): Promise<ScheduleEvent[]> {
@@ -32,6 +33,9 @@ export async function addEvento(form: {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Não autenticado" };
+
+  const limitCheck = await checkPlanLimit(supabase, user.id, "events");
+  if (limitCheck.error) return limitCheck;
 
   const { error } = await supabase.from("eventos_agenda").insert({
     user_id: user.id,

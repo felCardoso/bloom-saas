@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useCallback } from "react";
 import {
   User,
   CreditCard,
@@ -19,6 +19,10 @@ import {
   Sun,
   Moon,
   Palette,
+  Tag,
+  Plus,
+  Pencil,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -28,11 +32,12 @@ import { useTheme, type PrimaryColor } from "@/lib/theme-context";
 
 import { updateProfile, updateNotificationPrefs, type NotificationPrefs } from "@/lib/actions/profile";
 import { savePushSubscription, deletePushSubscription } from "@/lib/actions/push";
+import { addCategoria, deleteCategoria, renameCategoria, type Categoria } from "@/lib/actions/categorias";
 import { createClient } from "@/lib/supabase/client";
 import { AvatarUpload } from "@/components/ui/AvatarUpload";
 import { useProfile } from "@/lib/profile-context";
 
-type Tab = "perfil" | "assinatura" | "notificacoes" | "aparencia" | "seguranca" | "conta";
+type Tab = "perfil" | "assinatura" | "notificacoes" | "aparencia" | "seguranca" | "conta" | "categorias";
 
 const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "perfil", label: "Perfil", icon: User },
@@ -40,6 +45,7 @@ const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "notificacoes", label: "Notificações", icon: Bell },
   { id: "aparencia", label: "Aparência", icon: Palette },
   { id: "seguranca", label: "Segurança", icon: Shield },
+  { id: "categorias", label: "Categorias", icon: Tag },
   { id: "conta", label: "Conta", icon: Trash2 },
 ];
 
@@ -214,15 +220,91 @@ function ManageSubscriptionButton() {
   );
 }
 
+function CancelSubscriptionButton({ onCancelled }: { onCancelled: (expiresAt: string) => void }) {
+  const [confirm, setConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleCancel = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    const res = await fetch("/api/asaas/cancel", { method: "POST" });
+    const json = await res.json();
+    setLoading(false);
+    if (json.error) {
+      setError(json.error);
+      return;
+    }
+    onCancelled(json.expiresAt as string);
+  }, [onCancelled]);
+
+  return (
+    <div className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 space-y-3">
+      {!confirm ? (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Cancelar assinatura</p>
+            <p className="text-xs text-neutral-400 mt-0.5">Seu plano volta para Grátis imediatamente.</p>
+          </div>
+          <button
+            onClick={() => setConfirm(true)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-xl transition-colors sm:shrink-0"
+          >
+            Cancelar assinatura
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <p className="text-sm text-neutral-700 dark:text-neutral-300">
+            Tem certeza? Você perderá acesso às funcionalidades do plano atual <strong>imediatamente</strong>.
+          </p>
+          {error && <p className="text-xs text-red-500">{error}</p>}
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setConfirm(false); setError(""); }}
+              disabled={loading}
+              className="flex-1 py-2 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
+            >
+              Voltar
+            </button>
+            <button
+              onClick={handleCancel}
+              disabled={loading}
+              className="flex-1 py-2 px-3 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors disabled:opacity-60"
+            >
+              {loading ? (
+                <span className="inline-flex items-center gap-2 justify-center">
+                  <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  Cancelando...
+                </span>
+              ) : "Confirmar cancelamento"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Assinatura ── */
-function AssinaturaTab() {
+function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }) {
   const { planId, plan } = usePlan();
+  const [periodEnd, setPeriodEnd] = useState<string | null>(initialPeriodEnd);
+  const isCancelling = periodEnd !== null;
 
   const featureList: string[] = {
     free: ["Até 30 clientes", "Até 20 pedidos/mês", "Até 20 produtos", "Suporte por e-mail"],
     pro: ["Até 200 clientes", "Até 150 pedidos/mês", "Relatórios básicos", "WhatsApp rápido", "Alertas de estoque", "Lembretes de aniversário", "Suporte por e-mail (48h)"],
     premium: ["Clientes ilimitados", "Pedidos ilimitados", "Relatórios avançados", "Exportação CSV", "Até 3 usuários", "Suporte prioritário (24h)"],
   }[planId];
+
+  const formattedExpiry = periodEnd
+    ? new Date(periodEnd + "T00:00:00").toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      })
+    : null;
 
   return (
     <div className="space-y-6">
@@ -232,6 +314,11 @@ function AssinaturaTab() {
             <span className={cn("text-xs font-bold px-2.5 py-1 rounded-full", PLAN_BADGE[planId])}>
               Plano {plan.name}
             </span>
+            {isCancelling && (
+              <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
+                Cancelamento agendado
+              </span>
+            )}
             <div className="flex items-baseline gap-1 mt-3">
               <span className={cn("text-3xl font-bold", PLAN_ACCENT[planId])}>
                 {plan.price === 0 ? "Grátis" : `R$ ${plan.price}`}
@@ -240,8 +327,13 @@ function AssinaturaTab() {
                 <span className="text-sm text-neutral-500 dark:text-neutral-400">/mês</span>
               )}
             </div>
+            {isCancelling && formattedExpiry && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                Acesso ativo até {formattedExpiry}
+              </p>
+            )}
           </div>
-          {planId !== "premium" && (
+          {planId !== "premium" && !isCancelling && (
             <Link
               href="/pricing"
               className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-500 text-white rounded-xl text-xs font-semibold hover:bg-rose-600 transition-colors shadow-sm shrink-0"
@@ -264,8 +356,20 @@ function AssinaturaTab() {
         </div>
       </div>
 
-      {plan.price > 0 && (
-        <ManageSubscriptionButton />
+      {isCancelling && formattedExpiry ? (
+        <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-200 dark:border-amber-800">
+          <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Cancelamento agendado</p>
+          <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+            Seu plano permanece ativo até <strong>{formattedExpiry}</strong>. Após essa data, a conta retorna automaticamente para o plano Grátis.
+          </p>
+        </div>
+      ) : (
+        plan.price > 0 && (
+          <>
+            <ManageSubscriptionButton />
+            <CancelSubscriptionButton onCancelled={(expiresAt) => setPeriodEnd(expiresAt)} />
+          </>
+        )
       )}
 
       {planId === "free" && (
@@ -750,21 +854,177 @@ function ContaTab({ userEmail }: { userEmail: string }) {
   );
 }
 
+/* ── Categorias ── */
+function CategoriasTab({ initialCategorias }: { initialCategorias: Categoria[] }) {
+  const [categorias, setCategorias] = useState<Categoria[]>(initialCategorias);
+  const [newNome, setNewNome] = useState("");
+  const [addError, setAddError] = useState("");
+  const [addLoading, setAddLoading] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editNome, setEditNome] = useState("");
+  const [editError, setEditError] = useState("");
+  const [editLoading, setEditLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+
+  async function handleAdd() {
+    if (!newNome.trim()) return;
+    setAddLoading(true);
+    setAddError("");
+    const res = await addCategoria(newNome);
+    setAddLoading(false);
+    if (res.error) {
+      setAddError(res.error);
+      return;
+    }
+    setCategorias((prev) => [...prev, { id: crypto.randomUUID(), nome: newNome.trim(), created_at: new Date().toISOString() }]);
+    setNewNome("");
+  }
+
+  function startEdit(cat: Categoria) {
+    setEditingId(cat.id);
+    setEditNome(cat.nome);
+    setEditError("");
+  }
+
+  async function handleRename(id: string) {
+    if (!editNome.trim()) return;
+    setEditLoading(true);
+    setEditError("");
+    const res = await renameCategoria(id, editNome);
+    setEditLoading(false);
+    if (res.error) {
+      setEditError(res.error);
+      return;
+    }
+    setCategorias((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, nome: editNome.trim() } : c))
+    );
+    setEditingId(null);
+  }
+
+  async function handleDelete(id: string) {
+    setDeleteLoading(id);
+    await deleteCategoria(id);
+    setCategorias((prev) => prev.filter((c) => c.id !== id));
+    setDeleteLoading(null);
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-1">
+          Categorias de produto
+        </h3>
+        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          Personalize as categorias usadas para organizar seu catálogo de produtos.
+        </p>
+      </div>
+
+      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-50 dark:divide-neutral-800">
+        {categorias.map((cat) => (
+          <div key={cat.id} className="flex items-center gap-3 px-5 py-4">
+            {editingId === cat.id ? (
+              <>
+                <div className="flex-1 min-w-0">
+                  <input
+                    value={editNome}
+                    onChange={(e) => setEditNome(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleRename(cat.id); if (e.key === "Escape") setEditingId(null); }}
+                    autoFocus
+                    className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
+                  />
+                </div>
+                {editError && <p className="text-xs text-red-500 shrink-0">{editError}</p>}
+                <button
+                  onClick={() => handleRename(cat.id)}
+                  disabled={editLoading}
+                  className="shrink-0 px-3 py-1.5 text-xs font-semibold bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:opacity-60"
+                >
+                  {editLoading ? "..." : "Salvar"}
+                </button>
+                <button
+                  onClick={() => setEditingId(null)}
+                  className="shrink-0 p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </>
+            ) : (
+              <>
+                <Tag className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                <span className="flex-1 min-w-0 text-sm text-neutral-700 dark:text-neutral-200 truncate">
+                  {cat.nome}
+                </span>
+                <button
+                  onClick={() => startEdit(cat)}
+                  className="shrink-0 p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => handleDelete(cat.id)}
+                  disabled={deleteLoading === cat.id}
+                  className="shrink-0 p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </>
+            )}
+          </div>
+        ))}
+        {categorias.length === 0 && (
+          <div className="px-5 py-8 text-center text-sm text-neutral-400">
+            Nenhuma categoria cadastrada.
+          </div>
+        )}
+      </div>
+
+      <div className="flex gap-2">
+        <div className="flex-1 min-w-0">
+          <input
+            value={newNome}
+            onChange={(e) => { setNewNome(e.target.value); setAddError(""); }}
+            onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
+            placeholder="Nova categoria..."
+            className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 transition-all"
+          />
+        </div>
+        <button
+          onClick={handleAdd}
+          disabled={addLoading || !newNome.trim()}
+          className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-60"
+        >
+          {addLoading ? (
+            <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+          ) : (
+            <Plus className="w-4 h-4" />
+          )}
+          Adicionar
+        </button>
+      </div>
+      {addError && <p className="text-xs text-red-500">{addError}</p>}
+    </div>
+  );
+}
+
 /* ── Main ── */
 export interface ConfiguracoesClientProps {
   initialProfile: { name: string; email: string; phone: string; brand: string; avatarUrl: string | null };
   initialNotifs: NotificationPrefs;
+  initialPeriodEnd: string | null;
+  initialCategorias: Categoria[];
 }
 
-export default function ConfiguracoesClient({ initialProfile, initialNotifs }: ConfiguracoesClientProps) {
+export default function ConfiguracoesClient({ initialProfile, initialNotifs, initialPeriodEnd, initialCategorias }: ConfiguracoesClientProps) {
   const [activeTab, setActiveTab] = useState<Tab>("perfil");
 
   const content: Record<Tab, React.ReactNode> = {
     perfil: <PerfilTab initialProfile={initialProfile} />,
-    assinatura: <AssinaturaTab />,
+    assinatura: <AssinaturaTab initialPeriodEnd={initialPeriodEnd} />,
     notificacoes: <NotificacoesTab initialNotifs={initialNotifs} />,
     aparencia: <AparenciaTab />,
     seguranca: <SegurancaTab />,
+    categorias: <CategoriasTab initialCategorias={initialCategorias} />,
     conta: <ContaTab userEmail={initialProfile.email} />,
   };
 
@@ -788,7 +1048,7 @@ export default function ConfiguracoesClient({ initialProfile, initialNotifs }: C
         ))}
       </div>
 
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4 sm:p-5 shadow-card">
+      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4 sm:p-5 shadow-card overflow-hidden">
         {content[activeTab]}
       </div>
     </div>

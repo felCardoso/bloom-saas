@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { Shield, Lock, Eye, Trash2, Mail, FileText } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Política de Privacidade — Bloom",
+  title: "Política de Privacidade",
+  description:
+    "Saiba como o Bloom coleta, usa e protege seus dados pessoais, em conformidade com a LGPD.",
+  openGraph: { title: "Política de Privacidade — Bloom", description: "Privacidade e proteção de dados no Bloom (LGPD)." },
 };
 
 const highlights = [

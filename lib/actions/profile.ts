@@ -12,13 +12,44 @@ export async function getUserPlan(): Promise<PlanId> {
 
   const { data } = await supabase
     .from("perfis_usuarios")
-    .select("plano")
+    .select("plano, asaas_period_end")
     .eq("id", user.id)
     .single();
 
   const plan = data?.plano as PlanId | null;
-  if (plan === "pro" || plan === "premium") return plan;
-  return "free";
+  if (plan !== "pro" && plan !== "premium") return "free";
+
+  const periodEnd = data?.asaas_period_end as string | null;
+  if (periodEnd) {
+    const expired = new Date(periodEnd) <= new Date();
+    if (expired) {
+      // Lazy expiry: write the downgrade so subsequent calls are fast
+      await supabase
+        .from("perfis_usuarios")
+        .update({ plano: "free", asaas_period_end: null, updated_at: new Date().toISOString() })
+        .eq("id", user.id);
+      return "free";
+    }
+  }
+
+  return plan;
+}
+
+export async function getPlanPeriodEnd(): Promise<string | null> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data } = await supabase
+    .from("perfis_usuarios")
+    .select("asaas_period_end")
+    .eq("id", user.id)
+    .single();
+
+  const periodEnd = data?.asaas_period_end as string | null;
+  if (!periodEnd) return null;
+  // Return null if already expired (plan was just downgraded by getUserPlan)
+  return new Date(periodEnd) > new Date() ? periodEnd : null;
 }
 
 export async function getUsageCounts(): Promise<Partial<Usage>> {
