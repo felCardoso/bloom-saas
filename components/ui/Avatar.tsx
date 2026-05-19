@@ -17,6 +17,7 @@ function getColorByName(name: string): string {
 
 interface AvatarProps {
   name: string;
+  src?: string | null;
   size?: "sm" | "md" | "lg";
   className?: string;
 }
@@ -27,7 +28,21 @@ const sizeClasses = {
   lg: "w-12 h-12 text-base",
 };
 
-export function Avatar({ name, size = "md", className }: AvatarProps) {
+export function Avatar({ name, src, size = "md", className }: AvatarProps) {
+  if (src) {
+    return (
+      <div
+        className={cn(
+          "rounded-full overflow-hidden flex-shrink-0",
+          sizeClasses[size],
+          className
+        )}
+      >
+        <img src={src} alt={name} className="w-full h-full object-cover" />
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
