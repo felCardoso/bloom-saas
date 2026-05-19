@@ -11,7 +11,6 @@ import {
   Calendar,
   BarChart3,
   Settings,
-  Sparkles,
   Zap,
   LogOut,
 } from "lucide-react";
@@ -52,9 +51,7 @@ export function Sidebar() {
       {/* Logo → /dashboard */}
       <div className="px-5 py-5 border-b border-neutral-100 dark:border-neutral-800">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-rose-500 rounded-xl flex items-center justify-center shadow-sm">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
+          <img src="/logo.svg" className="w-8 h-8" alt="Bloom" />
           <div>
             <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100 tracking-tight">
               Bloom

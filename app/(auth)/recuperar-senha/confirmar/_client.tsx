@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
-import { Eye, EyeOff, Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ConfirmarSenhaPage() {
@@ -85,9 +85,7 @@ export default function ConfirmarSenhaPage() {
   return (
     <div className="w-full max-w-sm py-6">
       <Link href="/" className="flex items-center gap-2 mb-8 lg:hidden w-fit">
-        <div className="w-8 h-8 bg-rose-500 rounded-xl flex items-center justify-center shadow-sm">
-          <Sparkles className="w-4 h-4 text-white" />
-        </div>
+        <img src="/logo.svg" className="w-8 h-8" alt="Bloom" />
         <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">Bloom</span>
       </Link>
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Sparkles, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 const footerLinks = [
   { href: "/sobre", label: "Sobre" },
@@ -21,9 +21,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           {/* Logo → / */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-rose-500 rounded-xl flex items-center justify-center shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 text-white" />
-            </div>
+            <img src="/logo.svg" className="w-7 h-7" alt="Bloom" />
             <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">Bloom</span>
           </Link>
 
@@ -68,9 +66,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <footer className="border-t border-neutral-100 dark:border-neutral-800 py-8 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-rose-500 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-2.5 h-2.5 text-white" />
-            </div>
+            <img src="/logo.svg" className="w-5 h-5" alt="Bloom" />
             <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400">Bloom</span>
           </div>
           <div className="flex flex-wrap justify-center gap-4">

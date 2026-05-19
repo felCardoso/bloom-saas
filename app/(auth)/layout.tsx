@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Sparkles, Star } from "lucide-react";
+import { Star } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Bloom",
@@ -34,7 +34,7 @@ export default function AuthLayout({
         {/* Logo */}
         <div className="relative flex items-center gap-2.5 mb-auto">
           <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-            <Sparkles className="w-4.5 h-4.5 text-white" />
+            <img src="/logo.svg" className="w-6 h-6" alt="Bloom" style={{ filter: "brightness(0) invert(1)" }} />
           </div>
           <span className="text-lg font-bold text-white tracking-tight">
             Bloom
