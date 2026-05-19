@@ -100,8 +100,8 @@ Tabelas principais:
 NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY        # usado nos cron jobs
-NEXT_PUBLIC_VAPID_PUBLIC_KEY=BLZBsmi3niq8J2qGDd9BpWZWk_7jBXJhrb_owqgyaPq5q_ml7uFaEKhdyQoHyD3TDu6xII9dMMWVYx2nYpPQtfg
-VAPID_PRIVATE_KEY=Wh6pZXaDvs6qhPk8xLt-B5yn1Kiiy9JnWfj0JCf2Fss
+NEXT_PUBLIC_VAPID_PUBLIC_KEY
+VAPID_PRIVATE_KEY
 CRON_SECRET                      # Bearer token que a Vercel envia nos cron requests
 RESEND_API_KEY                   # email transacional
 ASAAS_API_KEY
