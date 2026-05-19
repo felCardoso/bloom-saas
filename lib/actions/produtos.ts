@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { checkPlanLimit } from "@/lib/actions/plan-limit";
 import type { Product } from "@/lib/types";
 
 type ProductRow = {
@@ -53,6 +54,9 @@ export async function addProduto(form: {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Não autenticado" };
+
+  const limitCheck = await checkPlanLimit(supabase, user.id, "products");
+  if (limitCheck.error) return limitCheck;
 
   const { error } = await supabase.from("produtos").insert({
     user_id: user.id,

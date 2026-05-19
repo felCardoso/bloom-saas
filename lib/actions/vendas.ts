@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Order, OrderStatus, OrderItem } from "@/lib/types";
 import { sendOrderConfirmationEmail } from "@/lib/email";
+import { checkPlanLimit } from "@/lib/actions/plan-limit";
 
 type VendaRow = {
   id: string;
@@ -103,6 +104,9 @@ export async function addVenda(form: {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Não autenticado" };
+
+  const limitCheck = await checkPlanLimit(supabase, user.id, "ordersPerMonth");
+  if (limitCheck.error) return limitCheck;
 
   const total = form.items.reduce((s, i) => s + i.subtotal, 0);
 

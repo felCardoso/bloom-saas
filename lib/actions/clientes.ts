@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { checkPlanLimit } from "@/lib/actions/plan-limit";
 import type { Client, ClientStatus } from "@/lib/types";
 
 type ClientRow = {
@@ -60,6 +61,9 @@ export async function addCliente(form: {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Não autenticado" };
+
+  const limitCheck = await checkPlanLimit(supabase, user.id, "clients");
+  if (limitCheck.error) return limitCheck;
 
   const { error } = await supabase.from("clientes").insert({
     user_id: user.id,
