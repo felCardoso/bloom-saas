@@ -10,34 +10,37 @@ export function PwaUpdateBanner() {
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
 
-    function checkForWaiting(reg: ServiceWorkerRegistration) {
-      if (reg.waiting) {
-        setWaiting(reg.waiting);
-      }
-      reg.addEventListener("updatefound", () => {
-        const incoming = reg.installing;
-        if (!incoming) return;
-        incoming.addEventListener("statechange", () => {
-          if (incoming.state === "installed" && navigator.serviceWorker.controller) {
-            setWaiting(incoming);
-          }
+    navigator.serviceWorker
+      .register("/sw.js", { scope: "/", updateViaCache: "none" })
+      .then((reg) => {
+        // Already a waiting SW (e.g. page was refreshed)
+        if (reg.waiting) {
+          setWaiting(reg.waiting);
+        }
+
+        // New SW found while page is open
+        reg.addEventListener("updatefound", () => {
+          const incoming = reg.installing;
+          if (!incoming) return;
+          incoming.addEventListener("statechange", () => {
+            if (
+              incoming.state === "installed" &&
+              navigator.serviceWorker.controller
+            ) {
+              setWaiting(incoming);
+            }
+          });
         });
       });
-    }
 
-    navigator.serviceWorker.getRegistration().then((reg) => {
-      if (reg) checkForWaiting(reg);
-    });
-
-    // Also handle controllers that change (after skipWaiting)
+    // When SW activates (after SKIP_WAITING), reload to get fresh content
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       window.location.reload();
     });
   }, []);
 
   function handleUpdate() {
-    if (!waiting) return;
-    waiting.postMessage({ type: "SKIP_WAITING" });
+    waiting?.postMessage({ type: "SKIP_WAITING" });
   }
 
   if (!waiting || dismissed) return null;

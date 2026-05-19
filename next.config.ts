@@ -1,32 +1,17 @@
 import type { NextConfig } from "next";
-import withPWAInit from "@ducanh2912/next-pwa";
 
-const withPWA = withPWAInit({
-  dest: "public",
-  disable: process.env.NODE_ENV === "development",
-  register: true,
-  reloadOnOnline: true,
-  cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
-  workboxOptions: {
-    // Don't auto-skip waiting so the update banner can control when to reload
-    skipWaiting: false,
-    cleanupOutdatedCaches: true,
-    runtimeCaching: [
+const nextConfig: NextConfig = {
+  async headers() {
+    return [
       {
-        // API routes — network-first with 1 hour fallback
-        urlPattern: /^\/api\/.*/,
-        handler: "NetworkFirst",
-        options: {
-          cacheName: "api-cache",
-          expiration: { maxEntries: 64, maxAgeSeconds: 60 * 60 },
-          networkTimeoutSeconds: 10,
-        },
+        source: "/sw.js",
+        headers: [
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+        ],
       },
-    ],
+    ];
   },
-});
+};
 
-const nextConfig: NextConfig = {};
-
-export default withPWA(nextConfig);
+export default nextConfig;
