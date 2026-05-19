@@ -203,8 +203,9 @@ export default function MensagensClient({
   }
 
   function fillMessage(mensagem: string, client: Client): string {
+    const firstName = client.name.split(" ")[0];
     return mensagem
-      .replace(/\{nome\}/g, client.name)
+      .replace(/\{nome\}/g, firstName)
       .replace(/\{produto\}/g, "seus produtos")
       .replace(/\{valor\}/g, "");
   }
