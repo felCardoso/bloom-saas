@@ -3,6 +3,9 @@
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { addCliente, updateCliente, deleteCliente } from "@/lib/actions/clientes";
+import { importClientesCSV } from "@/lib/actions/csv";
+import { parseCsv, normalizeHeaders } from "@/lib/csv-parse";
+import type { ImportClienteRow } from "@/lib/actions/csv";
 import {
   Plus,
   Search,
@@ -15,6 +18,8 @@ import {
   MessageCircle,
   Pencil,
   Trash2,
+  Upload,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -63,6 +68,11 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
   const [editForm, setEditForm] = useState(emptyForm);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importRows, setImportRows] = useState<ImportClienteRow[]>([]);
+  const [importResult, setImportResult] = useState<{ imported: number; skipped: number } | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importLoading, setImportLoading] = useState(false);
 
   useEffect(() => {
     setClients(initialClients);
@@ -140,6 +150,57 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
     setConfirmDelete(false);
   }
 
+  function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      const parsed = parseCsv(text);
+      const aliases = {
+        name: ["nome", "name", "cliente"],
+        phone: ["telefone", "phone", "tel", "celular"],
+        email: ["email", "e-mail"],
+        city: ["cidade", "city", "bairro", "bairro_cidade", "bairro/cidade"],
+        status: ["status", "situacao", "situação"],
+        notes: ["observacoes", "observações", "notes", "obs"],
+        birthday: ["data de nascimento", "aniversario", "aniversário", "birthday", "data_nascimento"],
+      };
+      const rows: ImportClienteRow[] = parsed
+        .map((r) => normalizeHeaders(r, aliases))
+        .filter((r) => r.name.trim() !== "") as ImportClienteRow[];
+      setImportRows(rows);
+      setImportResult(null);
+      setImportError(null);
+    };
+    reader.readAsText(file, "UTF-8");
+    e.target.value = "";
+  }
+
+  function handleImportOpen() {
+    if (!hasFeature("csvExport")) {
+      setUpgradeOpen(true);
+      return;
+    }
+    setImportOpen(true);
+    setImportRows([]);
+    setImportResult(null);
+    setImportError(null);
+  }
+
+  async function handleImportConfirm() {
+    setImportLoading(true);
+    const result = await importClientesCSV(importRows);
+    setImportLoading(false);
+    if (result.error) {
+      setImportError(result.error);
+    } else {
+      setImportResult({ imported: result.imported, skipped: result.skipped });
+      setImportRows([]);
+      router.refresh();
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* Toolbar */}
@@ -164,6 +225,13 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
             <option value="inativa">Inativa</option>
             <option value="prospect">Prospect</option>
           </select>
+          <button
+            onClick={handleImportOpen}
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors shadow-card"
+          >
+            <Upload className="w-4 h-4" />
+            <span className="hidden sm:inline">Importar</span>
+          </button>
           <Button onClick={handleAddClick}>
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Nova Cliente</span>
@@ -532,6 +600,107 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
               Salvar
             </Button>
           </div>
+        </div>
+      </Modal>
+
+      {/* Import modal */}
+      <Modal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        title="Importar clientes (CSV)"
+        size="lg"
+      >
+        <div className="space-y-5">
+          {importResult ? (
+            <div className="py-6 text-center space-y-2">
+              <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl flex items-center justify-center mx-auto">
+                <Users className="w-6 h-6 text-emerald-500" />
+              </div>
+              <p className="text-lg font-bold text-neutral-800 dark:text-neutral-100">
+                {importResult.imported} cliente{importResult.imported !== 1 ? "s" : ""} importada{importResult.imported !== 1 ? "s" : ""}
+              </p>
+              {importResult.skipped > 0 && (
+                <p className="text-sm text-neutral-400">{importResult.skipped} linha{importResult.skipped !== 1 ? "s" : ""} ignorada{importResult.skipped !== 1 ? "s" : ""} (sem nome ou limite do plano)</p>
+              )}
+              <button
+                onClick={() => setImportOpen(false)}
+                className="mt-4 px-5 py-2.5 bg-rose-500 text-white rounded-xl text-sm font-semibold hover:bg-rose-600 transition-colors"
+              >
+                Fechar
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-2xl space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <FileText className="w-4 h-4 text-neutral-400" />
+                  <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">Formato esperado (cabeçalho na 1ª linha)</p>
+                </div>
+                <code className="text-xs text-neutral-500 dark:text-neutral-400 block leading-relaxed">
+                  Nome, Telefone, Email, Cidade, Status, Observacoes, Data de Nascimento
+                </code>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500">Status aceitos: <span className="font-medium">ativa</span>, <span className="font-medium">inativa</span>, <span className="font-medium">prospect</span></p>
+              </div>
+
+              <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-2xl cursor-pointer hover:border-rose-300 dark:hover:border-rose-700 transition-colors group">
+                <Upload className="w-8 h-8 text-neutral-300 dark:text-neutral-600 group-hover:text-rose-400 transition-colors" />
+                <div className="text-center">
+                  <p className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Clique para selecionar o arquivo</p>
+                  <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">Arquivo .csv, codificação UTF-8</p>
+                </div>
+                <input type="file" accept=".csv,text/csv" onChange={handleImportFile} className="hidden" />
+              </label>
+
+              {importError && (
+                <p className="text-sm text-red-500 text-center">{importError}</p>
+              )}
+
+              {importRows.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    {importRows.length} registro{importRows.length !== 1 ? "s" : ""} encontrado{importRows.length !== 1 ? "s" : ""} — prévia das primeiras 5 linhas:
+                  </p>
+                  <div className="overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-700">
+                    <table className="min-w-full text-xs">
+                      <thead className="bg-neutral-50 dark:bg-neutral-800">
+                        <tr>
+                          {["Nome", "Telefone", "Email", "Cidade", "Status"].map((h) => (
+                            <th key={h} className="px-3 py-2 text-left font-semibold text-neutral-500 dark:text-neutral-400">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                        {importRows.slice(0, 5).map((r, i) => (
+                          <tr key={i} className="bg-white dark:bg-neutral-900">
+                            <td className="px-3 py-2 text-neutral-700 dark:text-neutral-300 font-medium truncate max-w-[120px]">{r.name || "—"}</td>
+                            <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400">{r.phone || "—"}</td>
+                            <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400 truncate max-w-[120px]">{r.email || "—"}</td>
+                            <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400">{r.city || "—"}</td>
+                            <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400">{r.status || "ativa"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => { setImportRows([]); setImportError(null); }}
+                      className="flex-1 py-2.5 px-4 rounded-xl border border-neutral-200 dark:border-neutral-700 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleImportConfirm}
+                      disabled={importLoading}
+                      className="flex-1 py-2.5 px-4 rounded-xl bg-rose-500 text-white text-sm font-semibold hover:bg-rose-600 transition-colors disabled:opacity-60"
+                    >
+                      {importLoading ? "Importando..." : `Importar ${importRows.length} cliente${importRows.length !== 1 ? "s" : ""}`}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </Modal>
 

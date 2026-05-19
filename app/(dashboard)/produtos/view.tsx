@@ -3,7 +3,10 @@
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { addProduto, updateProduto, deleteProduto } from "@/lib/actions/produtos";
-import { Plus, Search, Package, AlertTriangle, Pencil, Trash2, X } from "lucide-react";
+import { importProdutosCSV } from "@/lib/actions/csv";
+import { parseCsv, normalizeHeaders } from "@/lib/csv-parse";
+import type { ImportProdutoRow } from "@/lib/actions/csv";
+import { Plus, Search, Package, AlertTriangle, Pencil, Trash2, X, Upload, FileText } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
@@ -42,6 +45,11 @@ export function ProdutosView({ initialProducts }: { initialProducts: Product[] }
   const [editForm, setEditForm] = useState(emptyForm);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importRows, setImportRows] = useState<ImportProdutoRow[]>([]);
+  const [importResult, setImportResult] = useState<{ imported: number; skipped: number } | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importLoading, setImportLoading] = useState(false);
 
   useEffect(() => {
     setProducts(initialProducts);
@@ -121,6 +129,66 @@ export function ProdutosView({ initialProducts }: { initialProducts: Product[] }
     setConfirmDelete(false);
   }
 
+  function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      const parsed = parseCsv(text);
+      const aliases = {
+        name: ["nome", "name", "produto"],
+        brand: ["marca", "brand"],
+        category: ["categoria", "category"],
+        cost_price: ["preco de custo", "preço de custo", "custo", "cost_price", "cost price"],
+        sale_price: ["preco de venda", "preço de venda", "venda", "sale_price", "sale price", "preco_venda"],
+        stock: ["estoque", "stock", "quantidade", "estoque_atual"],
+      };
+      const rows: ImportProdutoRow[] = parsed
+        .map((r) => {
+          const n = normalizeHeaders(r, aliases);
+          return {
+            name: n.name,
+            brand: n.brand,
+            category: n.category,
+            cost_price: parseFloat(n.cost_price.replace(",", ".")) || 0,
+            sale_price: parseFloat(n.sale_price.replace(",", ".")) || 0,
+            stock: parseInt(n.stock) || 0,
+          };
+        })
+        .filter((r) => r.name.trim() !== "");
+      setImportRows(rows);
+      setImportResult(null);
+      setImportError(null);
+    };
+    reader.readAsText(file, "UTF-8");
+    e.target.value = "";
+  }
+
+  function handleImportOpen() {
+    if (!hasFeature("csvExport")) {
+      setUpgradeOpen(true);
+      return;
+    }
+    setImportOpen(true);
+    setImportRows([]);
+    setImportResult(null);
+    setImportError(null);
+  }
+
+  async function handleImportConfirm() {
+    setImportLoading(true);
+    const result = await importProdutosCSV(importRows);
+    setImportLoading(false);
+    if (result.error) {
+      setImportError(result.error);
+    } else {
+      setImportResult({ imported: result.imported, skipped: result.skipped });
+      setImportRows([]);
+      router.refresh();
+    }
+  }
+
   const margin = (p: Product) =>
     p.cost_price > 0
       ? Math.round(((p.sale_price - p.cost_price) / p.sale_price) * 100)
@@ -152,6 +220,13 @@ export function ProdutosView({ initialProducts }: { initialProducts: Product[] }
               </option>
             ))}
           </select>
+          <button
+            onClick={handleImportOpen}
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors shadow-card"
+          >
+            <Upload className="w-4 h-4" />
+            <span className="hidden sm:inline">Importar</span>
+          </button>
           <Button onClick={handleAddClick}>
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Novo Produto</span>
@@ -420,6 +495,108 @@ export function ProdutosView({ initialProducts }: { initialProducts: Product[] }
           </div>
         </Modal>
       )}
+
+      {/* Import modal */}
+      <Modal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        title="Importar produtos (CSV)"
+        size="lg"
+      >
+        <div className="space-y-5">
+          {importResult ? (
+            <div className="py-6 text-center space-y-2">
+              <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl flex items-center justify-center mx-auto">
+                <Package className="w-6 h-6 text-emerald-500" />
+              </div>
+              <p className="text-lg font-bold text-neutral-800 dark:text-neutral-100">
+                {importResult.imported} produto{importResult.imported !== 1 ? "s" : ""} importado{importResult.imported !== 1 ? "s" : ""}
+              </p>
+              {importResult.skipped > 0 && (
+                <p className="text-sm text-neutral-400">{importResult.skipped} linha{importResult.skipped !== 1 ? "s" : ""} ignorada{importResult.skipped !== 1 ? "s" : ""} (sem nome ou limite do plano)</p>
+              )}
+              <button
+                onClick={() => setImportOpen(false)}
+                className="mt-4 px-5 py-2.5 bg-rose-500 text-white rounded-xl text-sm font-semibold hover:bg-rose-600 transition-colors"
+              >
+                Fechar
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-2xl space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <FileText className="w-4 h-4 text-neutral-400" />
+                  <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">Formato esperado (cabeçalho na 1ª linha)</p>
+                </div>
+                <code className="text-xs text-neutral-500 dark:text-neutral-400 block leading-relaxed">
+                  Nome, Marca, Categoria, Preco de Custo, Preco de Venda, Estoque
+                </code>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500">Preços com ponto ou vírgula como separador decimal</p>
+              </div>
+
+              <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-2xl cursor-pointer hover:border-rose-300 dark:hover:border-rose-700 transition-colors group">
+                <Upload className="w-8 h-8 text-neutral-300 dark:text-neutral-600 group-hover:text-rose-400 transition-colors" />
+                <div className="text-center">
+                  <p className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Clique para selecionar o arquivo</p>
+                  <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">Arquivo .csv, codificação UTF-8</p>
+                </div>
+                <input type="file" accept=".csv,text/csv" onChange={handleImportFile} className="hidden" />
+              </label>
+
+              {importError && (
+                <p className="text-sm text-red-500 text-center">{importError}</p>
+              )}
+
+              {importRows.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    {importRows.length} registro{importRows.length !== 1 ? "s" : ""} encontrado{importRows.length !== 1 ? "s" : ""} — prévia das primeiras 5 linhas:
+                  </p>
+                  <div className="overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-700">
+                    <table className="min-w-full text-xs">
+                      <thead className="bg-neutral-50 dark:bg-neutral-800">
+                        <tr>
+                          {["Nome", "Marca", "Categoria", "Custo", "Venda", "Estoque"].map((h) => (
+                            <th key={h} className="px-3 py-2 text-left font-semibold text-neutral-500 dark:text-neutral-400">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                        {importRows.slice(0, 5).map((r, i) => (
+                          <tr key={i} className="bg-white dark:bg-neutral-900">
+                            <td className="px-3 py-2 text-neutral-700 dark:text-neutral-300 font-medium truncate max-w-[120px]">{r.name || "—"}</td>
+                            <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400">{r.brand || "—"}</td>
+                            <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400">{r.category || "—"}</td>
+                            <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400">{r.cost_price > 0 ? `R$${r.cost_price}` : "—"}</td>
+                            <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400">{r.sale_price > 0 ? `R$${r.sale_price}` : "—"}</td>
+                            <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400">{r.stock}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => { setImportRows([]); setImportError(null); }}
+                      className="flex-1 py-2.5 px-4 rounded-xl border border-neutral-200 dark:border-neutral-700 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleImportConfirm}
+                      disabled={importLoading}
+                      className="flex-1 py-2.5 px-4 rounded-xl bg-rose-500 text-white text-sm font-semibold hover:bg-rose-600 transition-colors disabled:opacity-60"
+                    >
+                      {importLoading ? "Importando..." : `Importar ${importRows.length} produto${importRows.length !== 1 ? "s" : ""}`}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </Modal>
 
       {/* Edit modal */}
       <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Editar Produto">
