@@ -494,7 +494,7 @@ export default function MensagensClient({
                               : "bg-neutral-100 text-neutral-400 dark:bg-neutral-800 cursor-not-allowed",
                           )}
                         >
-                          <Phone size={14} />
+                          <MessageCircle size={14} />
                           WhatsApp
                         </button>
                       </div>
@@ -652,7 +652,7 @@ export default function MensagensClient({
                       : "bg-neutral-100 text-neutral-400 dark:bg-neutral-800 cursor-not-allowed",
                   )}
                 >
-                  <Phone size={16} />
+                  <MessageCircle size={16} />
                   Abrir no WhatsApp
                 </button>
               </div>
