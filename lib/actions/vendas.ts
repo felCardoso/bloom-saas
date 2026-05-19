@@ -90,6 +90,33 @@ export async function addVenda(form: {
   const { error: itensError } = await supabase.from("itens_venda").insert(itens);
   if (itensError) return { error: itensError.message };
 
+  // Decrement stock for each sold product
+  const productIds = form.items.map((i) => i.product_id).filter(Boolean);
+  if (productIds.length > 0) {
+    const { data: produtos } = await supabase
+      .from("produtos")
+      .select("id, estoque_atual")
+      .in("id", productIds)
+      .eq("user_id", user.id);
+
+    if (produtos?.length) {
+      const stockMap = new Map(produtos.map((p) => [p.id, p.estoque_atual ?? 0]));
+      await Promise.all(
+        form.items
+          .filter((item) => item.product_id && stockMap.has(item.product_id))
+          .map((item) =>
+            supabase
+              .from("produtos")
+              .update({
+                estoque_atual: Math.max(0, (stockMap.get(item.product_id) ?? 0) - item.quantity),
+              })
+              .eq("id", item.product_id)
+              .eq("user_id", user.id)
+          )
+      );
+    }
+  }
+
   const { data: authUser } = await supabase.auth.getUser();
   if (authUser.user?.email) {
     const { data: cliente } = await supabase
@@ -112,6 +139,7 @@ export async function addVenda(form: {
 
   revalidatePath("/pedidos");
   revalidatePath("/dashboard");
+  revalidatePath("/produtos");
   return {};
 }
 
