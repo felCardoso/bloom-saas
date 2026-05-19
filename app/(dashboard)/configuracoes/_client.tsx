@@ -625,24 +625,57 @@ function ContaTab({ userEmail }: { userEmail: string }) {
   const { hasFeature } = usePlan();
   const [confirmEmail, setConfirmEmail] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [exportLoading, setExportLoading] = useState<string | null>(null);
+
+  async function handleExport(type: "clientes" | "produtos" | "pedidos") {
+    setExportLoading(type);
+    try {
+      const res = await fetch(`/api/export/csv?type=${type}`);
+      if (!res.ok) return;
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${type}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExportLoading(null);
+    }
+  }
 
   return (
     <div className="space-y-8">
       <div>
         <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-1">Exportar meus dados</h3>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
-          Baixe um arquivo CSV com todos os seus clientes, pedidos e produtos.
+          Baixe arquivos CSV com seus clientes, pedidos e produtos.
         </p>
         {hasFeature("csvExport") ? (
-          <button className="inline-flex items-center gap-2 px-5 py-2.5 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-xl text-sm font-semibold hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors">
-            <Download className="w-4 h-4" />
-            Exportar dados (CSV)
-          </button>
+          <div className="flex flex-wrap gap-2">
+            {(["clientes", "produtos", "pedidos"] as const).map((type) => (
+              <button
+                key={type}
+                onClick={() => handleExport(type)}
+                disabled={exportLoading === type}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-xl text-sm font-semibold hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors disabled:opacity-60 capitalize"
+              >
+                {exportLoading === type ? (
+                  <span className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                ) : (
+                  <Download className="w-3.5 h-3.5" />
+                )}
+                {type}
+              </button>
+            ))}
+          </div>
         ) : (
           <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800">
             <div>
               <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Disponível no plano Premium</p>
-              <p className="text-xs text-neutral-400 mt-0.5">Ou solicite por e-mail em até 5 dias úteis.</p>
+              <p className="text-xs text-neutral-400 mt-0.5">Faça upgrade para exportar seus dados a qualquer momento.</p>
             </div>
             <Link href="/pricing" className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-500 text-white text-xs font-semibold rounded-xl hover:bg-rose-600 transition-colors">
               <Zap className="w-3.5 h-3.5" />
