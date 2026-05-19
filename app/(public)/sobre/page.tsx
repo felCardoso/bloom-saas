@@ -3,7 +3,14 @@ import Link from "next/link";
 import { Heart, Target, Sparkles, ArrowRight, Star } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Sobre — Bloom",
+  title: "Sobre",
+  description:
+    "Conheça a história do Bloom: o CRM criado por e para revendedoras de cosméticos que queriam organizar o negócio com elegância.",
+  openGraph: {
+    title: "Sobre o Bloom",
+    description:
+      "Conheça a história do Bloom: o CRM criado por e para revendedoras de cosméticos.",
+  },
 };
 
 const values = [

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   User,
   CreditCard,
@@ -214,6 +215,84 @@ function ManageSubscriptionButton() {
   );
 }
 
+function CancelSubscriptionButton() {
+  const router = useRouter();
+  const [confirm, setConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleCancel = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    const res = await fetch("/api/asaas/cancel", { method: "POST" });
+    const json = await res.json();
+    setLoading(false);
+    if (json.error) {
+      setError(json.error);
+      return;
+    }
+    setDone(true);
+    router.refresh();
+  }, [router]);
+
+  if (done) {
+    return (
+      <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-200 dark:border-emerald-800">
+        <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Assinatura cancelada.</p>
+        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Seu plano voltou para Grátis.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 space-y-3">
+      {!confirm ? (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Cancelar assinatura</p>
+            <p className="text-xs text-neutral-400 mt-0.5">Seu plano volta para Grátis imediatamente.</p>
+          </div>
+          <button
+            onClick={() => setConfirm(true)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-xl transition-colors sm:shrink-0"
+          >
+            Cancelar assinatura
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <p className="text-sm text-neutral-700 dark:text-neutral-300">
+            Tem certeza? Você perderá acesso às funcionalidades do plano atual <strong>imediatamente</strong>.
+          </p>
+          {error && <p className="text-xs text-red-500">{error}</p>}
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setConfirm(false); setError(""); }}
+              disabled={loading}
+              className="flex-1 py-2 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
+            >
+              Voltar
+            </button>
+            <button
+              onClick={handleCancel}
+              disabled={loading}
+              className="flex-1 py-2 px-3 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors disabled:opacity-60"
+            >
+              {loading ? (
+                <span className="inline-flex items-center gap-2 justify-center">
+                  <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  Cancelando...
+                </span>
+              ) : "Confirmar cancelamento"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Assinatura ── */
 function AssinaturaTab() {
   const { planId, plan } = usePlan();
@@ -265,7 +344,10 @@ function AssinaturaTab() {
       </div>
 
       {plan.price > 0 && (
-        <ManageSubscriptionButton />
+        <>
+          <ManageSubscriptionButton />
+          <CancelSubscriptionButton />
+        </>
       )}
 
       {planId === "free" && (

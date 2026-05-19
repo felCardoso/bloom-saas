@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Termos de Uso — Bloom",
+  title: "Termos de Uso",
+  description:
+    "Leia os Termos de Uso do Bloom: condições de uso da plataforma, responsabilidades, planos e pagamentos.",
+  openGraph: { title: "Termos de Uso — Bloom", description: "Condições de uso da plataforma Bloom." },
 };
 
 const sections = [
