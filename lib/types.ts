@@ -1,5 +1,6 @@
 export type ClientStatus = "ativa" | "inativa" | "prospect";
 export type OrderStatus = "pendente" | "confirmado" | "entregue" | "cancelado";
+export type PaymentMethod = "pix" | "dinheiro" | "cartao_credito" | "cartao_debito" | "fiado";
 
 export interface Client {
   id: string;
@@ -44,9 +45,21 @@ export interface Order {
   items: OrderItem[];
   total: number;
   status: OrderStatus;
+  payment_method: PaymentMethod;
+  paid_at?: string;
   notes?: string;
   created_at: string;
   delivered_at?: string;
+}
+
+export interface StockMovement {
+  id: string;
+  produto_id: string;
+  tipo: "entrada" | "saida" | "ajuste";
+  quantidade: number;
+  motivo?: string;
+  venda_id?: string;
+  created_at: string;
 }
 
 export interface ScheduleEvent {

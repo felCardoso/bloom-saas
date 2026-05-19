@@ -3,35 +3,40 @@
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { addProduto, updateProduto, deleteProduto } from "@/lib/actions/produtos";
+import { getMovimentacoes } from "@/lib/actions/estoque";
 import { importProdutosCSV } from "@/lib/actions/csv";
 import { parseCsv, normalizeHeaders } from "@/lib/csv-parse";
 import type { ImportProdutoRow } from "@/lib/actions/csv";
-import { Plus, Search, Package, AlertTriangle, Pencil, Trash2, X, Upload, FileText } from "lucide-react";
+import { Plus, Search, Package, AlertTriangle, Pencil, Trash2, Upload, FileText, History, ArrowUpCircle, ArrowDownCircle, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { formatCurrency } from "@/lib/utils";
-import type { Product } from "@/lib/types";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import type { Product, StockMovement } from "@/lib/types";
 import { usePlan } from "@/lib/plan-context";
 import { UpgradeModal } from "@/components/ui/UpgradeModal";
 import { LockedFeature } from "@/components/ui/LockedFeature";
 import { cn } from "@/lib/utils";
 
-const categories = ["Maquiagem", "Skincare", "Perfumaria", "Cabelos", "Corpo"];
-
 const emptyForm = {
   name: "",
   brand: "",
-  category: "Maquiagem",
+  category: "",
   cost_price: "",
   sale_price: "",
   stock: "",
 };
 
-export function ProdutosView({ initialProducts }: { initialProducts: Product[] }) {
+export function ProdutosView({
+  initialProducts,
+  categories,
+}: {
+  initialProducts: Product[];
+  categories: string[];
+}) {
   const router = useRouter();
   const { canAdd, hasFeature } = usePlan();
   const [isPending, startTransition] = useTransition();
@@ -45,12 +50,15 @@ export function ProdutosView({ initialProducts }: { initialProducts: Product[] }
   const [editForm, setEditForm] = useState(emptyForm);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState({ ...emptyForm, category: categories[0] ?? "" });
   const [importOpen, setImportOpen] = useState(false);
   const [importRows, setImportRows] = useState<ImportProdutoRow[]>([]);
   const [importResult, setImportResult] = useState<{ imported: number; skipped: number } | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [importLoading, setImportLoading] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [movements, setMovements] = useState<StockMovement[]>([]);
+  const [movementsLoading, setMovementsLoading] = useState(false);
 
   useEffect(() => {
     setProducts(initialProducts);
@@ -76,7 +84,7 @@ export function ProdutosView({ initialProducts }: { initialProducts: Product[] }
     if (!form.name || !form.sale_price) return;
     startTransition(async () => {
       await addProduto(form);
-      setForm(emptyForm);
+      setForm({ ...emptyForm, category: categories[0] ?? "" });
       setAddOpen(false);
       router.refresh();
     });
@@ -129,6 +137,16 @@ export function ProdutosView({ initialProducts }: { initialProducts: Product[] }
   function handleCloseDetail() {
     setDetailProduct(null);
     setConfirmDelete(false);
+  }
+
+  async function openHistory(product: Product) {
+    setDetailProduct(null);
+    setHistoryOpen(true);
+    setMovements([]);
+    setMovementsLoading(true);
+    const data = await getMovimentacoes(product.id);
+    setMovements(data);
+    setMovementsLoading(false);
   }
 
   function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -195,6 +213,14 @@ export function ProdutosView({ initialProducts }: { initialProducts: Product[] }
     p.cost_price > 0
       ? Math.round(((p.sale_price - p.cost_price) / p.sale_price) * 100)
       : null;
+
+  const tipoLabel = (m: StockMovement) => {
+    if (m.tipo === "entrada") return { label: "Entrada", icon: ArrowUpCircle, color: "text-emerald-500" };
+    if (m.tipo === "saida") return { label: "Saída", icon: ArrowDownCircle, color: "text-red-400" };
+    return { label: "Ajuste", icon: SlidersHorizontal, color: "text-amber-500" };
+  };
+
+  const catOptions = categories.map((c) => ({ value: c, label: c }));
 
   return (
     <div className="space-y-4">
@@ -335,7 +361,7 @@ export function ProdutosView({ initialProducts }: { initialProducts: Product[] }
               label="Categoria"
               value={form.category}
               onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-              options={categories.map((c) => ({ value: c, label: c }))}
+              options={catOptions}
             />
           </div>
           <div className="grid grid-cols-3 gap-2">
@@ -451,6 +477,15 @@ export function ProdutosView({ initialProducts }: { initialProducts: Product[] }
               ))}
             </div>
 
+            {/* History button */}
+            <button
+              onClick={() => openHistory(detailProduct)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+            >
+              <History className="w-4 h-4" />
+              Ver histórico de estoque
+            </button>
+
             {/* Actions */}
             <div className="pt-1 border-t border-neutral-100 dark:border-neutral-800">
               {confirmDelete ? (
@@ -497,6 +532,53 @@ export function ProdutosView({ initialProducts }: { initialProducts: Product[] }
           </div>
         </Modal>
       )}
+
+      {/* Stock history modal */}
+      <Modal
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        title="Histórico de estoque"
+      >
+        <div className="space-y-3">
+          {movementsLoading ? (
+            <div className="py-10 flex items-center justify-center">
+              <span className="w-6 h-6 border-2 border-rose-300 border-t-rose-500 rounded-full animate-spin" />
+            </div>
+          ) : movements.length === 0 ? (
+            <div className="py-10 text-center">
+              <History className="w-8 h-8 mx-auto mb-2 text-neutral-300" />
+              <p className="text-sm text-neutral-400">Nenhuma movimentação registrada ainda.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {movements.map((m) => {
+                const { label, icon: Icon, color } = tipoLabel(m);
+                return (
+                  <div
+                    key={m.id}
+                    className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl"
+                  >
+                    <Icon className={cn("w-5 h-5 shrink-0", color)} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+                        {label} · {m.quantidade} un.
+                      </p>
+                      {m.motivo && (
+                        <p className="text-xs text-neutral-400 dark:text-neutral-500 truncate">
+                          {m.motivo}
+                        </p>
+                      )}
+                    </div>
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500 shrink-0">
+                      {formatDate(m.created_at)}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </Modal>
 
       {/* Import modal */}
       <Modal
@@ -620,7 +702,7 @@ export function ProdutosView({ initialProducts }: { initialProducts: Product[] }
               label="Categoria"
               value={editForm.category}
               onChange={(e) => setEditForm((f) => ({ ...f, category: e.target.value }))}
-              options={categories.map((c) => ({ value: c, label: c }))}
+              options={catOptions}
             />
           </div>
           <div className="grid grid-cols-3 gap-2">

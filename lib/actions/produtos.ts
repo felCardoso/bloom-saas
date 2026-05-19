@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { checkPlanLimit } from "@/lib/actions/plan-limit";
+import { logMovimento } from "@/lib/stock-utils";
 import type { Product } from "@/lib/types";
 
 type ProductRow = {
@@ -58,17 +59,34 @@ export async function addProduto(form: {
   const limitCheck = await checkPlanLimit(supabase, user.id, "products");
   if (limitCheck.error) return limitCheck;
 
-  const { error } = await supabase.from("produtos").insert({
-    user_id: user.id,
-    nome: form.name,
-    marca: form.brand || null,
-    categoria: form.category || null,
-    preco_custo: Number(form.cost_price) || 0,
-    preco_venda: Number(form.sale_price) || 0,
-    estoque_atual: Number(form.stock) || 0,
-  });
+  const initialStock = Number(form.stock) || 0;
+
+  const { data: produto, error } = await supabase
+    .from("produtos")
+    .insert({
+      user_id: user.id,
+      nome: form.name,
+      marca: form.brand || null,
+      categoria: form.category || null,
+      preco_custo: Number(form.cost_price) || 0,
+      preco_venda: Number(form.sale_price) || 0,
+      estoque_atual: initialStock,
+    })
+    .select("id")
+    .single();
 
   if (error) return { error: error.message };
+
+  if (produto && initialStock > 0) {
+    await logMovimento(supabase, {
+      user_id: user.id,
+      produto_id: produto.id,
+      tipo: "entrada",
+      quantidade: initialStock,
+      motivo: "Estoque inicial",
+    });
+  }
+
   revalidatePath("/produtos");
   return {};
 }
@@ -96,6 +114,19 @@ export async function updateProduto(
   }
 ): Promise<{ error?: string }> {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: current } = await supabase
+    .from("produtos")
+    .select("estoque_atual")
+    .eq("id", id)
+    .maybeSingle();
+
+  const oldStock = current?.estoque_atual ?? 0;
+  const newStock = Number(form.stock) || 0;
+
   const { error } = await supabase
     .from("produtos")
     .update({
@@ -104,10 +135,22 @@ export async function updateProduto(
       categoria: form.category || null,
       preco_custo: Number(form.cost_price) || 0,
       preco_venda: Number(form.sale_price) || 0,
-      estoque_atual: Number(form.stock) || 0,
+      estoque_atual: newStock,
     })
     .eq("id", id);
   if (error) return { error: error.message };
+
+  if (user && oldStock !== newStock) {
+    const diff = newStock - oldStock;
+    await logMovimento(supabase, {
+      user_id: user.id,
+      produto_id: id,
+      tipo: "ajuste",
+      quantidade: Math.abs(diff),
+      motivo: diff > 0 ? "Ajuste manual (entrada)" : "Ajuste manual (saída)",
+    });
+  }
+
   revalidatePath("/produtos");
   return {};
 }

@@ -19,6 +19,10 @@ import {
   Sun,
   Moon,
   Palette,
+  Tag,
+  Plus,
+  Pencil,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -28,11 +32,12 @@ import { useTheme, type PrimaryColor } from "@/lib/theme-context";
 
 import { updateProfile, updateNotificationPrefs, type NotificationPrefs } from "@/lib/actions/profile";
 import { savePushSubscription, deletePushSubscription } from "@/lib/actions/push";
+import { addCategoria, deleteCategoria, renameCategoria, type Categoria } from "@/lib/actions/categorias";
 import { createClient } from "@/lib/supabase/client";
 import { AvatarUpload } from "@/components/ui/AvatarUpload";
 import { useProfile } from "@/lib/profile-context";
 
-type Tab = "perfil" | "assinatura" | "notificacoes" | "aparencia" | "seguranca" | "conta";
+type Tab = "perfil" | "assinatura" | "notificacoes" | "aparencia" | "seguranca" | "conta" | "categorias";
 
 const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "perfil", label: "Perfil", icon: User },
@@ -40,6 +45,7 @@ const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "notificacoes", label: "Notificações", icon: Bell },
   { id: "aparencia", label: "Aparência", icon: Palette },
   { id: "seguranca", label: "Segurança", icon: Shield },
+  { id: "categorias", label: "Categorias", icon: Tag },
   { id: "conta", label: "Conta", icon: Trash2 },
 ];
 
@@ -848,14 +854,162 @@ function ContaTab({ userEmail }: { userEmail: string }) {
   );
 }
 
+/* ── Categorias ── */
+function CategoriasTab({ initialCategorias }: { initialCategorias: Categoria[] }) {
+  const [categorias, setCategorias] = useState<Categoria[]>(initialCategorias);
+  const [newNome, setNewNome] = useState("");
+  const [addError, setAddError] = useState("");
+  const [addLoading, setAddLoading] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editNome, setEditNome] = useState("");
+  const [editError, setEditError] = useState("");
+  const [editLoading, setEditLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+
+  async function handleAdd() {
+    if (!newNome.trim()) return;
+    setAddLoading(true);
+    setAddError("");
+    const res = await addCategoria(newNome);
+    setAddLoading(false);
+    if (res.error) {
+      setAddError(res.error);
+      return;
+    }
+    setCategorias((prev) => [...prev, { id: crypto.randomUUID(), nome: newNome.trim(), created_at: new Date().toISOString() }]);
+    setNewNome("");
+  }
+
+  function startEdit(cat: Categoria) {
+    setEditingId(cat.id);
+    setEditNome(cat.nome);
+    setEditError("");
+  }
+
+  async function handleRename(id: string) {
+    if (!editNome.trim()) return;
+    setEditLoading(true);
+    setEditError("");
+    const res = await renameCategoria(id, editNome);
+    setEditLoading(false);
+    if (res.error) {
+      setEditError(res.error);
+      return;
+    }
+    setCategorias((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, nome: editNome.trim() } : c))
+    );
+    setEditingId(null);
+  }
+
+  async function handleDelete(id: string) {
+    setDeleteLoading(id);
+    await deleteCategoria(id);
+    setCategorias((prev) => prev.filter((c) => c.id !== id));
+    setDeleteLoading(null);
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-1">
+          Categorias de produto
+        </h3>
+        <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
+          Personalize as categorias usadas para organizar seu catálogo de produtos.
+        </p>
+
+        <div className="space-y-2">
+          {categorias.map((cat) => (
+            <div
+              key={cat.id}
+              className="flex items-center gap-2 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700"
+            >
+              {editingId === cat.id ? (
+                <>
+                  <input
+                    value={editNome}
+                    onChange={(e) => setEditNome(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleRename(cat.id); if (e.key === "Escape") setEditingId(null); }}
+                    autoFocus
+                    className="flex-1 px-2 py-1 text-sm rounded-lg border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
+                  />
+                  {editError && <p className="text-xs text-red-500">{editError}</p>}
+                  <button
+                    onClick={() => handleRename(cat.id)}
+                    disabled={editLoading}
+                    className="px-2.5 py-1 text-xs font-semibold bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:opacity-60"
+                  >
+                    {editLoading ? "..." : "Salvar"}
+                  </button>
+                  <button
+                    onClick={() => setEditingId(null)}
+                    className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Tag className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                  <span className="flex-1 text-sm text-neutral-700 dark:text-neutral-200">
+                    {cat.nome}
+                  </span>
+                  <button
+                    onClick={() => startEdit(cat)}
+                    className="p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(cat.id)}
+                    disabled={deleteLoading === cat.id}
+                    className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 flex gap-2">
+          <input
+            value={newNome}
+            onChange={(e) => { setNewNome(e.target.value); setAddError(""); }}
+            onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
+            placeholder="Nova categoria..."
+            className="flex-1 px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 transition-all"
+          />
+          <button
+            onClick={handleAdd}
+            disabled={addLoading || !newNome.trim()}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-60"
+          >
+            {addLoading ? (
+              <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Plus className="w-4 h-4" />
+            )}
+            Adicionar
+          </button>
+        </div>
+        {addError && <p className="mt-1.5 text-xs text-red-500">{addError}</p>}
+      </div>
+    </div>
+  );
+}
+
 /* ── Main ── */
 export interface ConfiguracoesClientProps {
   initialProfile: { name: string; email: string; phone: string; brand: string; avatarUrl: string | null };
   initialNotifs: NotificationPrefs;
   initialPeriodEnd: string | null;
+  initialCategorias: Categoria[];
 }
 
-export default function ConfiguracoesClient({ initialProfile, initialNotifs, initialPeriodEnd }: ConfiguracoesClientProps) {
+export default function ConfiguracoesClient({ initialProfile, initialNotifs, initialPeriodEnd, initialCategorias }: ConfiguracoesClientProps) {
   const [activeTab, setActiveTab] = useState<Tab>("perfil");
 
   const content: Record<Tab, React.ReactNode> = {
@@ -864,6 +1018,7 @@ export default function ConfiguracoesClient({ initialProfile, initialNotifs, ini
     notificacoes: <NotificacoesTab initialNotifs={initialNotifs} />,
     aparencia: <AparenciaTab />,
     seguranca: <SegurancaTab />,
+    categorias: <CategoriasTab initialCategorias={initialCategorias} />,
     conta: <ContaTab userEmail={initialProfile.email} />,
   };
 

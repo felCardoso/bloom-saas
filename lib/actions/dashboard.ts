@@ -116,6 +116,7 @@ export async function getRecentVendas(): Promise<Order[]> {
     })),
     total: Number(row.valor_total),
     status: row.status,
+    payment_method: row.payment_method ?? "dinheiro",
     created_at: row.data_venda ?? row.created_at,
   }));
 }
