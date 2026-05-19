@@ -1,6 +1,7 @@
 "use client";
 
-import { Bell, Search, Sparkles, Zap } from "lucide-react";
+import { Search, Sparkles, Zap } from "lucide-react";
+import { NotificationBell } from "@/components/NotificationBell";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
@@ -89,10 +90,7 @@ export function Header() {
         )}
 
         {/* Notifications */}
-        <button className="relative p-2 rounded-xl text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
-          <Bell size={18} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white dark:border-neutral-950" />
-        </button>
+        <NotificationBell />
       </div>
     </header>
   );
