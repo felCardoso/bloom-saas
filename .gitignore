@@ -41,3 +41,6 @@ yarn-error.log*
 next-env.d.ts
 
 # PWA — sw.js is manually maintained in public/sw.js (not generated)
+
+# Agents
+CLAUDE.md
