@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import {
   User,
   CreditCard,
@@ -215,11 +214,9 @@ function ManageSubscriptionButton() {
   );
 }
 
-function CancelSubscriptionButton() {
-  const router = useRouter();
+function CancelSubscriptionButton({ onCancelled }: { onCancelled: (expiresAt: string) => void }) {
   const [confirm, setConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
   const [error, setError] = useState("");
 
   const handleCancel = useCallback(async () => {
@@ -232,18 +229,8 @@ function CancelSubscriptionButton() {
       setError(json.error);
       return;
     }
-    setDone(true);
-    router.refresh();
-  }, [router]);
-
-  if (done) {
-    return (
-      <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-200 dark:border-emerald-800">
-        <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Assinatura cancelada.</p>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Seu plano voltou para Grátis.</p>
-      </div>
-    );
-  }
+    onCancelled(json.expiresAt as string);
+  }, [onCancelled]);
 
   return (
     <div className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 space-y-3">
@@ -294,14 +281,24 @@ function CancelSubscriptionButton() {
 }
 
 /* ── Assinatura ── */
-function AssinaturaTab() {
+function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }) {
   const { planId, plan } = usePlan();
+  const [periodEnd, setPeriodEnd] = useState<string | null>(initialPeriodEnd);
+  const isCancelling = periodEnd !== null;
 
   const featureList: string[] = {
     free: ["Até 30 clientes", "Até 20 pedidos/mês", "Até 20 produtos", "Suporte por e-mail"],
     pro: ["Até 200 clientes", "Até 150 pedidos/mês", "Relatórios básicos", "WhatsApp rápido", "Alertas de estoque", "Lembretes de aniversário", "Suporte por e-mail (48h)"],
     premium: ["Clientes ilimitados", "Pedidos ilimitados", "Relatórios avançados", "Exportação CSV", "Até 3 usuários", "Suporte prioritário (24h)"],
   }[planId];
+
+  const formattedExpiry = periodEnd
+    ? new Date(periodEnd + "T00:00:00").toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      })
+    : null;
 
   return (
     <div className="space-y-6">
@@ -311,6 +308,11 @@ function AssinaturaTab() {
             <span className={cn("text-xs font-bold px-2.5 py-1 rounded-full", PLAN_BADGE[planId])}>
               Plano {plan.name}
             </span>
+            {isCancelling && (
+              <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
+                Cancelamento agendado
+              </span>
+            )}
             <div className="flex items-baseline gap-1 mt-3">
               <span className={cn("text-3xl font-bold", PLAN_ACCENT[planId])}>
                 {plan.price === 0 ? "Grátis" : `R$ ${plan.price}`}
@@ -319,8 +321,13 @@ function AssinaturaTab() {
                 <span className="text-sm text-neutral-500 dark:text-neutral-400">/mês</span>
               )}
             </div>
+            {isCancelling && formattedExpiry && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                Acesso ativo até {formattedExpiry}
+              </p>
+            )}
           </div>
-          {planId !== "premium" && (
+          {planId !== "premium" && !isCancelling && (
             <Link
               href="/pricing"
               className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-500 text-white rounded-xl text-xs font-semibold hover:bg-rose-600 transition-colors shadow-sm shrink-0"
@@ -343,11 +350,20 @@ function AssinaturaTab() {
         </div>
       </div>
 
-      {plan.price > 0 && (
-        <>
-          <ManageSubscriptionButton />
-          <CancelSubscriptionButton />
-        </>
+      {isCancelling && formattedExpiry ? (
+        <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-200 dark:border-amber-800">
+          <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Cancelamento agendado</p>
+          <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+            Seu plano permanece ativo até <strong>{formattedExpiry}</strong>. Após essa data, a conta retorna automaticamente para o plano Grátis.
+          </p>
+        </div>
+      ) : (
+        plan.price > 0 && (
+          <>
+            <ManageSubscriptionButton />
+            <CancelSubscriptionButton onCancelled={(expiresAt) => setPeriodEnd(expiresAt)} />
+          </>
+        )
       )}
 
       {planId === "free" && (
@@ -836,14 +852,15 @@ function ContaTab({ userEmail }: { userEmail: string }) {
 export interface ConfiguracoesClientProps {
   initialProfile: { name: string; email: string; phone: string; brand: string; avatarUrl: string | null };
   initialNotifs: NotificationPrefs;
+  initialPeriodEnd: string | null;
 }
 
-export default function ConfiguracoesClient({ initialProfile, initialNotifs }: ConfiguracoesClientProps) {
+export default function ConfiguracoesClient({ initialProfile, initialNotifs, initialPeriodEnd }: ConfiguracoesClientProps) {
   const [activeTab, setActiveTab] = useState<Tab>("perfil");
 
   const content: Record<Tab, React.ReactNode> = {
     perfil: <PerfilTab initialProfile={initialProfile} />,
-    assinatura: <AssinaturaTab />,
+    assinatura: <AssinaturaTab initialPeriodEnd={initialPeriodEnd} />,
     notificacoes: <NotificacoesTab initialNotifs={initialNotifs} />,
     aparencia: <AparenciaTab />,
     seguranca: <SegurancaTab />,

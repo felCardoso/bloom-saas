@@ -46,6 +46,7 @@ export async function POST(request: Request) {
             .update({
               plano: planId,
               asaas_subscription_id: subscriptionId,
+              asaas_period_end: null, // clear any pending cancellation
               updated_at: new Date().toISOString(),
             })
             .eq("asaas_customer_id", payment.customer);
@@ -57,14 +58,18 @@ export async function POST(request: Request) {
     case "SUBSCRIPTION_DELETED":
     case "SUBSCRIPTION_INACTIVATED": {
       const { subscription } = body as AsaasSubscriptionEvent;
+      // Only downgrade immediately if there is no active period_end scheduled.
+      // When the user cancels via the app, period_end is set and the plan stays
+      // active until that date — getUserPlan handles the lazy expiry.
       await supabase
         .from("perfis_usuarios")
         .update({
-          plano: "free",
           asaas_subscription_id: null,
           updated_at: new Date().toISOString(),
         })
-        .eq("asaas_customer_id", subscription.customer);
+        .eq("asaas_customer_id", subscription.customer)
+        .is("asaas_period_end", null); // only touch rows with no scheduled expiry
+      // For rows that DO have asaas_period_end, getUserPlan will expire them lazily.
       break;
     }
   }
