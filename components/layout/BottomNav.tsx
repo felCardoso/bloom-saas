@@ -21,11 +21,11 @@ const mainItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Início" },
   { href: "/clientes", icon: Users, label: "Clientes" },
   { href: "/pedidos", icon: ShoppingBag, label: "Pedidos" },
-  { href: "/agenda", icon: Calendar, label: "Agenda" },
+  { href: "/produtos", icon: Package, label: "Produtos" },
 ];
 
 const moreItems = [
-  { href: "/produtos", icon: Package, label: "Produtos" },
+  { href: "/agenda", icon: Calendar, label: "Agenda" },
   { href: "/relatorios", icon: BarChart3, label: "Relatórios" },
   { href: "/pricing", icon: Zap, label: "Planos" },
   { href: "/configuracoes", icon: Settings, label: "Config." },
