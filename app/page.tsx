@@ -13,49 +13,57 @@ import {
   Check,
   Menu,
   X,
+  Bell,
 } from "lucide-react";
 
 const features = [
   {
     icon: Users,
     title: "Gestão de Clientes",
-    desc: "Centralize toda a carteira de clientes com histórico de compras, aniversários e anotações.",
+    desc: "Centralize toda a carteira com histórico de compras, aniversários, anotações e link direto para o WhatsApp.",
   },
   {
     icon: ShoppingBag,
     title: "Controle de Pedidos",
-    desc: "Registre e acompanhe pedidos do recebimento até a entrega, com atualização de status em um clique.",
+    desc: "Registre pedidos com forma de pagamento (PIX, cartão, fiado), acompanhe o status e gerencie entregas.",
   },
   {
     icon: Package,
     title: "Catálogo de Produtos",
-    desc: "Organize produtos por categoria, controle estoque e acompanhe margem de lucro automaticamente.",
+    desc: "Organize por categorias personalizadas, controle estoque com histórico de movimentações e veja sua margem de lucro.",
   },
   {
     icon: Calendar,
     title: "Agenda Inteligente",
-    desc: "Follow-ups, entregas e aniversários de clientes para nunca perder uma venda.",
+    desc: "Follow-ups, entregas e aniversários de clientes organizados para você nunca perder uma venda.",
   },
   {
     icon: BarChart3,
     title: "Relatórios e Insights",
-    desc: "Visualize receita, ticket médio e desempenho para tomar decisões estratégicas com confiança.",
+    desc: "Visualize receita, ticket médio e produtos mais vendidos para tomar decisões com confiança.",
   },
   {
-    icon: Sparkles,
-    title: "Design Minimalista",
-    desc: "Interface limpa e intuitiva pensada para revendedoras que querem praticidade no dia a dia.",
+    icon: Bell,
+    title: "Notificações em Tempo Real",
+    desc: "Alertas de estoque baixo, pedidos pendentes e aniversários via push notification e notificações in-app.",
   },
 ];
 
 const plans = [
   {
-    name: "Starter",
+    name: "Grátis",
     price: "Grátis",
     period: "",
     desc: "Para quem está começando",
-    features: ["Até 30 clientes", "Até 50 pedidos/mês", "Catálogo básico"],
+    features: [
+      "Até 30 clientes",
+      "Até 20 pedidos/mês",
+      "Até 20 produtos",
+      "Agenda e follow-ups",
+      "Suporte por e-mail",
+    ],
     cta: "Começar grátis",
+    href: "/registro",
     primary: false,
   },
   {
@@ -64,27 +72,33 @@ const plans = [
     period: "/mês",
     desc: "Para revendedoras em crescimento",
     features: [
-      "Clientes ilimitados",
-      "Pedidos ilimitados",
-      "Relatórios completos",
-      "Agenda avançada",
-      "Suporte prioritário",
+      "Até 200 clientes",
+      "Até 150 pedidos/mês",
+      "Relatórios e gráficos",
+      "Lembretes de aniversário",
+      "Alertas de estoque baixo",
+      "Link rápido para WhatsApp",
+      "Suporte por e-mail",
     ],
     cta: "Experimentar 14 dias",
+    href: "/registro",
     primary: true,
   },
   {
-    name: "Business",
+    name: "Premium",
     price: "R$ 59",
     period: "/mês",
-    desc: "Para times e grandes carteiras",
+    desc: "Para top revendedoras e times",
     features: [
-      "Tudo do Pro",
-      "Múltiplos usuários",
-      "Exportação de dados",
-      "API integrations",
+      "Clientes ilimitados",
+      "Pedidos ilimitados",
+      "Relatórios avançados",
+      "Exportação de dados (CSV)",
+      "Até 3 usuários",
+      "Suporte prioritário",
     ],
-    cta: "Falar com vendas",
+    cta: "Assinar Premium",
+    href: "/registro",
     primary: false,
   },
 ];
@@ -375,7 +389,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <Link
-                  href="/dashboard"
+                  href={plan.href}
                   className={`block text-center py-3 rounded-xl text-sm font-semibold transition-all ${
                     plan.primary
                       ? "bg-white text-rose-600 hover:bg-rose-50"
