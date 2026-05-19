@@ -925,13 +925,15 @@ function CategoriasTab({ initialCategorias }: { initialCategorias: Categoria[] }
           <div key={cat.id} className="flex items-center gap-3 px-5 py-4">
             {editingId === cat.id ? (
               <>
-                <input
-                  value={editNome}
-                  onChange={(e) => setEditNome(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") handleRename(cat.id); if (e.key === "Escape") setEditingId(null); }}
-                  autoFocus
-                  className="flex-1 min-w-0 px-2.5 py-1.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
-                />
+                <div className="flex-1 min-w-0">
+                  <input
+                    value={editNome}
+                    onChange={(e) => setEditNome(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleRename(cat.id); if (e.key === "Escape") setEditingId(null); }}
+                    autoFocus
+                    className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
+                  />
+                </div>
                 {editError && <p className="text-xs text-red-500 shrink-0">{editError}</p>}
                 <button
                   onClick={() => handleRename(cat.id)}
@@ -978,13 +980,15 @@ function CategoriasTab({ initialCategorias }: { initialCategorias: Categoria[] }
       </div>
 
       <div className="flex gap-2">
-        <input
-          value={newNome}
-          onChange={(e) => { setNewNome(e.target.value); setAddError(""); }}
-          onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
-          placeholder="Nova categoria..."
-          className="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 transition-all"
-        />
+        <div className="flex-1 min-w-0">
+          <input
+            value={newNome}
+            onChange={(e) => { setNewNome(e.target.value); setAddError(""); }}
+            onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
+            placeholder="Nova categoria..."
+            className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 transition-all"
+          />
+        </div>
         <button
           onClick={handleAdd}
           disabled={addLoading || !newNome.trim()}
