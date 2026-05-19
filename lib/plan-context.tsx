@@ -23,13 +23,13 @@ interface PlanContextType {
   setPlanId: (id: PlanId) => void;
   usage: Usage;
   setUsage: (u: Partial<Usage>) => void;
-  /** Returns false when the resource limit is reached */
+  // Returns false when the resource limit is reached
   canAdd: (resource: keyof Usage) => boolean;
-  /** Returns true when usage >= 80% of limit */
+  // Returns true when usage >= 80% of limit
   isNearLimit: (resource: keyof Usage) => boolean;
-  /** Returns 0-100, or null when unlimited */
+  // Returns 0-100, or null when unlimited
   usagePercent: (resource: keyof Usage) => number | null;
-  /** Remaining slots, or null when unlimited */
+  // Remaining slots, or null when unlimited
   remaining: (resource: keyof Usage) => number | null;
   hasFeature: (feature: keyof PlanFeatures) => boolean;
 }
@@ -78,7 +78,7 @@ export function PlanProvider({
       if (limit === -1) return true;
       return usage[resource] < limit;
     },
-    [plan, usage]
+    [plan, usage],
   );
 
   const isNearLimit = useCallback(
@@ -87,7 +87,7 @@ export function PlanProvider({
       if (limit === -1) return false;
       return usage[resource] / limit >= 0.8;
     },
-    [plan, usage]
+    [plan, usage],
   );
 
   const usagePercent = useCallback(
@@ -96,7 +96,7 @@ export function PlanProvider({
       if (limit === -1) return null;
       return Math.min((usage[resource] / limit) * 100, 100);
     },
-    [plan, usage]
+    [plan, usage],
   );
 
   const remaining = useCallback(
@@ -105,7 +105,7 @@ export function PlanProvider({
       if (limit === -1) return null;
       return Math.max(limit - usage[resource], 0);
     },
-    [plan, usage]
+    [plan, usage],
   );
 
   const hasFeature = useCallback(
@@ -115,7 +115,7 @@ export function PlanProvider({
       if (typeof val === "number") return val > 0;
       return true;
     },
-    [plan]
+    [plan],
   );
 
   return (

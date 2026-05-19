@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { usePlan } from "@/lib/plan-context";
-import { cn } from "@/lib/utils";
 
 const pageTitles: Record<string, { title: string; subtitle: string }> = {
   "/dashboard": { title: "Dashboard", subtitle: "Visão geral do seu negócio" },
@@ -15,14 +14,17 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
   "/agenda": { title: "Agenda", subtitle: "Follow-ups e lembretes" },
   "/relatorios": { title: "Relatórios", subtitle: "Análise de desempenho" },
   "/pricing": { title: "Planos", subtitle: "Gerencie sua assinatura" },
-  "/configuracoes": { title: "Configurações", subtitle: "Preferências da conta" },
+  "/configuracoes": {
+    title: "Configurações",
+    subtitle: "Preferências da conta",
+  },
 };
 
 export function Header() {
   const pathname = usePathname();
   const page = pageTitles[pathname] || { title: "Bloom", subtitle: "" };
   const [searchOpen, setSearchOpen] = useState(false);
-  const { planId, plan } = usePlan();
+  const { planId } = usePlan();
 
   return (
     <header className="h-14 lg:h-16 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800 flex items-center px-4 lg:px-6 gap-3 sticky top-0 z-20">
@@ -35,8 +37,12 @@ export function Header() {
 
       {/* Title */}
       <div className="flex-1 min-w-0">
-        <h1 className="text-sm lg:text-base font-semibold text-neutral-800 dark:text-neutral-100 truncate">{page.title}</h1>
-        <p className="text-[11px] lg:text-xs text-neutral-400 dark:text-neutral-500 hidden sm:block">{page.subtitle}</p>
+        <h1 className="text-sm lg:text-base font-semibold text-neutral-800 dark:text-neutral-100 truncate">
+          {page.title}
+        </h1>
+        <p className="text-[11px] lg:text-xs text-neutral-400 dark:text-neutral-500 hidden sm:block">
+          {page.subtitle}
+        </p>
       </div>
 
       <div className="flex items-center gap-2">
