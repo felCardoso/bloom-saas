@@ -27,6 +27,15 @@ import { usePlan } from "@/lib/plan-context";
 import { useTheme, type PrimaryColor } from "@/lib/theme-context";
 
 import { updateProfile, updateNotificationPrefs, type NotificationPrefs } from "@/lib/actions/profile";
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  const bytes = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+  return bytes;
+}
 import { savePushSubscription, deletePushSubscription } from "@/lib/actions/push";
 import { createClient } from "@/lib/supabase/client";
 import { AvatarUpload } from "@/components/ui/AvatarUpload";
@@ -306,14 +315,18 @@ function NotificacoesTab({ initialNotifs }: { initialNotifs: NotificationPrefs }
         return;
       }
       try {
+        const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+        if (!vapidKey) throw new Error("VAPID key not configured");
         const reg = await navigator.serviceWorker.ready;
         const sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+          applicationServerKey: urlBase64ToUint8Array(vapidKey),
         });
-        await savePushSubscription(sub.toJSON() as Parameters<typeof savePushSubscription>[0]);
+        const result = await savePushSubscription(sub.toJSON() as Parameters<typeof savePushSubscription>[0]);
+        if (result?.error) throw new Error(result.error);
         toggle("push");
-      } catch {
+      } catch (err) {
+        console.error("Push subscription error:", err);
         alert("Não foi possível ativar as notificações push. Tente novamente.");
       }
     } else {
