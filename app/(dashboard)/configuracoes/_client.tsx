@@ -919,11 +919,11 @@ function CategoriasTab({ initialCategorias }: { initialCategorias: Categoria[] }
           Personalize as categorias usadas para organizar seu catálogo de produtos.
         </p>
 
-        <div className="space-y-2">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-50 dark:divide-neutral-800">
           {categorias.map((cat) => (
             <div
               key={cat.id}
-              className="flex items-center gap-2 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700"
+              className="flex items-center gap-3 px-5 py-3.5"
             >
               {editingId === cat.id ? (
                 <>
@@ -932,19 +932,19 @@ function CategoriasTab({ initialCategorias }: { initialCategorias: Categoria[] }
                     onChange={(e) => setEditNome(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") handleRename(cat.id); if (e.key === "Escape") setEditingId(null); }}
                     autoFocus
-                    className="flex-1 px-2 py-1 text-sm rounded-lg border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
+                    className="flex-1 px-2.5 py-1.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
                   />
-                  {editError && <p className="text-xs text-red-500">{editError}</p>}
+                  {editError && <p className="text-xs text-red-500 shrink-0">{editError}</p>}
                   <button
                     onClick={() => handleRename(cat.id)}
                     disabled={editLoading}
-                    className="px-2.5 py-1 text-xs font-semibold bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:opacity-60"
+                    className="px-3 py-1.5 text-xs font-semibold bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:opacity-60 shrink-0"
                   >
                     {editLoading ? "..." : "Salvar"}
                   </button>
                   <button
                     onClick={() => setEditingId(null)}
-                    className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
+                    className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors shrink-0"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -972,6 +972,11 @@ function CategoriasTab({ initialCategorias }: { initialCategorias: Categoria[] }
               )}
             </div>
           ))}
+          {categorias.length === 0 && (
+            <div className="px-5 py-8 text-center text-sm text-neutral-400">
+              Nenhuma categoria cadastrada.
+            </div>
+          )}
         </div>
 
         <div className="mt-4 flex gap-2">
