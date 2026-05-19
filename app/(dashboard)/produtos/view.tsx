@@ -43,6 +43,7 @@ export function ProdutosView({ initialProducts }: { initialProducts: Product[] }
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState(emptyForm);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [importOpen, setImportOpen] = useState(false);
@@ -82,6 +83,7 @@ export function ProdutosView({ initialProducts }: { initialProducts: Product[] }
   }
 
   function openEdit(product: Product) {
+    setEditingProduct(product);
     setEditForm({
       name: product.name,
       brand: product.brand,
@@ -90,16 +92,17 @@ export function ProdutosView({ initialProducts }: { initialProducts: Product[] }
       sale_price: String(product.sale_price),
       stock: String(product.stock),
     });
+    setDetailProduct(null);
     setEditOpen(true);
   }
 
   function handleEdit() {
-    if (!detailProduct || !editForm.name || !editForm.sale_price) return;
-    const id = detailProduct.id;
+    if (!editingProduct || !editForm.name || !editForm.sale_price) return;
+    const id = editingProduct.id;
     startTransition(async () => {
       await updateProduto(id, editForm);
       const updated: Product = {
-        ...detailProduct,
+        ...editingProduct,
         name: editForm.name,
         brand: editForm.brand,
         category: editForm.category,
@@ -108,7 +111,6 @@ export function ProdutosView({ initialProducts }: { initialProducts: Product[] }
         stock: Number(editForm.stock) || 0,
       };
       setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)));
-      setDetailProduct(updated);
       setEditOpen(false);
     });
   }
@@ -477,7 +479,7 @@ export function ProdutosView({ initialProducts }: { initialProducts: Product[] }
                 <div className="flex gap-3">
                   <button
                     onClick={() => setConfirmDelete(true)}
-                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                     Excluir
