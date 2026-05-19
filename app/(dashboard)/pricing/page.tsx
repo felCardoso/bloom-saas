@@ -24,7 +24,7 @@ const FEATURES_TABLE = [
     { label: "Alertas estoque", icon: Package, values: { free: false, pro: true, premium: true } },
     { label: "Exportar CSV", icon: Download, values: { free: false, pro: false, premium: true } },
     { label: "Múltiplos usuários", icon: UsersRound, values: { free: false, pro: false, premium: "até 3" } },
-    { label: "Suporte", icon: HeadphonesIcon, values: { free: "Comunidade", pro: "E-mail", premium: "Prioritário" } },
+    { label: "Suporte", icon: HeadphonesIcon, values: { free: "E-mail", pro: "E-mail", premium: "Prioritário (24h)" } },
   ]},
 ];
 
@@ -36,16 +36,20 @@ function FeatureValue({ value }: { value: boolean | string }) {
 
 function planKey(p: (typeof PLANS)[PlanId]) {
   const limits = [
-    p.limits.clients === -1 ? "Clientes ilimitados" : `${p.limits.clients} clientes`,
-    p.limits.ordersPerMonth === -1 ? "Pedidos ilimitados" : `${p.limits.ordersPerMonth} pedidos/mês`,
-    p.limits.products === -1 ? "Produtos ilimitados" : `${p.limits.products} produtos`,
+    p.limits.clients === -1 ? "Clientes ilimitados" : `Até ${p.limits.clients} clientes`,
+    p.limits.ordersPerMonth === -1 ? "Pedidos ilimitados" : `Até ${p.limits.ordersPerMonth} pedidos/mês`,
+    p.limits.products === -1 ? "Produtos ilimitados" : `Até ${p.limits.products} produtos`,
   ];
+  const supportLabel = { community: "Suporte por e-mail", email: "Suporte por e-mail", priority: "Suporte prioritário" }[p.features.support];
   const extras = [
-    p.features.revenueChart && "Gráficos e relatórios",
-    p.features.whatsappLink && "Link WhatsApp",
-    p.features.stockAlerts && "Alertas de estoque",
-    p.features.csvExport && "Exportar CSV",
+    p.features.reportsBasic && !p.features.reportsAdvanced && "Relatórios e gráficos",
+    p.features.reportsAdvanced && "Relatórios avançados",
+    p.features.birthdayReminders && "Lembretes de aniversário",
+    p.features.stockAlerts && "Alertas de estoque baixo",
+    p.features.whatsappLink && "Link rápido para WhatsApp",
+    p.features.csvExport && "Exportar dados (CSV)",
     p.features.multipleUsers > 0 && `Até ${p.features.multipleUsers} usuários`,
+    supportLabel,
   ].filter(Boolean) as string[];
   return [...limits, ...extras];
 }
