@@ -40,6 +40,45 @@ function rowToOrder(row: VendaRow): Order {
   };
 }
 
+type StockItem = { product_id: string; quantity: number };
+
+async function adjustStock(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  items: StockItem[],
+  delta: 1 | -1
+): Promise<void> {
+  for (const item of items) {
+    const { data } = await supabase
+      .from("produtos")
+      .select("estoque_atual")
+      .eq("id", item.product_id)
+      .maybeSingle();
+
+    if (data) {
+      const newStock = Math.max(0, (data.estoque_atual ?? 0) + delta * item.quantity);
+      await supabase
+        .from("produtos")
+        .update({ estoque_atual: newStock })
+        .eq("id", item.product_id);
+    }
+  }
+}
+
+async function getItensVenda(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  vendaId: string
+): Promise<StockItem[]> {
+  const { data } = await supabase
+    .from("itens_venda")
+    .select("produto_id, quantidade")
+    .eq("venda_id", vendaId);
+
+  return (data ?? []).map((r: { produto_id: string; quantidade: number }) => ({
+    product_id: r.produto_id,
+    quantity: r.quantidade,
+  }));
+}
+
 export async function getVendas(): Promise<Order[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -90,6 +129,15 @@ export async function addVenda(form: {
   const { error: itensError } = await supabase.from("itens_venda").insert(itens);
   if (itensError) return { error: itensError.message };
 
+  // Decrement stock for non-cancelled orders
+  if (form.status !== "cancelado") {
+    await adjustStock(
+      supabase,
+      form.items.map((i) => ({ product_id: i.product_id, quantity: i.quantity })),
+      -1
+    );
+  }
+
   const { data: authUser } = await supabase.auth.getUser();
   if (authUser.user?.email) {
     const { data: cliente } = await supabase
@@ -111,6 +159,7 @@ export async function addVenda(form: {
   }
 
   revalidatePath("/pedidos");
+  revalidatePath("/produtos");
   revalidatePath("/dashboard");
   return {};
 }
@@ -120,21 +169,64 @@ export async function updateVendaStatus(
   status: OrderStatus
 ): Promise<{ error?: string }> {
   const supabase = await createClient();
+
+  const { data: current } = await supabase
+    .from("vendas")
+    .select("status")
+    .eq("id", id)
+    .single();
+
+  const oldStatus = current?.status as OrderStatus | undefined;
+
   const { error } = await supabase
     .from("vendas")
     .update({ status })
     .eq("id", id);
   if (error) return { error: error.message };
+
+  // Adjust stock when cancellation state changes
+  if (oldStatus && oldStatus !== status) {
+    const itens = await getItensVenda(supabase, id);
+    if (itens.length > 0) {
+      if (status === "cancelado" && oldStatus !== "cancelado") {
+        // Restore stock
+        await adjustStock(supabase, itens, 1);
+      } else if (status !== "cancelado" && oldStatus === "cancelado") {
+        // Re-decrement stock
+        await adjustStock(supabase, itens, -1);
+      }
+    }
+  }
+
   revalidatePath("/pedidos");
+  revalidatePath("/produtos");
   revalidatePath("/dashboard");
   return {};
 }
 
 export async function deleteVenda(id: string): Promise<{ error?: string }> {
   const supabase = await createClient();
+
+  // Restore stock before deleting (only if not already cancelled)
+  const { data: current } = await supabase
+    .from("vendas")
+    .select("status")
+    .eq("id", id)
+    .single();
+
+  if (current?.status !== "cancelado") {
+    const itens = await getItensVenda(supabase, id);
+    if (itens.length > 0) {
+      await adjustStock(supabase, itens, 1);
+    }
+  }
+
   const { error } = await supabase.from("vendas").delete().eq("id", id);
   if (error) return { error: error.message };
+
   revalidatePath("/pedidos");
+  revalidatePath("/produtos");
   revalidatePath("/dashboard");
   return {};
 }
+
