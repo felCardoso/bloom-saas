@@ -60,6 +60,16 @@ export interface ScheduleEvent {
   completed: boolean;
 }
 
+export type WaTemplateType = "aniversario" | "pedido_pendente" | "promocao" | "pos_venda" | "personalizado";
+
+export interface WhatsAppTemplate {
+  id: string;
+  nome: string;
+  tipo: WaTemplateType;
+  mensagem: string;
+  created_at: string;
+}
+
 export interface DashboardStats {
   total_clients: number;
   active_clients: number;

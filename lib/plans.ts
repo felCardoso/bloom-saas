@@ -5,6 +5,7 @@ export interface PlanLimits {
   ordersPerMonth: number;
   products: number;
   events: number;
+  messageTemplates: number;
 }
 
 export interface PlanFeatures {
@@ -42,6 +43,7 @@ export const PLANS: Record<PlanId, Plan> = {
       ordersPerMonth: 20,
       products: 20,
       events: 15,
+      messageTemplates: 5,
     },
     features: {
       revenueChart: false,
@@ -67,6 +69,7 @@ export const PLANS: Record<PlanId, Plan> = {
       ordersPerMonth: 150,
       products: 100,
       events: -1,
+      messageTemplates: -1,
     },
     features: {
       revenueChart: true,
@@ -91,6 +94,7 @@ export const PLANS: Record<PlanId, Plan> = {
       ordersPerMonth: -1,
       products: -1,
       events: -1,
+      messageTemplates: -1,
     },
     features: {
       revenueChart: true,
@@ -113,6 +117,7 @@ export const RESOURCE_LABELS: Record<string, string> = {
   ordersPerMonth: "pedidos este mês",
   products: "produtos",
   events: "eventos na agenda",
+  messageTemplates: "templates de mensagem",
 };
 
 export const FEATURE_LABELS: Record<keyof PlanFeatures, string> = {

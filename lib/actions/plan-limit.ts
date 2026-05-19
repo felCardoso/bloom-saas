@@ -4,7 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { PLANS, RESOURCE_LABELS } from "@/lib/plans";
 import type { PlanId } from "@/lib/plans";
 
-type LimitResource = "clients" | "products" | "ordersPerMonth" | "events";
+type LimitResource = "clients" | "products" | "ordersPerMonth" | "events" | "messageTemplates";
 
 export async function checkPlanLimit(
   supabase: SupabaseClient,
@@ -46,6 +46,12 @@ export async function checkPlanLimit(
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
       .gte("data_venda", startOfMonth.toISOString().split("T")[0]);
+    count = c ?? 0;
+  } else if (resource === "messageTemplates") {
+    const { count: c } = await supabase
+      .from("templates_whatsapp")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId);
     count = c ?? 0;
   } else {
     const { count: c } = await supabase
