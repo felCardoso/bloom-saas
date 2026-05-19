@@ -62,6 +62,7 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState(emptyForm);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
@@ -127,17 +128,24 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
   function handleDelete() {
     if (!selected) return;
     const id = selected.id;
+    setDeleteError("");
     startTransition(async () => {
-      await deleteCliente(id);
+      const result = await deleteCliente(id);
+      if (result?.error) {
+        setDeleteError("Não foi possível excluir. Remova os pedidos desta cliente primeiro.");
+        return;
+      }
       setClients((prev) => prev.filter((c) => c.id !== id));
       setSelected(null);
       setConfirmDelete(false);
+      router.refresh();
     });
   }
 
   function handleCloseDetail() {
     setSelected(null);
     setConfirmDelete(false);
+    setDeleteError("");
   }
 
   return (
@@ -682,11 +690,14 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
                   <p className="text-sm text-center text-neutral-600 dark:text-neutral-300">
                     Excluir <strong>{selected.name}</strong>? Esta ação não pode ser desfeita.
                   </p>
+                  {deleteError && (
+                    <p className="text-xs text-red-500 text-center">{deleteError}</p>
+                  )}
                   <div className="flex gap-3">
                     <Button
                       variant="secondary"
                       className="flex-1"
-                      onClick={() => setConfirmDelete(false)}
+                      onClick={() => { setConfirmDelete(false); setDeleteError(""); }}
                     >
                       Cancelar
                     </Button>
