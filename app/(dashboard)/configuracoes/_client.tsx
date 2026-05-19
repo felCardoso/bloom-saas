@@ -27,6 +27,7 @@ import { usePlan } from "@/lib/plan-context";
 import { useTheme, type PrimaryColor } from "@/lib/theme-context";
 
 import { updateProfile, updateNotificationPrefs, type NotificationPrefs } from "@/lib/actions/profile";
+import { savePushSubscription, deletePushSubscription } from "@/lib/actions/push";
 import { createClient } from "@/lib/supabase/client";
 import { AvatarUpload } from "@/components/ui/AvatarUpload";
 
@@ -293,6 +294,43 @@ function NotificacoesTab({ initialNotifs }: { initialNotifs: NotificationPrefs }
     setSaved(false);
   };
 
+  const handlePushToggle = async () => {
+    if (!notifs.push) {
+      if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+        alert("Seu navegador não suporta notificações push.");
+        return;
+      }
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        alert("Permissão negada. Habilite notificações nas configurações do navegador.");
+        return;
+      }
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+        });
+        await savePushSubscription(sub.toJSON() as Parameters<typeof savePushSubscription>[0]);
+        toggle("push");
+      } catch {
+        alert("Não foi possível ativar as notificações push. Tente novamente.");
+      }
+    } else {
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          await deletePushSubscription(sub.endpoint);
+          await sub.unsubscribe();
+        }
+        toggle("push");
+      } catch {
+        toggle("push");
+      }
+    }
+  };
+
   const handleSave = () => {
     setError("");
     startTransition(async () => {
@@ -335,7 +373,14 @@ function NotificacoesTab({ initialNotifs }: { initialNotifs: NotificationPrefs }
               </div>
               <p className="text-xs text-neutral-400 mt-0.5">{row.desc}</p>
             </div>
-            <Toggle checked={notifs[row.key]} onChange={() => !row.locked && toggle(row.key)} />
+            <Toggle
+              checked={notifs[row.key]}
+              onChange={() => {
+                if (row.locked) return;
+                if (row.key === "push") handlePushToggle();
+                else toggle(row.key);
+              }}
+            />
           </div>
         ))}
       </div>

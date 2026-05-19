@@ -78,6 +78,46 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
+// ─── Push: show native notification ──────────────────────────────────────────
+self.addEventListener("push", (event) => {
+  if (!event.data) return;
+  let payload;
+  try {
+    payload = event.data.json();
+  } catch {
+    payload = { title: "Bloom", body: event.data.text() };
+  }
+
+  const { title, body, icon, badge, url, tag } = payload;
+  event.waitUntil(
+    self.registration.showNotification(title ?? "Bloom", {
+      body: body ?? "",
+      icon: icon ?? "/icons/icon-192.png",
+      badge: badge ?? "/icons/icon-192.png",
+      tag: tag,
+      data: { url: url ?? "/dashboard" },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url ?? "/dashboard";
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clients) => {
+        const existing = clients.find((c) => c.url.includes(self.location.origin));
+        if (existing) {
+          existing.focus();
+          existing.navigate(targetUrl);
+        } else {
+          self.clients.openWindow(targetUrl);
+        }
+      })
+  );
+});
+
 // ─── Message: handle SKIP_WAITING from PwaUpdateBanner ───────────────────────
 self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") {
