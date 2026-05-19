@@ -1044,7 +1044,7 @@ export default function ConfiguracoesClient({ initialProfile, initialNotifs, ini
         ))}
       </div>
 
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4 sm:p-5 shadow-card">
+      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4 sm:p-5 shadow-card overflow-hidden">
         {content[activeTab]}
       </div>
     </div>
