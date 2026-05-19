@@ -79,3 +79,31 @@ export async function deleteProduto(id: string): Promise<{ error?: string }> {
   revalidatePath("/produtos");
   return {};
 }
+
+export async function updateProduto(
+  id: string,
+  form: {
+    name: string;
+    brand: string;
+    category: string;
+    cost_price: string;
+    sale_price: string;
+    stock: string;
+  }
+): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("produtos")
+    .update({
+      nome: form.name,
+      marca: form.brand || null,
+      categoria: form.category || null,
+      preco_custo: Number(form.cost_price) || 0,
+      preco_venda: Number(form.sale_price) || 0,
+      estoque_atual: Number(form.stock) || 0,
+    })
+    .eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/produtos");
+  return {};
+}

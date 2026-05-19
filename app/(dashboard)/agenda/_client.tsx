@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, CheckCircle2, Circle, Calendar, Phone, Gift, Truck, Trash2 } from "lucide-react";
+import { Plus, CheckCircle2, Circle, Calendar, Phone, Gift, Truck, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
@@ -14,13 +14,21 @@ import type { ScheduleEvent } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { usePlan } from "@/lib/plan-context";
 import { UpgradeModal } from "@/components/ui/UpgradeModal";
-import { addEvento, toggleEvento, deleteEvento } from "@/lib/actions/agenda";
+import { addEvento, toggleEvento, deleteEvento, updateEvento } from "@/lib/actions/agenda";
 
 const typeMap = {
   follow_up: { label: "Follow-up", variant: "rose" as const, icon: Phone },
   entrega: { label: "Entrega", variant: "blue" as const, icon: Truck },
   aniversario: { label: "Aniversário", variant: "yellow" as const, icon: Gift },
   outro: { label: "Outro", variant: "gray" as const, icon: Calendar },
+};
+
+const emptyForm = {
+  client_name: "",
+  type: "follow_up" as ScheduleEvent["type"],
+  title: "",
+  description: "",
+  date: "",
 };
 
 interface Props {
@@ -31,16 +39,13 @@ export default function AgendaClient({ initialEvents }: Props) {
   const { canAdd, usage, setUsage } = usePlan();
   const [events, setEvents] = useState<ScheduleEvent[]>(initialEvents);
   const [addOpen, setAddOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<ScheduleEvent | null>(null);
+  const [editForm, setEditForm] = useState(emptyForm);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "pending" | "done">("pending");
   const [isPending, startTransition] = useTransition();
-  const [form, setForm] = useState({
-    client_name: "",
-    type: "follow_up" as ScheduleEvent["type"],
-    title: "",
-    description: "",
-    date: "",
-  });
+  const [form, setForm] = useState(emptyForm);
 
   const filtered = events.filter((e) => {
     if (filter === "pending") return !e.completed;
@@ -64,6 +69,36 @@ export default function AgendaClient({ initialEvents }: Props) {
   function handleDelete(id: string) {
     setEvents((prev) => prev.filter((e) => e.id !== id));
     startTransition(async () => { await deleteEvento(id); });
+  }
+
+  function openEdit(event: ScheduleEvent) {
+    setEditingEvent(event);
+    setEditForm({
+      client_name: event.client_name ?? "",
+      type: event.type,
+      title: event.title,
+      description: event.description ?? "",
+      date: event.date,
+    });
+    setEditOpen(true);
+  }
+
+  function handleEdit() {
+    if (!editingEvent || !editForm.title || !editForm.date) return;
+    const id = editingEvent.id;
+    startTransition(async () => {
+      const result = await updateEvento(id, editForm);
+      if (result.error) return;
+      setEvents((prev) =>
+        prev.map((e) =>
+          e.id === id
+            ? { ...e, ...editForm }
+            : e
+        ).sort((a, b) => a.date.localeCompare(b.date))
+      );
+      setEditOpen(false);
+      setEditingEvent(null);
+    });
   }
 
   function handleAddClick() {
@@ -90,7 +125,7 @@ export default function AgendaClient({ initialEvents }: Props) {
       };
       setEvents((prev) => [...prev, newEvent].sort((a, b) => a.date.localeCompare(b.date)));
       setUsage({ events: usage.events + 1 });
-      setForm({ client_name: "", type: "follow_up", title: "", description: "", date: "" });
+      setForm(emptyForm);
       setAddOpen(false);
     });
   }
@@ -222,12 +257,20 @@ export default function AgendaClient({ initialEvents }: Props) {
                             </div>
                           </div>
 
-                          <button
-                            onClick={() => handleDelete(event.id)}
-                            className="shrink-0 text-neutral-300 hover:text-red-400 transition-colors mt-0.5"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center gap-1 shrink-0 mt-0.5">
+                            <button
+                              onClick={() => openEdit(event)}
+                              className="p-1.5 rounded-lg text-neutral-300 hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(event.id)}
+                              className="p-1.5 rounded-lg text-neutral-300 hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </Card>
                     );
@@ -292,6 +335,63 @@ export default function AgendaClient({ initialEvents }: Props) {
               Cancelar
             </Button>
             <Button className="flex-1" onClick={handleAdd} disabled={isPending || !form.title || !form.date}>
+              {isPending ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : "Salvar"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Edit modal */}
+      <Modal open={editOpen} onClose={() => { setEditOpen(false); setEditingEvent(null); }} title="Editar Evento">
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <Select
+              label="Tipo"
+              value={editForm.type}
+              onChange={(e) =>
+                setEditForm((f) => ({ ...f, type: e.target.value as ScheduleEvent["type"] }))
+              }
+              options={[
+                { value: "follow_up", label: "Follow-up" },
+                { value: "entrega", label: "Entrega" },
+                { value: "aniversario", label: "Aniversário" },
+                { value: "outro", label: "Outro" },
+              ]}
+            />
+            <Input
+              label="Data *"
+              type="date"
+              value={editForm.date}
+              onChange={(e) => setEditForm((f) => ({ ...f, date: e.target.value }))}
+            />
+          </div>
+          <Input
+            label="Título *"
+            value={editForm.title}
+            onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
+            placeholder="Ex: Ligar para apresentar catálogo"
+          />
+          <Input
+            label="Cliente"
+            value={editForm.client_name}
+            onChange={(e) => setEditForm((f) => ({ ...f, client_name: e.target.value }))}
+            placeholder="Nome da cliente (opcional)"
+          />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Descrição</label>
+            <textarea
+              value={editForm.description}
+              onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+              rows={2}
+              placeholder="Detalhes do evento..."
+              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"
+            />
+          </div>
+          <div className="flex gap-3 pt-1">
+            <Button variant="secondary" className="flex-1" onClick={() => { setEditOpen(false); setEditingEvent(null); }}>
+              Cancelar
+            </Button>
+            <Button className="flex-1" onClick={handleEdit} disabled={isPending || !editForm.title || !editForm.date}>
               {isPending ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : "Salvar"}
             </Button>
           </div>

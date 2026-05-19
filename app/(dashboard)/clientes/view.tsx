@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { addCliente } from "@/lib/actions/clientes";
+import { addCliente, updateCliente, deleteCliente } from "@/lib/actions/clientes";
 import {
   Plus,
   Search,
@@ -13,6 +13,8 @@ import {
   Users,
   ChevronRight,
   MessageCircle,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -37,6 +39,16 @@ const statusMap: Record<
   prospect: { label: "Prospect", variant: "rose" },
 };
 
+const emptyForm = {
+  name: "",
+  phone: "",
+  email: "",
+  city: "",
+  status: "ativa" as ClientStatus,
+  notes: "",
+  birthday: "",
+};
+
 export function ClientesView({ initialClients }: { initialClients: Client[] }) {
   const router = useRouter();
   const { canAdd, hasFeature } = usePlan();
@@ -47,15 +59,10 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
   const [addOpen, setAddOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [selected, setSelected] = useState<Client | null>(null);
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    city: "",
-    status: "ativa" as ClientStatus,
-    notes: "",
-    birthday: "",
-  });
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState(emptyForm);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
     setClients(initialClients);
@@ -82,10 +89,55 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
     if (!form.name || !form.phone) return;
     startTransition(async () => {
       await addCliente(form);
-      setForm({ name: "", phone: "", email: "", city: "", status: "ativa", notes: "", birthday: "" });
+      setForm(emptyForm);
       setAddOpen(false);
       router.refresh();
     });
+  }
+
+  function openEdit(client: Client) {
+    setEditForm({
+      name: client.name,
+      phone: client.phone,
+      email: client.email ?? "",
+      city: client.city ?? "",
+      status: client.status,
+      notes: client.notes ?? "",
+      birthday: client.birthday ?? "",
+    });
+    setEditOpen(true);
+  }
+
+  function handleEdit() {
+    if (!selected || !editForm.name || !editForm.phone) return;
+    const id = selected.id;
+    startTransition(async () => {
+      await updateCliente(id, editForm);
+      setClients((prev) =>
+        prev.map((c) =>
+          c.id === id ? { ...c, ...editForm } : c
+        )
+      );
+      setSelected((s) => (s ? { ...s, ...editForm } : s));
+      setEditOpen(false);
+      router.refresh();
+    });
+  }
+
+  function handleDelete() {
+    if (!selected) return;
+    const id = selected.id;
+    startTransition(async () => {
+      await deleteCliente(id);
+      setClients((prev) => prev.filter((c) => c.id !== id));
+      setSelected(null);
+      setConfirmDelete(false);
+    });
+  }
+
+  function handleCloseDetail() {
+    setSelected(null);
+    setConfirmDelete(false);
   }
 
   return (
@@ -391,7 +443,92 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
             >
               Cancelar
             </Button>
-            <Button className="flex-1" onClick={handleAdd}>
+            <Button className="flex-1" onClick={handleAdd} disabled={isPending}>
+              Salvar
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Edit modal */}
+      <Modal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        title="Editar Cliente"
+      >
+        <div className="space-y-4">
+          <Input
+            label="Nome completo *"
+            value={editForm.name}
+            onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+            placeholder="Ex: Ana Paula Ferreira"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Telefone *"
+              value={editForm.phone}
+              onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))}
+              placeholder="(11) 99999-9999"
+              type="tel"
+            />
+            <Input
+              label="Aniversário"
+              value={editForm.birthday}
+              onChange={(e) => setEditForm((f) => ({ ...f, birthday: e.target.value }))}
+              type="date"
+            />
+          </div>
+          <Input
+            label="Email"
+            value={editForm.email}
+            onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+            placeholder="email@exemplo.com"
+            type="email"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Cidade"
+              value={editForm.city}
+              onChange={(e) => setEditForm((f) => ({ ...f, city: e.target.value }))}
+              placeholder="Ex: São Paulo"
+            />
+            <Select
+              label="Status"
+              value={editForm.status}
+              onChange={(e) =>
+                setEditForm((f) => ({
+                  ...f,
+                  status: e.target.value as ClientStatus,
+                }))
+              }
+              options={[
+                { value: "ativa", label: "Ativa" },
+                { value: "inativa", label: "Inativa" },
+                { value: "prospect", label: "Prospect" },
+              ]}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              Observações
+            </label>
+            <textarea
+              value={editForm.notes}
+              onChange={(e) => setEditForm((f) => ({ ...f, notes: e.target.value }))}
+              placeholder="Preferências, histórico, observações..."
+              rows={3}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent resize-none"
+            />
+          </div>
+          <div className="flex gap-3 pt-1">
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={() => setEditOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button className="flex-1" onClick={handleEdit} disabled={isPending}>
               Salvar
             </Button>
           </div>
@@ -402,7 +539,7 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
       {selected && (
         <Modal
           open={!!selected}
-          onClose={() => setSelected(null)}
+          onClose={handleCloseDetail}
           title={selected.name}
           size="lg"
         >
@@ -537,6 +674,50 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
                 </p>
               </div>
             )}
+
+            {/* Actions */}
+            <div className="pt-1 border-t border-neutral-100 dark:border-neutral-800">
+              {confirmDelete ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-center text-neutral-600 dark:text-neutral-300">
+                    Excluir <strong>{selected.name}</strong>? Esta ação não pode ser desfeita.
+                  </p>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="secondary"
+                      className="flex-1"
+                      onClick={() => setConfirmDelete(false)}
+                    >
+                      Cancelar
+                    </Button>
+                    <button
+                      onClick={handleDelete}
+                      disabled={isPending}
+                      className="flex-1 py-2.5 px-4 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+                    >
+                      {isPending ? "Excluindo..." : "Excluir"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setConfirmDelete(true)}
+                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Excluir
+                  </button>
+                  <Button
+                    className="flex-1"
+                    onClick={() => openEdit(selected)}
+                  >
+                    <Pencil className="w-4 h-4" />
+                    Editar
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </Modal>
       )}

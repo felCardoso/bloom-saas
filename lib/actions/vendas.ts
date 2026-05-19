@@ -129,3 +129,12 @@ export async function updateVendaStatus(
   revalidatePath("/dashboard");
   return {};
 }
+
+export async function deleteVenda(id: string): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("vendas").delete().eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/pedidos");
+  revalidatePath("/dashboard");
+  return {};
+}
