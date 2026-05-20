@@ -85,14 +85,14 @@ export default function PricingPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ planId: confirming }),
         });
-        const { url, error } = await res.json();
-        if (url) {
-          window.location.href = url;
+        const json = await res.json().catch(() => ({})) as { url?: string; error?: string };
+        if (json.url) {
+          window.location.href = json.url;
         } else {
-          setCheckoutError(error ?? "Erro ao iniciar checkout. Tente novamente.");
+          setCheckoutError(json.error ?? `Erro ${res.status} ao iniciar checkout. Tente novamente.`);
         }
       } catch {
-        setCheckoutError("Erro de conexão. Verifique sua internet e tente novamente.");
+        setCheckoutError("Erro ao iniciar checkout. Tente novamente.");
       } finally {
         setCheckoutLoading(null);
       }

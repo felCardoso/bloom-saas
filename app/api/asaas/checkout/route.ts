@@ -66,63 +66,68 @@ export async function POST(request: Request) {
     }
   }
 
-  // No existing subscription — create customer if needed, then create subscription
-  let customerId = profile?.asaas_customer_id as string | null;
+  try {
+    // No existing subscription — create customer if needed, then create subscription
+    let customerId = profile?.asaas_customer_id as string | null;
 
-  if (!customerId) {
-    const email = (profile?.email as string | null) ?? user.email ?? "";
-    const list = await asaasRequest<AsaasCustomerList>(
-      `/customers?email=${encodeURIComponent(email)}&limit=1`
-    );
+    if (!customerId) {
+      const email = (profile?.email as string | null) ?? user.email ?? "";
+      const list = await asaasRequest<AsaasCustomerList>(
+        `/customers?email=${encodeURIComponent(email)}&limit=1`
+      );
 
-    if (list.data.length > 0) {
-      customerId = list.data[0].id;
-    } else {
-      const customer = await asaasRequest<AsaasCustomer>("/customers", {
-        method: "POST",
-        body: JSON.stringify({
-          name: (profile?.nome_completo as string | null) ?? "Usuário Bloom",
-          email,
-          externalReference: user.id,
-        }),
-      });
-      customerId = customer.id;
+      if (list.data.length > 0) {
+        customerId = list.data[0].id;
+      } else {
+        const customer = await asaasRequest<AsaasCustomer>("/customers", {
+          method: "POST",
+          body: JSON.stringify({
+            name: (profile?.nome_completo as string | null) ?? "Usuário Bloom",
+            email,
+            externalReference: user.id,
+          }),
+        });
+        customerId = customer.id;
+      }
+
+      await supabase
+        .from("perfis_usuarios")
+        .update({ asaas_customer_id: customerId })
+        .eq("id", user.id);
     }
+
+    // Next due date = tomorrow (avoids same-day charge)
+    const nextDueDate = new Date();
+    nextDueDate.setDate(nextDueDate.getDate() + 1);
+    const dueDateStr = nextDueDate.toISOString().split("T")[0];
+
+    const subscription = await asaasRequest<AsaasSubscription>("/subscriptions", {
+      method: "POST",
+      body: JSON.stringify({
+        customer: customerId,
+        billingType,
+        value,
+        nextDueDate: dueDateStr,
+        cycle: "MONTHLY",
+        description: PLAN_DESCRIPTIONS[planId],
+        externalReference: `${user.id}:${planId}`,
+        redirectUrl: `${origin}/pricing?success=1`,
+      }),
+    });
 
     await supabase
       .from("perfis_usuarios")
-      .update({ asaas_customer_id: customerId })
+      .update({ asaas_subscription_id: subscription.id })
       .eq("id", user.id);
+
+    const payments = await asaasRequest<AsaasPaymentList>(
+      `/payments?subscription=${subscription.id}&limit=1`
+    );
+    const url = payments.data[0]?.invoiceUrl ?? `${origin}/pricing?success=1`;
+
+    return NextResponse.json({ url });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Erro ao criar assinatura";
+    return NextResponse.json({ error: msg }, { status: 502 });
   }
-
-  // Next due date = tomorrow (avoids same-day charge)
-  const nextDueDate = new Date();
-  nextDueDate.setDate(nextDueDate.getDate() + 1);
-  const dueDateStr = nextDueDate.toISOString().split("T")[0];
-
-  const subscription = await asaasRequest<AsaasSubscription>("/subscriptions", {
-    method: "POST",
-    body: JSON.stringify({
-      customer: customerId,
-      billingType,
-      value,
-      nextDueDate: dueDateStr,
-      cycle: "MONTHLY",
-      description: PLAN_DESCRIPTIONS[planId],
-      externalReference: `${user.id}:${planId}`,
-      redirectUrl: `${origin}/pricing?success=1`,
-    }),
-  });
-
-  await supabase
-    .from("perfis_usuarios")
-    .update({ asaas_subscription_id: subscription.id })
-    .eq("id", user.id);
-
-  const payments = await asaasRequest<AsaasPaymentList>(
-    `/payments?subscription=${subscription.id}&limit=1`
-  );
-  const url = payments.data[0]?.invoiceUrl ?? `${origin}/pricing?success=1`;
-
-  return NextResponse.json({ url });
 }
