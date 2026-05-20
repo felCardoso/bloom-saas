@@ -4,7 +4,7 @@ import { asaasRequest, PLAN_TO_VALUE, PLAN_DESCRIPTIONS } from "@/lib/asaas";
 
 interface AsaasCustomer { id: string }
 interface AsaasCustomerList { data: AsaasCustomer[]; totalCount: number }
-interface AsaasSubscription { id: string }
+interface AsaasSubscription { id: string; nextDueDate: string }
 interface AsaasPayment { invoiceUrl: string }
 interface AsaasPaymentList { data: AsaasPayment[] }
 
@@ -27,10 +27,46 @@ export async function POST(request: Request) {
 
   const { data: profile } = await supabase
     .from("perfis_usuarios")
-    .select("asaas_customer_id, nome_completo, email")
+    .select("asaas_customer_id, asaas_subscription_id, nome_completo, email")
     .eq("id", user.id)
     .single();
 
+  const existingSubId = profile?.asaas_subscription_id as string | null;
+
+  // Mid-cycle plan switch: update existing subscription instead of creating a new one
+  if (existingSubId) {
+    try {
+      await asaasRequest<AsaasSubscription>(`/subscriptions/${existingSubId}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          value,
+          description: PLAN_DESCRIPTIONS[planId],
+          externalReference: `${user.id}:${planId}`,
+        }),
+      });
+
+      // Update plan immediately — webhook will confirm on next payment
+      await supabase
+        .from("perfis_usuarios")
+        .update({
+          plano: planId,
+          asaas_period_end: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+
+      const payments = await asaasRequest<AsaasPaymentList>(
+        `/payments?subscription=${existingSubId}&limit=1`
+      );
+      const url = payments.data[0]?.invoiceUrl ?? `${origin}/pricing?success=1`;
+      return NextResponse.json({ url });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro ao atualizar assinatura";
+      return NextResponse.json({ error: msg }, { status: 502 });
+    }
+  }
+
+  // No existing subscription — create customer if needed, then create subscription
   let customerId = profile?.asaas_customer_id as string | null;
 
   if (!customerId) {
@@ -83,7 +119,6 @@ export async function POST(request: Request) {
     .update({ asaas_subscription_id: subscription.id })
     .eq("id", user.id);
 
-  // Get the first generated charge's payment page
   const payments = await asaasRequest<AsaasPaymentList>(
     `/payments?subscription=${subscription.id}&limit=1`
   );

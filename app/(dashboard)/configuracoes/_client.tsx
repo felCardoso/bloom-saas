@@ -23,6 +23,8 @@ import {
   Plus,
   Pencil,
   X,
+  FileText,
+  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -287,27 +289,53 @@ function CancelSubscriptionButton({ onCancelled }: { onCancelled: (expiresAt: st
 }
 
 /* ── Assinatura ── */
+interface Invoice {
+  id: string;
+  value: number;
+  status: string;
+  dueDate: string;
+  paymentDate: string | null;
+  invoiceUrl: string;
+}
+
+const INVOICE_STATUS: Record<string, { label: string; className: string }> = {
+  RECEIVED:  { label: "Pago",        className: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800" },
+  CONFIRMED: { label: "Confirmado",  className: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800" },
+  PENDING:   { label: "Pendente",    className: "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400 border border-amber-100 dark:border-amber-800" },
+  OVERDUE:   { label: "Vencido",     className: "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 border border-red-100 dark:border-red-800" },
+  REFUNDED:  { label: "Estornado",   className: "bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700" },
+};
+
 function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }) {
   const { planId, plan } = usePlan();
   const [periodEnd, setPeriodEnd] = useState<string | null>(initialPeriodEnd);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [invoicesLoading, setInvoicesLoading] = useState(false);
   const isCancelling = periodEnd !== null;
 
+  useEffect(() => {
+    if (planId === "free") return;
+    setInvoicesLoading(true);
+    fetch("/api/asaas/invoices")
+      .then((r) => r.json())
+      .then((data) => setInvoices(data.invoices ?? []))
+      .catch(() => {})
+      .finally(() => setInvoicesLoading(false));
+  }, [planId]);
+
   const featureList: string[] = {
-    free: ["Até 30 clientes", "Até 20 pedidos/mês", "Até 20 produtos", "Suporte por e-mail"],
-    pro: ["Até 200 clientes", "Até 150 pedidos/mês", "Relatórios básicos", "WhatsApp rápido", "Alertas de estoque", "Lembretes de aniversário", "Suporte por e-mail (48h)"],
-    premium: ["Clientes ilimitados", "Pedidos ilimitados", "Relatórios avançados", "Exportação CSV", "Até 3 usuários", "Suporte prioritário (24h)"],
+    free:    ["Até 30 clientes", "Até 20 pedidos/mês", "Até 20 produtos", "Suporte por e-mail"],
+    pro:     ["Até 200 clientes", "Até 150 pedidos/mês", "Relatórios e gráficos", "Lembretes de aniversário", "Alertas de estoque", "Link WhatsApp", "Suporte por e-mail"],
+    premium: ["Clientes ilimitados", "Pedidos ilimitados", "Relatórios avançados", "Exportação CSV", "Até 3 usuários", "Suporte prioritário"],
   }[planId];
 
   const formattedExpiry = periodEnd
-    ? new Date(periodEnd + "T00:00:00").toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      })
+    ? new Date(periodEnd + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })
     : null;
 
   return (
     <div className="space-y-6">
+      {/* Plan card */}
       <div className={cn("rounded-2xl border bg-linear-to-br p-5 sm:p-6", PLAN_CARD[planId])}>
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
@@ -323,14 +351,10 @@ function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }
               <span className={cn("text-3xl font-bold", PLAN_ACCENT[planId])}>
                 {plan.price === 0 ? "Grátis" : `R$ ${plan.price}`}
               </span>
-              {plan.price > 0 && (
-                <span className="text-sm text-neutral-500 dark:text-neutral-400">/mês</span>
-              )}
+              {plan.price > 0 && <span className="text-sm text-neutral-500 dark:text-neutral-400">/mês</span>}
             </div>
             {isCancelling && formattedExpiry && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                Acesso ativo até {formattedExpiry}
-              </p>
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">Acesso ativo até {formattedExpiry}</p>
             )}
           </div>
           {planId !== "premium" && !isCancelling && (
@@ -356,6 +380,7 @@ function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }
         </div>
       </div>
 
+      {/* Cancellation banner / management buttons */}
       {isCancelling && formattedExpiry ? (
         <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-200 dark:border-amber-800">
           <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Cancelamento agendado</p>
@@ -372,18 +397,73 @@ function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }
         )
       )}
 
+      {/* Upgrade CTA for free plan */}
       {planId === "free" && (
         <div className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">Experimente o plano Pro grátis</p>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">14 dias, sem cartão de crédito.</p>
           </div>
-          <Link
-            href="/pricing"
-            className="self-start sm:self-auto px-4 py-2 bg-rose-500 text-white text-sm font-semibold rounded-xl hover:bg-rose-600 transition-colors"
-          >
+          <Link href="/pricing" className="self-start sm:self-auto px-4 py-2 bg-rose-500 text-white text-sm font-semibold rounded-xl hover:bg-rose-600 transition-colors">
             Testar Pro
           </Link>
+        </div>
+      )}
+
+      {/* Invoice history */}
+      {planId !== "free" && (
+        <div>
+          <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-3 flex items-center gap-2">
+            <FileText className="w-4 h-4 text-neutral-400" />
+            Histórico de faturas
+          </h3>
+          {invoicesLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <span className="w-5 h-5 border-2 border-neutral-200 border-t-rose-500 rounded-full animate-spin" />
+            </div>
+          ) : invoices.length === 0 ? (
+            <p className="text-sm text-neutral-400 dark:text-neutral-500 py-4 text-center">
+              Nenhuma fatura encontrada.
+            </p>
+          ) : (
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-50 dark:divide-neutral-800">
+              {invoices.map((inv) => {
+                const statusCfg = INVOICE_STATUS[inv.status] ?? { label: inv.status, className: "bg-neutral-100 text-neutral-500" };
+                const date = new Date(inv.dueDate + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+                return (
+                  <div key={inv.id} className="flex items-center gap-3 px-4 py-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-neutral-700 dark:text-neutral-200">
+                        {date}
+                      </p>
+                      {inv.paymentDate && (
+                        <p className="text-xs text-neutral-400 mt-0.5">
+                          Pago em {new Date(inv.paymentDate + "T12:00:00").toLocaleDateString("pt-BR")}
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-sm font-semibold text-neutral-700 dark:text-neutral-200 shrink-0">
+                      R$ {Number(inv.value).toFixed(2)}
+                    </span>
+                    <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0", statusCfg.className)}>
+                      {statusCfg.label}
+                    </span>
+                    {inv.invoiceUrl && (
+                      <a
+                        href={inv.invoiceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="shrink-0 p-1.5 text-neutral-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
+                        title="Ver fatura"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

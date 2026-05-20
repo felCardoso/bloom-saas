@@ -1,5 +1,3 @@
-"use server";
-
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { asaasRequest } from "@/lib/asaas";
@@ -7,7 +5,7 @@ import { revalidatePath } from "next/cache";
 
 interface AsaasSubscription {
   id: string;
-  nextDueDate: string; // YYYY-MM-DD — first day of the NEXT billing cycle = end of current access
+  nextDueDate: string;
 }
 
 export async function POST() {
