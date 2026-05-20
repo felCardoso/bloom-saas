@@ -118,7 +118,7 @@ function SaveButton({ saved, loading, onClick }: { saved: boolean; loading: bool
 
 /* ── Perfil ── */
 function PerfilTab({ initialProfile }: {
-  initialProfile: { name: string; email: string; phone: string; brand: string; avatarUrl: string | null };
+  initialProfile: { name: string; email: string; phone: string; brand: string; avatarUrl: string | null; cpfCnpj: string };
 }) {
   const [form, setForm] = useState(initialProfile);
   const [isPending, startTransition] = useTransition();
@@ -184,6 +184,13 @@ function PerfilTab({ initialProfile }: {
           onChange={(e) => { setForm({ ...form, brand: e.target.value }); setSaved(false); }}
           placeholder="Ex: Ana Beauty"
           hint="Aparece nos seus documentos e relatórios."
+        />
+        <Input
+          label="CPF ou CNPJ"
+          value={form.cpfCnpj}
+          onChange={(e) => { setForm({ ...form, cpfCnpj: e.target.value }); setSaved(false); }}
+          placeholder="000.000.000-00"
+          hint="Obrigatório para assinar um plano pago."
         />
       </div>
 
@@ -1089,7 +1096,7 @@ function CategoriasTab({ initialCategorias }: { initialCategorias: Categoria[] }
 
 /* ── Main ── */
 export interface ConfiguracoesClientProps {
-  initialProfile: { name: string; email: string; phone: string; brand: string; avatarUrl: string | null };
+  initialProfile: { name: string; email: string; phone: string; brand: string; avatarUrl: string | null; cpfCnpj: string };
   initialNotifs: NotificationPrefs;
   initialPeriodEnd: string | null;
   initialCategorias: Categoria[];

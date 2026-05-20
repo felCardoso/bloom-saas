@@ -27,9 +27,17 @@ export async function POST(request: Request) {
 
   const { data: profile } = await supabase
     .from("perfis_usuarios")
-    .select("asaas_customer_id, asaas_subscription_id, nome_completo, email")
+    .select("asaas_customer_id, asaas_subscription_id, nome_completo, email, cpf_cnpj")
     .eq("id", user.id)
     .single();
+
+  const cpfCnpj = (profile?.cpf_cnpj as string | null)?.replace(/\D/g, "") ?? "";
+  if (!cpfCnpj) {
+    return NextResponse.json(
+      { error: "Preencha seu CPF ou CNPJ em Configurações → Perfil antes de assinar." },
+      { status: 400 }
+    );
+  }
 
   const existingSubId = profile?.asaas_subscription_id as string | null;
 
@@ -84,6 +92,7 @@ export async function POST(request: Request) {
           body: JSON.stringify({
             name: (profile?.nome_completo as string | null) ?? "Usuário Bloom",
             email,
+            cpfCnpj,
             externalReference: user.id,
           }),
         });
