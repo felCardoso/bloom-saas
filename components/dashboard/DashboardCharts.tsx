@@ -1,9 +1,23 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { usePlan } from "@/lib/plan-context";
-import { RevenueChart } from "./RevenueChart";
 import { TopProducts } from "./TopProducts";
 import { LockedFeature } from "@/components/ui/LockedFeature";
+import { Skeleton } from "@/components/ui/Skeleton";
+
+const RevenueChart = dynamic(
+  () => import("./RevenueChart").then((m) => ({ default: m.RevenueChart })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="col-span-2 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4 shadow-card">
+        <Skeleton className="h-5 w-48 mb-4" />
+        <Skeleton className="h-52 w-full" />
+      </div>
+    ),
+  },
+);
 
 interface Props {
   monthlyRevenue: { month: string; revenue: number }[];
