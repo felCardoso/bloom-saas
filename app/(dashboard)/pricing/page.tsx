@@ -58,6 +58,7 @@ export default function PricingPage() {
   const { planId, setPlanId } = usePlan();
   const [confirming, setConfirming] = useState<PlanId | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState<PlanId | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [flash, setFlash] = useState<"success" | "canceled" | null>(null);
 
   useEffect(() => {
@@ -76,6 +77,7 @@ export default function PricingPage() {
     if (!confirming) return;
     if (confirming !== "free") {
       setCheckoutLoading(confirming);
+      setCheckoutError(null);
       setConfirming(null);
       try {
         const res = await fetch("/api/asaas/checkout", {
@@ -84,8 +86,13 @@ export default function PricingPage() {
           body: JSON.stringify({ planId: confirming }),
         });
         const { url, error } = await res.json();
-        if (url) window.location.href = url;
-        else console.error(error);
+        if (url) {
+          window.location.href = url;
+        } else {
+          setCheckoutError(error ?? "Erro ao iniciar checkout. Tente novamente.");
+        }
+      } catch {
+        setCheckoutError("Erro de conexão. Verifique sua internet e tente novamente.");
       } finally {
         setCheckoutLoading(null);
       }
@@ -108,6 +115,12 @@ export default function PricingPage() {
       {flash === "canceled" && (
         <div className="px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-600 dark:text-neutral-400">
           Checkout cancelado. Você pode tentar novamente quando quiser.
+        </div>
+      )}
+      {checkoutError && (
+        <div className="px-4 py-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-700 dark:text-red-400 flex items-start gap-2">
+          <X className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>{checkoutError}</span>
         </div>
       )}
 
