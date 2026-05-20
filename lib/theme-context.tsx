@@ -14,16 +14,12 @@ interface ThemeCtx {
 
 const ThemeContext = createContext<ThemeCtx | null>(null);
 
-const SHADES = [50, 100, 200, 300, 400, 500, 600, 700];
-
 function applyPrimary(color: PrimaryColor) {
   const root = document.documentElement;
   if (color === "rose") {
-    SHADES.forEach((s) => root.style.removeProperty(`--color-rose-${s}`));
+    root.removeAttribute("data-primary");
   } else {
-    SHADES.forEach((s) =>
-      root.style.setProperty(`--color-rose-${s}`, `var(--color-${color}-${s})`)
-    );
+    root.setAttribute("data-primary", color);
   }
 }
 
