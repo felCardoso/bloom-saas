@@ -81,7 +81,7 @@ export async function getProfile() {
 
   const { data } = await supabase
     .from("perfis_usuarios")
-    .select("nome_completo, email, telefone, nome_marca, avatar_url")
+    .select("nome_completo, email, telefone, nome_marca, avatar_url, cpf_cnpj")
     .eq("id", user.id)
     .single();
 
@@ -91,6 +91,7 @@ export async function getProfile() {
     phone: data?.telefone ?? "",
     brand: data?.nome_marca ?? "",
     avatarUrl: (data?.avatar_url as string | null) ?? null,
+    cpfCnpj: (data?.cpf_cnpj as string | null) ?? "",
   };
 }
 
@@ -113,6 +114,7 @@ export async function updateProfile(profile: {
   email: string;
   phone: string;
   brand: string;
+  cpfCnpj?: string;
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -123,6 +125,7 @@ export async function updateProfile(profile: {
     email: profile.email,
     telefone: profile.phone,
     nome_marca: profile.brand,
+    cpf_cnpj: profile.cpfCnpj ?? null,
     updated_at: new Date().toISOString(),
   };
 

@@ -27,10 +27,10 @@ export const metadata: Metadata = {
       "Organize clientes, pedidos, estoque e agenda do seu negócio de cosméticos. CRM simples e bonito feito para revendedoras.",
     images: [
       {
-        url: "/icons/icon-512.png",
-        width: 512,
-        height: 512,
-        alt: "Bloom CRM",
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Bloom — CRM para Revendedoras de Cosméticos",
       },
     ],
   },
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     title: "Bloom — CRM para Revendedoras de Cosméticos",
     description:
       "Organize clientes, pedidos, estoque e agenda do seu negócio de cosméticos.",
-    images: ["/icons/icon-512.png"],
+    images: ["/opengraph-image"],
   },
   icons: {
     icon: [
