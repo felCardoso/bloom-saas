@@ -11,12 +11,13 @@ import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
 import { Toast } from "@/components/ui/Toast";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate, cn } from "@/lib/utils";
 import type { Order, OrderStatus, OrderItem, Client, Product, PaymentMethod } from "@/lib/types";
 import { usePlan } from "@/lib/plan-context";
 import { UpgradeModal } from "@/components/ui/UpgradeModal";
 import { usePagination } from "@/lib/use-pagination";
 import { Pagination } from "@/components/ui/Pagination";
+import { isOrderPaid, isOrderPendingRevenue } from "@/lib/order-utils";
 
 const statusMap: Record<
   OrderStatus,
@@ -166,10 +167,13 @@ export function PedidosView({
     setConfirmDelete(false);
   }
 
-  const totalRevenue = filtered.reduce(
-    (s, o) => s + (o.status !== "cancelado" ? o.total : 0),
-    0,
-  );
+  const confirmedRevenue = filtered
+    .filter(isOrderPaid)
+    .reduce((s, o) => s + o.total, 0);
+
+  const pendingRevenue = filtered
+    .filter(isOrderPendingRevenue)
+    .reduce((s, o) => s + o.total, 0);
 
   const isFiadoPending = (o: Order) =>
     o.payment_method === "fiado" && o.status === "entregue" && !o.paid_at;
@@ -211,11 +215,11 @@ export function PedidosView({
         {[
           { label: "Pedidos", value: filtered.length },
           { label: "Pendentes", value: filtered.filter((o) => o.status === "pendente").length },
-          { label: "Entregues", value: filtered.filter((o) => o.status === "entregue").length },
-          { label: "Receita", value: formatCurrency(totalRevenue) },
+          { label: "Receita", value: formatCurrency(confirmedRevenue), accent: "text-emerald-600 dark:text-emerald-400" },
+          { label: "Receita pendente", value: formatCurrency(pendingRevenue), accent: "text-amber-600 dark:text-amber-400" },
         ].map((s) => (
           <Card key={s.label} padding="sm">
-            <p className="text-lg lg:text-xl font-bold text-neutral-800 dark:text-neutral-100">{s.value}</p>
+            <p className={cn("text-lg lg:text-xl font-bold", s.accent ?? "text-neutral-800 dark:text-neutral-100")}>{s.value}</p>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">{s.label}</p>
           </Card>
         ))}
