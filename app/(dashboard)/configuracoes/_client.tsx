@@ -40,6 +40,7 @@ import { useTheme, type PrimaryColor } from "@/lib/theme-context";
 import { updateProfile, updateNotificationPrefs, type NotificationPrefs } from "@/lib/actions/profile";
 import { savePushSubscription, deletePushSubscription } from "@/lib/actions/push";
 import { addCategoria, deleteCategoria, renameCategoria, type Categoria } from "@/lib/actions/categorias";
+import { deleteAccount } from "@/lib/actions/account";
 import { createClient } from "@/lib/supabase/client";
 import { AvatarUpload } from "@/components/ui/AvatarUpload";
 import { useProfile } from "@/lib/profile-context";
@@ -831,6 +832,19 @@ function ContaTab({ userEmail }: { userEmail: string }) {
   const [confirmEmail, setConfirmEmail] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [exportLoading, setExportLoading] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  async function handleDeleteAccount() {
+    setDeleteError("");
+    setDeleteLoading(true);
+    const result = await deleteAccount(confirmEmail);
+    if (result?.error) {
+      setDeleteError(result.error);
+      setDeleteLoading(false);
+    }
+    // success: server action redirects, no need to handle here
+  }
 
   async function handleExport(type: "clientes" | "produtos" | "pedidos") {
     setExportLoading(type);
@@ -928,17 +942,28 @@ function ContaTab({ userEmail }: { userEmail: string }) {
                 className="w-full px-3.5 py-2.5 rounded-xl border border-red-300 dark:border-red-700 bg-white dark:bg-neutral-900 text-sm text-neutral-800 dark:text-neutral-200 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all"
               />
             </div>
+            {deleteError && (
+              <p className="text-sm text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/40 px-3 py-2 rounded-lg">
+                {deleteError}
+              </p>
+            )}
             <div className="flex items-center gap-3">
               <button
-                disabled={confirmEmail !== userEmail}
+                onClick={handleDeleteAccount}
+                disabled={confirmEmail !== userEmail || deleteLoading}
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
-                <Trash2 className="w-4 h-4" />
-                Excluir conta permanentemente
+                {deleteLoading ? (
+                  <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+                {deleteLoading ? "Excluindo..." : "Excluir conta permanentemente"}
               </button>
               <button
-                onClick={() => { setDeleteOpen(false); setConfirmEmail(""); }}
-                className="px-4 py-2.5 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 font-medium transition-colors"
+                onClick={() => { setDeleteOpen(false); setConfirmEmail(""); setDeleteError(""); }}
+                disabled={deleteLoading}
+                className="px-4 py-2.5 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 font-medium transition-colors disabled:opacity-50"
               >
                 Cancelar
               </button>
