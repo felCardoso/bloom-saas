@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendPushNotification } from "@/lib/push";
 import type { PushPayload } from "@/lib/push";
+import { sendLowStockEmail, sendPendingOrdersEmail } from "@/lib/email";
 
 function isCronAuthorized(req: Request): boolean {
   const auth = req.headers.get("authorization");
@@ -38,7 +39,7 @@ export async function GET(req: Request) {
   pendingCutoff.setDate(pendingCutoff.getDate() - 7);
   const stats = { pending: 0, stock: 0 };
 
-  const { data: profiles } = await supabase.from("perfis_usuarios").select("id, preferencias_notificacoes");
+  const { data: profiles } = await supabase.from("perfis_usuarios").select("id, email, preferencias_notificacoes");
   if (!profiles?.length) return NextResponse.json(stats);
 
   for (const profile of profiles) {
@@ -82,6 +83,11 @@ export async function GET(req: Request) {
           if (pushSubs.length) {
             await safePush(supabase, pushSubs, { title, body, tag: "pending_order", url: "/pedidos" });
           }
+
+          if (profile.email) {
+            const clientName = (Array.isArray(orders[0].clientes) ? orders[0].clientes[0] : orders[0].clientes as { nome: string } | null)?.nome;
+            await sendPendingOrdersEmail(profile.email, orders.length, clientName);
+          }
         }
       }
     }
@@ -122,6 +128,13 @@ export async function GET(req: Request) {
 
           if (pushSubs.length) {
             await safePush(supabase, pushSubs, { title, body, tag: "low_stock", url: "/produtos" });
+          }
+
+          if (profile.email) {
+            await sendLowStockEmail(
+              profile.email,
+              lowStock.map((p) => ({ name: p.nome, stock: p.estoque_atual })),
+            );
           }
         }
       }

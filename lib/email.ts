@@ -150,3 +150,120 @@ export async function sendOrderConfirmationEmail(
     `),
   });
 }
+
+export async function sendBirthdayReminderEmail(
+  to: string,
+  clients: { name: string }[],
+) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://usebloom.app";
+  const count = clients.length;
+  const listItems = clients
+    .map(
+      (c) => `
+      <tr><td style="padding:6px 0;font-size:14px;color:#374151;">
+        🎂&nbsp; <strong>${c.name}</strong>
+      </td></tr>`,
+    )
+    .join("");
+
+  await sendEmail({
+    from: FROM,
+    to,
+    subject: count === 1
+      ? `🎂 ${clients[0].name} faz aniversário amanhã`
+      : `🎂 ${count} clientes fazem aniversário amanhã`,
+    html: baseTemplate(`
+      <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">
+        ${count === 1 ? "Aniversário amanhã" : "Aniversários amanhã"}
+      </h1>
+      <p style="margin:0 0 20px;font-size:14px;color:#6b7280;line-height:1.6;">
+        ${count === 1 ? "Uma cliente faz aniversário amanhã" : `${count} clientes fazem aniversário amanhã`}.
+        Aproveite para enviar uma mensagem de carinho — gestos simples fortalecem o relacionamento.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff7f7;border-radius:12px;border:1px solid #fecdd3;padding:16px 20px;margin-bottom:24px;">
+        ${listItems}
+      </table>
+      <a href="${appUrl}/clientes"
+         style="display:inline-block;background:#f43f5e;color:#fff;font-weight:600;font-size:14px;padding:12px 28px;border-radius:10px;text-decoration:none;">
+        Ver clientes →
+      </a>
+    `),
+  });
+}
+
+export async function sendLowStockEmail(
+  to: string,
+  products: { name: string; stock: number }[],
+) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://usebloom.app";
+  const count = products.length;
+  const listItems = products
+    .map(
+      (p) => `
+      <tr>
+        <td style="padding:6px 0;font-size:14px;color:#374151;border-bottom:1px solid #f3f4f6;">
+          📦&nbsp; <strong>${p.name}</strong>
+        </td>
+        <td style="padding:6px 0;font-size:14px;color:#dc2626;border-bottom:1px solid #f3f4f6;text-align:right;font-weight:600;">
+          ${p.stock} ${p.stock === 1 ? "unidade" : "unidades"}
+        </td>
+      </tr>`,
+    )
+    .join("");
+
+  await sendEmail({
+    from: FROM,
+    to,
+    subject: count === 1
+      ? `Estoque baixo: ${products[0].name}`
+      : `${count} produtos com estoque baixo`,
+    html: baseTemplate(`
+      <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">
+        Estoque baixo
+      </h1>
+      <p style="margin:0 0 20px;font-size:14px;color:#6b7280;line-height:1.6;">
+        ${count === 1
+          ? "Um produto está com estoque baixo. Reponha o quanto antes para não perder vendas."
+          : `${count} produtos estão com estoque baixo. Reponha o quanto antes para não perder vendas.`}
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+        ${listItems}
+      </table>
+      <a href="${appUrl}/produtos"
+         style="display:inline-block;background:#f43f5e;color:#fff;font-weight:600;font-size:14px;padding:12px 28px;border-radius:10px;text-decoration:none;">
+        Ver produtos →
+      </a>
+    `),
+  });
+}
+
+export async function sendPendingOrdersEmail(
+  to: string,
+  count: number,
+  exampleClient?: string,
+) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://usebloom.app";
+  const intro = count === 1
+    ? `Você tem 1 pedido${exampleClient ? ` de <strong>${exampleClient}</strong>` : ""} pendente há mais de 7 dias.`
+    : `Você tem ${count} pedidos pendentes há mais de 7 dias.`;
+
+  await sendEmail({
+    from: FROM,
+    to,
+    subject: count === 1
+      ? "Você tem um pedido pendente há mais de 7 dias"
+      : `${count} pedidos pendentes há mais de 7 dias`,
+    html: baseTemplate(`
+      <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">
+        Pedidos aguardando atualização
+      </h1>
+      <p style="margin:0 0 20px;font-size:14px;color:#6b7280;line-height:1.6;">
+        ${intro} Atualize o status para confirmar a entrega ou cancelar o pedido.
+      </p>
+      <a href="${appUrl}/pedidos"
+         style="display:inline-block;background:#f43f5e;color:#fff;font-weight:600;font-size:14px;padding:12px 28px;border-radius:10px;text-decoration:none;">
+        Ver pedidos →
+      </a>
+    `),
+  });
+}

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendPushNotification } from "@/lib/push";
 import type { PushPayload } from "@/lib/push";
+import { sendBirthdayReminderEmail } from "@/lib/email";
 
 function isCronAuthorized(req: Request): boolean {
   const auth = req.headers.get("authorization");
@@ -27,7 +28,7 @@ export async function GET(req: Request) {
   // Find users with birthday reminders enabled
   const { data: profiles } = await supabase
     .from("perfis_usuarios")
-    .select("id")
+    .select("id, email")
     .filter("preferencias_notificacoes->birthdays", "eq", "true");
 
   if (!profiles?.length) return NextResponse.json({ sent: 0 });
@@ -93,6 +94,14 @@ export async function GET(req: Request) {
       if (result === "expired") {
         await supabase.from("push_subscriptions").delete().eq("id", sub.id);
       }
+    }
+
+    // Send email
+    if (profile.email) {
+      await sendBirthdayReminderEmail(
+        profile.email,
+        birthdayClients.map((c) => ({ name: c.nome })),
+      );
     }
   }
 
