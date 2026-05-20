@@ -22,6 +22,7 @@ import { LockedFeature } from "@/components/ui/LockedFeature";
 import { cn } from "@/lib/utils";
 import { usePagination } from "@/lib/use-pagination";
 import { Pagination } from "@/components/ui/Pagination";
+import { Toast } from "@/components/ui/Toast";
 
 const emptyForm = {
   name: "",
@@ -61,6 +62,7 @@ export function ProdutosView({
   const [historyOpen, setHistoryOpen] = useState(false);
   const [movements, setMovements] = useState<StockMovement[]>([]);
   const [movementsLoading, setMovementsLoading] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     setProducts(initialProducts);
@@ -90,10 +92,27 @@ export function ProdutosView({
 
   function handleAdd() {
     if (!form.name || !form.sale_price) return;
+    const snapshot = { ...form };
+    const optimistic: Product = {
+      id: `temp_${Date.now()}`,
+      name: snapshot.name,
+      brand: snapshot.brand,
+      category: snapshot.category,
+      cost_price: Number(snapshot.cost_price) || 0,
+      sale_price: Number(snapshot.sale_price) || 0,
+      stock: Number(snapshot.stock) || 0,
+      created_at: new Date().toISOString(),
+    };
+    setProducts((prev) => [optimistic, ...prev]);
+    setForm({ ...emptyForm, category: categories[0] ?? "" });
+    setAddOpen(false);
     startTransition(async () => {
-      await addProduto(form);
-      setForm({ ...emptyForm, category: categories[0] ?? "" });
-      setAddOpen(false);
+      const result = await addProduto(snapshot);
+      if (result?.error) {
+        setProducts((prev) => prev.filter((p) => p.id !== optimistic.id));
+        setToast(result.error);
+        return;
+      }
       router.refresh();
     });
   }
@@ -115,19 +134,24 @@ export function ProdutosView({
   function handleEdit() {
     if (!editingProduct || !editForm.name || !editForm.sale_price) return;
     const id = editingProduct.id;
+    const previous = editingProduct;
+    const updated: Product = {
+      ...editingProduct,
+      name: editForm.name,
+      brand: editForm.brand,
+      category: editForm.category,
+      cost_price: Number(editForm.cost_price) || 0,
+      sale_price: Number(editForm.sale_price),
+      stock: Number(editForm.stock) || 0,
+    };
+    setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)));
+    setEditOpen(false);
     startTransition(async () => {
-      await updateProduto(id, editForm);
-      const updated: Product = {
-        ...editingProduct,
-        name: editForm.name,
-        brand: editForm.brand,
-        category: editForm.category,
-        cost_price: Number(editForm.cost_price) || 0,
-        sale_price: Number(editForm.sale_price),
-        stock: Number(editForm.stock) || 0,
-      };
-      setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)));
-      setEditOpen(false);
+      const result = await updateProduto(id, editForm);
+      if (result?.error) {
+        setProducts((prev) => prev.map((p) => (p.id === id ? previous : p)));
+        setToast(result.error);
+      }
     });
   }
 
@@ -354,6 +378,8 @@ export function ProdutosView({
         pageSize={pageSize}
         onPageChange={setPage}
       />
+
+      {toast && <Toast message={toast} variant="warning" onClose={() => setToast(null)} />}
 
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} resource="products" />
 

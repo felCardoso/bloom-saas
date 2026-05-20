@@ -108,11 +108,32 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
 
   function handleAdd() {
     if (!form.name || !form.phone) return;
+    const snapshot = { ...form };
+    const optimistic: Client = {
+      id: `temp_${Date.now()}`,
+      name: snapshot.name,
+      phone: snapshot.phone,
+      email: snapshot.email || undefined,
+      city: snapshot.city || undefined,
+      status: snapshot.status,
+      notes: snapshot.notes || undefined,
+      birthday: snapshot.birthday || undefined,
+      created_at: new Date().toISOString(),
+      total_orders: 0,
+      total_spent: 0,
+      last_order_date: undefined,
+    };
+    setClients((prev) => [optimistic, ...prev]);
+    setForm(emptyForm);
+    setAddOpen(false);
     startTransition(async () => {
-      await addCliente(form);
-      setForm(emptyForm);
-      setAddOpen(false);
-      router.refresh();
+      const result = await addCliente(snapshot);
+      if (result.error) {
+        setClients((prev) => prev.filter((c) => c.id !== optimistic.id));
+        setToast(result.error);
+      } else {
+        router.refresh();
+      }
     });
   }
 
@@ -134,13 +155,22 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
   function handleEdit() {
     if (!editingId || !editForm.name || !editForm.phone) return;
     const id = editingId;
+    const snapshot = { ...editForm };
+    const previous = clients.find((c) => c.id === id);
+    setClients((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, ...snapshot } : c))
+    );
+    setEditOpen(false);
     startTransition(async () => {
-      await updateCliente(id, editForm);
-      setClients((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, ...editForm } : c))
-      );
-      setEditOpen(false);
-      router.refresh();
+      const result = await updateCliente(id, snapshot);
+      if (result.error) {
+        if (previous) {
+          setClients((prev) => prev.map((c) => (c.id === id ? previous : c)));
+        }
+        setToast(result.error);
+      } else {
+        router.refresh();
+      }
     });
   }
 

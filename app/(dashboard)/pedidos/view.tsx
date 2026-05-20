@@ -10,6 +10,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
+import { Toast } from "@/components/ui/Toast";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Order, OrderStatus, OrderItem, Client, Product, PaymentMethod } from "@/lib/types";
 import { usePlan } from "@/lib/plan-context";
@@ -62,6 +63,7 @@ export function PedidosView({
     items: [] as OrderItem[],
   });
   const [addingItem, setAddingItem] = useState({ product_id: "", quantity: 1 });
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     setOrders(initialOrders);
@@ -103,11 +105,31 @@ export function PedidosView({
 
   function handleCreate() {
     if (!newOrder.client_id || newOrder.items.length === 0) return;
+    const snapshot = { ...newOrder, items: [...newOrder.items] };
+    const client = clients.find((c) => c.id === snapshot.client_id);
+    const total = snapshot.items.reduce((s, i) => s + i.subtotal, 0);
+    const optimistic: Order = {
+      id: `temp_${Date.now()}`,
+      client_id: snapshot.client_id,
+      client_name: client?.name ?? "—",
+      items: snapshot.items,
+      total,
+      status: snapshot.status,
+      payment_method: snapshot.payment_method,
+      notes: snapshot.notes || undefined,
+      created_at: new Date().toISOString(),
+    };
+    setOrders((prev) => [optimistic, ...prev]);
+    setNewOrder({ client_id: "", status: "pendente", payment_method: "dinheiro", notes: "", items: [] });
+    setAddOpen(false);
     startTransition(async () => {
-      await addVenda(newOrder);
-      setNewOrder({ client_id: "", status: "pendente", payment_method: "dinheiro", notes: "", items: [] });
-      setAddOpen(false);
-      router.refresh();
+      const result = await addVenda(snapshot);
+      if (result?.error) {
+        setOrders((prev) => prev.filter((o) => o.id !== optimistic.id));
+        setToast(result.error);
+      } else {
+        router.refresh();
+      }
     });
   }
 
@@ -310,6 +332,8 @@ export function PedidosView({
         pageSize={pageSize}
         onPageChange={setPage}
       />
+
+      {toast && <Toast message={toast} variant="warning" onClose={() => setToast(null)} />}
 
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} resource="ordersPerMonth" />
 
