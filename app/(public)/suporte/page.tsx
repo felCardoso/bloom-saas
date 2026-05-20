@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createClient } from "@/lib/supabase/server";
 import SuporteClient from "./_client";
 
 export const metadata: Metadata = {
@@ -11,6 +12,23 @@ export const metadata: Metadata = {
   },
 };
 
-export default function SuportePage() {
-  return <SuporteClient />;
+async function isUserPremium(): Promise<boolean> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+    const { data } = await supabase
+      .from("perfis_usuarios")
+      .select("plano")
+      .eq("id", user.id)
+      .single();
+    return data?.plano === "premium";
+  } catch {
+    return false;
+  }
+}
+
+export default async function SuportePage() {
+  const isPremium = await isUserPremium();
+  return <SuporteClient isPremium={isPremium} />;
 }

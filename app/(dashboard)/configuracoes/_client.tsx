@@ -29,6 +29,7 @@ import {
   Mail,
   HelpCircle,
   LifeBuoy,
+  Lock,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -1104,6 +1105,8 @@ function CategoriasTab({ initialCategorias }: { initialCategorias: Categoria[] }
 
 /* ── Suporte ── */
 function SuporteTab() {
+  const { planId } = usePlan();
+  const isPremium = planId === "premium";
   return (
     <div className="space-y-6">
       <div>
@@ -1131,25 +1134,48 @@ function SuporteTab() {
               </p>
             </div>
           </a>
-          <a
-            href="https://wa.me/5511999999999"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-start gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900 rounded-2xl hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
-          >
-            <div className="w-9 h-9 bg-white dark:bg-neutral-900 rounded-xl flex items-center justify-center shrink-0 shadow-card">
-              <MessageCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">WhatsApp</p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                Pro e Premium
-              </p>
-              <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
-                Atendimento prioritário
-              </p>
-            </div>
-          </a>
+          {isPremium ? (
+            <a
+              href="https://wa.me/5511999999999"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900 rounded-2xl hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+            >
+              <div className="w-9 h-9 bg-white dark:bg-neutral-900 rounded-xl flex items-center justify-center shrink-0 shadow-card">
+                <MessageCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">WhatsApp</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  Atendimento prioritário
+                </p>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
+                  Resposta em até 24h
+                </p>
+              </div>
+            </a>
+          ) : (
+            <Link
+              href="/pricing"
+              className="flex items-start gap-3 p-4 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-800 rounded-2xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            >
+              <div className="w-9 h-9 bg-white dark:bg-neutral-900 rounded-xl flex items-center justify-center shrink-0 shadow-card relative">
+                <MessageCircle className="w-4 h-4 text-neutral-400" />
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-neutral-800 dark:bg-neutral-200 rounded-full flex items-center justify-center">
+                  <Lock className="w-2.5 h-2.5 text-white dark:text-neutral-900" />
+                </span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">WhatsApp</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  Disponível no Premium
+                </p>
+                <p className="text-xs font-medium text-rose-600 dark:text-rose-400 mt-1">
+                  Fazer upgrade →
+                </p>
+              </div>
+            </Link>
+          )}
         </div>
       </div>
 
