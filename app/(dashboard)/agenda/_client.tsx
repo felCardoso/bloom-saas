@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Plus, CheckCircle2, Circle, Calendar, Phone, Gift, Truck, Trash2, Pencil } from "lucide-react";
+import { useState, useTransition, useMemo } from "react";
+import { Plus, CheckCircle2, Circle, Calendar, Phone, Gift, Truck, Trash2, Pencil, List, LayoutGrid, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
@@ -44,6 +44,12 @@ export default function AgendaClient({ initialEvents }: Props) {
   const [editForm, setEditForm] = useState(emptyForm);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "pending" | "done">("pending");
+  const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), 1);
+  });
+  const [dayDetailOpen, setDayDetailOpen] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState(emptyForm);
 
@@ -134,6 +140,37 @@ export default function AgendaClient({ initialEvents }: Props) {
   const pending = events.filter((e) => !e.completed).length;
   const overdue = events.filter((e) => !e.completed && e.date < today).length;
 
+  // Map date → events for the calendar grid
+  const eventsByDate = useMemo(() => {
+    const map = new Map<string, ScheduleEvent[]>();
+    for (const ev of filtered) {
+      const list = map.get(ev.date) ?? [];
+      list.push(ev);
+      map.set(ev.date, list);
+    }
+    return map;
+  }, [filtered]);
+
+  // Build calendar grid cells for the current visible month
+  const calendarCells = useMemo(() => {
+    const year = calendarMonth.getFullYear();
+    const month = calendarMonth.getMonth();
+    const firstOfMonth = new Date(year, month, 1);
+    const startWeekday = firstOfMonth.getDay(); // 0 = Sunday
+    const gridStart = new Date(year, month, 1 - startWeekday);
+    const cells: { date: string; day: number; inMonth: boolean }[] = [];
+    for (let i = 0; i < 42; i++) {
+      const d = new Date(gridStart);
+      d.setDate(gridStart.getDate() + i);
+      const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      cells.push({ date: iso, day: d.getDate(), inMonth: d.getMonth() === month });
+    }
+    return cells;
+  }, [calendarMonth]);
+
+  const monthLabel = calendarMonth.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  const dayDetailEvents = dayDetailOpen ? (eventsByDate.get(dayDetailOpen) ?? []) : [];
+
   return (
     <div className="space-y-4">
       {/* Toolbar */}
@@ -164,14 +201,133 @@ export default function AgendaClient({ initialEvents }: Props) {
             {overdue} atrasado{overdue > 1 ? "s" : ""}
           </Badge>
         )}
+        <div className="flex bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-1 shadow-card">
+          {[
+            { value: "list", icon: List, label: "Lista" },
+            { value: "calendar", icon: LayoutGrid, label: "Calendário" },
+          ].map((opt) => {
+            const Icon = opt.icon;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => setViewMode(opt.value as typeof viewMode)}
+                aria-label={opt.label}
+                className={cn(
+                  "px-2.5 py-1.5 rounded-lg transition-all",
+                  viewMode === opt.value
+                    ? "bg-rose-500 text-white shadow-sm"
+                    : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200",
+                )}
+              >
+                <Icon className="w-4 h-4" />
+              </button>
+            );
+          })}
+        </div>
         <Button onClick={handleAddClick} size="sm" disabled={isPending}>
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">Novo Evento</span>
         </Button>
       </div>
 
-      {/* Events */}
-      {sortedDates.length === 0 ? (
+      {/* Calendar view */}
+      {viewMode === "calendar" && (
+        <Card padding="none">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100 dark:border-neutral-800">
+            <button
+              onClick={() => setCalendarMonth((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1))}
+              aria-label="Mês anterior"
+              className="p-1.5 rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 capitalize">
+              {monthLabel}
+            </p>
+            <button
+              onClick={() => setCalendarMonth((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1))}
+              aria-label="Próximo mês"
+              className="p-1.5 rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="grid grid-cols-7 border-b border-neutral-100 dark:border-neutral-800">
+            {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((d) => (
+              <div key={d} className="px-2 py-2 text-center text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wide">
+                {d}
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-7">
+            {calendarCells.map((cell, i) => {
+              const cellEvents = eventsByDate.get(cell.date) ?? [];
+              const isToday = cell.date === today;
+              const hasEvents = cellEvents.length > 0;
+              return (
+                <button
+                  key={i}
+                  onClick={() => setDayDetailOpen(cell.date)}
+                  className={cn(
+                    "min-h-[64px] sm:min-h-[88px] p-1.5 sm:p-2 border-r border-b border-neutral-50 dark:border-neutral-800/60 text-left transition-colors hover:bg-neutral-50/60 dark:hover:bg-neutral-800/40 last:border-r-0 [&:nth-child(7n)]:border-r-0",
+                    !cell.inMonth && "bg-neutral-50/40 dark:bg-neutral-900/40",
+                  )}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span
+                      className={cn(
+                        "text-xs font-semibold inline-flex items-center justify-center w-5 h-5 rounded-full",
+                        isToday && "bg-rose-500 text-white",
+                        !isToday && cell.inMonth && "text-neutral-700 dark:text-neutral-300",
+                        !cell.inMonth && "text-neutral-300 dark:text-neutral-600",
+                      )}
+                    >
+                      {cell.day}
+                    </span>
+                    {hasEvents && !isToday && (
+                      <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium">
+                        {cellEvents.length}
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-0.5">
+                    {cellEvents.slice(0, 2).map((ev) => {
+                      const type = typeMap[ev.type];
+                      return (
+                        <div
+                          key={ev.id}
+                          className={cn(
+                            "text-[10px] sm:text-xs px-1.5 py-0.5 rounded truncate",
+                            ev.completed
+                              ? "bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 line-through"
+                              : type.variant === "rose"
+                                ? "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300"
+                                : type.variant === "blue"
+                                  ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                                  : type.variant === "yellow"
+                                    ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                                    : "bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300",
+                          )}
+                        >
+                          {ev.title}
+                        </div>
+                      );
+                    })}
+                    {cellEvents.length > 2 && (
+                      <p className="text-[10px] text-neutral-400 px-1.5">
+                        + {cellEvents.length - 2}
+                      </p>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </Card>
+      )}
+
+      {/* Events list view */}
+      {viewMode === "list" && (sortedDates.length === 0 ? (
         <Card>
           <div className="py-12 text-center">
             <Calendar className="w-8 h-8 mx-auto mb-2 text-neutral-300" />
@@ -280,9 +436,91 @@ export default function AgendaClient({ initialEvents }: Props) {
             );
           })}
         </div>
-      )}
+      ))}
 
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} resource="events" />
+
+      {/* Day detail modal — calendar click */}
+      {dayDetailOpen && (
+        <Modal
+          open={!!dayDetailOpen}
+          onClose={() => setDayDetailOpen(null)}
+          title={new Date(dayDetailOpen + "T12:00:00").toLocaleDateString("pt-BR", {
+            weekday: "long", day: "2-digit", month: "long", year: "numeric",
+          })}
+        >
+          <div className="space-y-3">
+            {dayDetailEvents.length === 0 ? (
+              <div className="py-8 text-center">
+                <Calendar className="w-7 h-7 mx-auto mb-2 text-neutral-300" />
+                <p className="text-sm text-neutral-400">Nenhum evento neste dia</p>
+              </div>
+            ) : (
+              dayDetailEvents.map((event) => {
+                const type = typeMap[event.type];
+                const Icon = type.icon;
+                return (
+                  <div
+                    key={event.id}
+                    className="flex items-start gap-3 px-3 py-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/60"
+                  >
+                    <button
+                      onClick={() => handleToggle(event.id, event.completed)}
+                      className="shrink-0 text-neutral-300 hover:text-rose-400 transition-colors mt-0.5"
+                    >
+                      {event.completed ? (
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                      ) : (
+                        <Circle className="w-5 h-5" />
+                      )}
+                    </button>
+                    <div className="w-8 h-8 bg-white dark:bg-neutral-900 rounded-xl flex items-center justify-center shrink-0 mt-0.5 shadow-card">
+                      <Icon className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={cn(
+                        "text-sm font-medium",
+                        event.completed ? "text-neutral-400 line-through" : "text-neutral-800 dark:text-neutral-100",
+                      )}>
+                        {event.title}
+                      </p>
+                      {event.client_name && (
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{event.client_name}</p>
+                      )}
+                      <Badge variant={type.variant} className="mt-2">{type.label}</Badge>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() => { setDayDetailOpen(null); openEdit(event); }}
+                        className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(event.id)}
+                        className="p-1.5 rounded-lg text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+            <Button
+              className="w-full"
+              onClick={() => {
+                setForm({ ...emptyForm, date: dayDetailOpen });
+                setDayDetailOpen(null);
+                handleAddClick();
+              }}
+            >
+              <Plus className="w-4 h-4" />
+              Adicionar evento neste dia
+            </Button>
+          </div>
+        </Modal>
+      )}
 
       {/* Add modal */}
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Novo Evento">
