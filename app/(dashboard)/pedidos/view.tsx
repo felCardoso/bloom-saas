@@ -14,6 +14,8 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Order, OrderStatus, OrderItem, Client, Product, PaymentMethod } from "@/lib/types";
 import { usePlan } from "@/lib/plan-context";
 import { UpgradeModal } from "@/components/ui/UpgradeModal";
+import { usePagination } from "@/lib/use-pagination";
+import { Pagination } from "@/components/ui/Pagination";
 
 const statusMap: Record<
   OrderStatus,
@@ -70,6 +72,12 @@ export function PedidosView({
     const matchStatus = statusFilter === "all" || o.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  const { paginated, page, setPage, totalPages, totalItems, pageSize } = usePagination(
+    filtered,
+    20,
+    `${search}|${statusFilter}`,
+  );
 
   function addItem() {
     const product = products.find((p) => p.id === addingItem.product_id);
@@ -201,7 +209,7 @@ export function PedidosView({
             </div>
           </Card>
         ) : (
-          filtered.map((order) => {
+          paginated.map((order) => {
             const status = statusMap[order.status];
             const fiadoPending = isFiadoPending(order);
             return (
@@ -294,6 +302,14 @@ export function PedidosView({
           })
         )}
       </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageChange={setPage}
+      />
 
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} resource="ordersPerMonth" />
 

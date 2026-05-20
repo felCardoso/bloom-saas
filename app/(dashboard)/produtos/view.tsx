@@ -20,6 +20,8 @@ import { usePlan } from "@/lib/plan-context";
 import { UpgradeModal } from "@/components/ui/UpgradeModal";
 import { LockedFeature } from "@/components/ui/LockedFeature";
 import { cn } from "@/lib/utils";
+import { usePagination } from "@/lib/use-pagination";
+import { Pagination } from "@/components/ui/Pagination";
 
 const emptyForm = {
   name: "",
@@ -71,6 +73,12 @@ export function ProdutosView({
     const matchCat = catFilter === "all" || p.category === catFilter;
     return matchSearch && matchCat;
   });
+
+  const { paginated, page, setPage, totalPages, totalItems, pageSize } = usePagination(
+    filtered,
+    24,
+    `${search}|${catFilter}`,
+  );
 
   function handleAddClick() {
     if (!canAdd("products")) {
@@ -272,7 +280,7 @@ export function ProdutosView({
         </Card>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4">
-          {filtered.map((product) => {
+          {paginated.map((product) => {
             const m = margin(product);
             const lowStock = product.stock <= 5;
             return (
@@ -338,6 +346,14 @@ export function ProdutosView({
           })}
         </div>
       )}
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageChange={setPage}
+      />
 
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} resource="products" />
 

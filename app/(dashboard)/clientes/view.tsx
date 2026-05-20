@@ -35,6 +35,8 @@ import { formatCurrency, formatDate, formatPhone } from "@/lib/utils";
 import type { Client, ClientStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { usePlan } from "@/lib/plan-context";
+import { usePagination } from "@/lib/use-pagination";
+import { Pagination } from "@/components/ui/Pagination";
 
 const statusMap: Record<
   ClientStatus,
@@ -89,6 +91,12 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
     const matchStatus = statusFilter === "all" || c.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  const { paginated, page, setPage, totalPages, totalItems, pageSize } = usePagination(
+    filtered,
+    20,
+    `${search}|${statusFilter}`,
+  );
 
   function handleAddClick() {
     if (!canAdd("clients")) {
@@ -289,7 +297,7 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
             </div>
           </Card>
         ) : (
-          filtered.map((client) => {
+          paginated.map((client) => {
             const status = statusMap[client.status];
             return (
               <button
@@ -364,7 +372,7 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
                   </td>
                 </tr>
               ) : (
-                filtered.map((client) => {
+                paginated.map((client) => {
                   const status = statusMap[client.status];
                   return (
                     <tr
@@ -435,6 +443,14 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
           </table>
         </div>
       </Card>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageChange={setPage}
+      />
 
       {/* Upgrade modal */}
       <UpgradeModal
