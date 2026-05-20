@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { addProduto, updateProduto, deleteProduto } from "@/lib/actions/produtos";
 import { getMovimentacoes } from "@/lib/actions/estoque";
 import { importProdutosCSV } from "@/lib/actions/csv";
-import { parseCsv, normalizeHeaders } from "@/lib/csv-parse";
+import { parseFile, normalizeHeaders } from "@/lib/csv-parse";
 import type { ImportProdutoRow } from "@/lib/actions/csv";
 import { Plus, Search, Package, AlertTriangle, Pencil, Trash2, Upload, FileText, History, ArrowUpCircle, ArrowDownCircle, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -181,13 +181,12 @@ export function ProdutosView({
     setMovementsLoading(false);
   }
 
-  function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const text = ev.target?.result as string;
-      const parsed = parseCsv(text);
+    try {
+      const parsed = await parseFile(file);
       const aliases = {
         name: ["nome", "name", "produto"],
         brand: ["marca", "brand"],
@@ -212,9 +211,9 @@ export function ProdutosView({
       setImportRows(rows);
       setImportResult(null);
       setImportError(null);
-    };
-    reader.readAsText(file, "UTF-8");
-    e.target.value = "";
+    } catch {
+      setImportError("Não foi possível ler o arquivo. Verifique se é um CSV ou XLSX válido.");
+    }
   }
 
   function handleImportOpen() {
@@ -626,7 +625,7 @@ export function ProdutosView({
       <Modal
         open={importOpen}
         onClose={() => setImportOpen(false)}
-        title="Importar produtos (CSV)"
+        title="Importar produtos"
         size="lg"
       >
         <div className="space-y-5">
@@ -665,9 +664,14 @@ export function ProdutosView({
                 <Upload className="w-8 h-8 text-neutral-300 dark:text-neutral-600 group-hover:text-rose-400 transition-colors" />
                 <div className="text-center">
                   <p className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Clique para selecionar o arquivo</p>
-                  <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">Arquivo .csv, codificação UTF-8</p>
+                  <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">Arquivo .csv (UTF-8) ou .xlsx</p>
                 </div>
-                <input type="file" accept=".csv,text/csv" onChange={handleImportFile} className="hidden" />
+                <input
+                  type="file"
+                  accept=".csv,text/csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                  onChange={handleImportFile}
+                  className="hidden"
+                />
               </label>
 
               {importError && (

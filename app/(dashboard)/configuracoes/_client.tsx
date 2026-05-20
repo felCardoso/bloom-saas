@@ -832,6 +832,7 @@ function ContaTab({ userEmail }: { userEmail: string }) {
   const [confirmEmail, setConfirmEmail] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [exportLoading, setExportLoading] = useState<string | null>(null);
+  const [exportFormat, setExportFormat] = useState<"csv" | "xlsx">("xlsx");
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
@@ -849,13 +850,13 @@ function ContaTab({ userEmail }: { userEmail: string }) {
   async function handleExport(type: "clientes" | "produtos" | "pedidos") {
     setExportLoading(type);
     try {
-      const res = await fetch(`/api/export/csv?type=${type}`);
+      const res = await fetch(`/api/export?type=${type}&format=${exportFormat}`);
       if (!res.ok) return;
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${type}.csv`;
+      a.download = `${type}.${exportFormat}`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -870,10 +871,27 @@ function ContaTab({ userEmail }: { userEmail: string }) {
       <div>
         <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-1">Exportar meus dados</h3>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
-          Baixe arquivos CSV com seus clientes, pedidos e produtos.
+          Baixe arquivos com seus clientes, pedidos e produtos.
         </p>
         {hasFeature("csvExport") ? (
-          <div className="flex flex-wrap gap-2">
+          <>
+            <div className="inline-flex bg-neutral-100 dark:bg-neutral-800 rounded-xl p-1 mb-3">
+              {(["xlsx", "csv"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setExportFormat(f)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wide transition-all",
+                    exportFormat === f
+                      ? "bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-100 shadow-sm"
+                      : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200",
+                  )}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2">
             {(["clientes", "produtos", "pedidos"] as const).map((type) => (
               <button
                 key={type}
@@ -889,7 +907,8 @@ function ContaTab({ userEmail }: { userEmail: string }) {
                 {type}
               </button>
             ))}
-          </div>
+            </div>
+          </>
         ) : (
           <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800">
             <div>
