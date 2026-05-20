@@ -25,6 +25,10 @@ import {
   X,
   FileText,
   ExternalLink,
+  MessageCircle,
+  Mail,
+  HelpCircle,
+  LifeBuoy,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -39,7 +43,7 @@ import { createClient } from "@/lib/supabase/client";
 import { AvatarUpload } from "@/components/ui/AvatarUpload";
 import { useProfile } from "@/lib/profile-context";
 
-type Tab = "perfil" | "assinatura" | "notificacoes" | "aparencia" | "seguranca" | "conta" | "categorias";
+type Tab = "perfil" | "assinatura" | "notificacoes" | "aparencia" | "seguranca" | "suporte" | "categorias";
 
 const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "perfil", label: "Perfil", icon: User },
@@ -48,7 +52,7 @@ const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "aparencia", label: "Aparência", icon: Palette },
   { id: "seguranca", label: "Segurança", icon: Shield },
   { id: "categorias", label: "Categorias", icon: Tag },
-  { id: "conta", label: "Conta", icon: Trash2 },
+  { id: "suporte", label: "Suporte", icon: LifeBuoy },
 ];
 
 const PLAN_BADGE: Record<string, string> = {
@@ -196,6 +200,10 @@ function PerfilTab({ initialProfile }: {
 
       <div className="flex justify-end pt-2 border-t border-neutral-100 dark:border-neutral-800">
         <SaveButton saved={saved} loading={isPending} onClick={handleSave} />
+      </div>
+
+      <div className="pt-6 border-t border-neutral-200 dark:border-neutral-800">
+        <ContaTab userEmail={initialProfile.email} />
       </div>
     </div>
   );
@@ -1094,6 +1102,105 @@ function CategoriasTab({ initialCategorias }: { initialCategorias: Categoria[] }
   );
 }
 
+/* ── Suporte ── */
+function SuporteTab() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-1">
+          Precisa de ajuda?
+        </h3>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+          Escolha o canal que preferir — respondemos rápido.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <a
+            href="mailto:suporte@bloom.app"
+            className="flex items-start gap-3 p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900 rounded-2xl hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors"
+          >
+            <div className="w-9 h-9 bg-white dark:bg-neutral-900 rounded-xl flex items-center justify-center shrink-0 shadow-card">
+              <Mail className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">E-mail</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
+                suporte@bloom.app
+              </p>
+              <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
+                Respondemos em até 24h
+              </p>
+            </div>
+          </a>
+          <a
+            href="https://wa.me/5511999999999"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-start gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900 rounded-2xl hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+          >
+            <div className="w-9 h-9 bg-white dark:bg-neutral-900 rounded-xl flex items-center justify-center shrink-0 shadow-card">
+              <MessageCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">WhatsApp</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                Pro e Premium
+              </p>
+              <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
+                Atendimento prioritário
+              </p>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div className="border-t border-neutral-100 dark:border-neutral-800 pt-6">
+        <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-1">
+          Perguntas frequentes
+        </h3>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+          Respostas rápidas sobre planos, dados, funcionalidades e pagamento.
+        </p>
+        <Link
+          href="/suporte"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+        >
+          <HelpCircle className="w-4 h-4" />
+          Ver central de ajuda
+        </Link>
+      </div>
+
+      <div className="border-t border-neutral-100 dark:border-neutral-800 pt-6">
+        <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-3">
+          Recursos úteis
+        </h3>
+        <div className="space-y-2">
+          <Link
+            href="/termos"
+            className="flex items-center justify-between px-4 py-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <span>Termos de uso</span>
+            <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
+          </Link>
+          <Link
+            href="/privacidade"
+            className="flex items-center justify-between px-4 py-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <span>Política de privacidade</span>
+            <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
+          </Link>
+          <Link
+            href="/sobre"
+            className="flex items-center justify-between px-4 py-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <span>Sobre o Bloom</span>
+            <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Main ── */
 export interface ConfiguracoesClientProps {
   initialProfile: { name: string; email: string; phone: string; brand: string; avatarUrl: string | null; cpfCnpj: string };
@@ -1112,7 +1219,7 @@ export default function ConfiguracoesClient({ initialProfile, initialNotifs, ini
     aparencia: <AparenciaTab />,
     seguranca: <SegurancaTab />,
     categorias: <CategoriasTab initialCategorias={initialCategorias} />,
-    conta: <ContaTab userEmail={initialProfile.email} />,
+    suporte: <SuporteTab />,
   };
 
   return (
