@@ -85,6 +85,18 @@ export function PedidosView({
   function addItem() {
     const product = products.find((p) => p.id === addingItem.product_id);
     if (!product) return;
+    if (product.stock === 0) {
+      setToast("Produto sem estoque disponível.");
+      return;
+    }
+    const alreadyQueued = newOrder.items
+      .filter((i) => i.product_id === product.id)
+      .reduce((s, i) => s + i.quantity, 0);
+    const available = product.stock - alreadyQueued;
+    if (addingItem.quantity > available) {
+      setToast(`Estoque insuficiente. Disponível: ${available} unidade(s).`);
+      return;
+    }
     const item: OrderItem = {
       product_id: product.id,
       product_name: product.name,
@@ -242,7 +254,7 @@ export function PedidosView({
               <Card
                 key={order.id}
                 padding="none"
-                className="hover:shadow-elevated transition-shadow"
+                className="hover:shadow-elevated transition-shadow overflow-hidden"
               >
                 <div
                   className="flex items-start sm:items-center gap-3 px-4 py-4 cursor-pointer"
@@ -262,12 +274,12 @@ export function PedidosView({
                     <p className="text-xs text-neutral-400 dark:text-neutral-500 truncate">
                       {order.items.map((i) => i.product_name).join(", ")}
                     </p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                    <div className="flex items-center gap-x-2 flex-wrap mt-0.5">
+                      <p className="text-xs text-neutral-400 dark:text-neutral-500 whitespace-nowrap">
                         {formatDate(order.created_at)}
                       </p>
                       <span className="text-xs text-neutral-300 dark:text-neutral-600">·</span>
-                      <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                      <p className="text-xs text-neutral-400 dark:text-neutral-500 whitespace-nowrap">
                         {paymentLabels[order.payment_method]}
                       </p>
                     </div>
@@ -399,8 +411,9 @@ export function PedidosView({
               >
                 <option value="">Selecione o produto</option>
                 {products.map((p) => (
-                  <option key={p.id} value={p.id}>
+                  <option key={p.id} value={p.id} disabled={p.stock === 0}>
                     {p.name} — {formatCurrency(p.sale_price)}
+                    {p.stock === 0 ? " (sem estoque)" : ` (${p.stock} un.)`}
                   </option>
                 ))}
               </select>
