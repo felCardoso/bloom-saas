@@ -23,8 +23,8 @@ export async function asaasRequest<T>(path: string, options?: RequestInit): Prom
 }
 
 export const PLAN_TO_VALUE: Record<string, number> = {
-  pro: Number(process.env.ASAAS_PRO_VALUE ?? "39.90"),
-  premium: Number(process.env.ASAAS_PREMIUM_VALUE ?? "79.90"),
+  pro: Number(process.env.ASAAS_PRO_VALUE ?? "29.00"),
+  premium: Number(process.env.ASAAS_PREMIUM_VALUE ?? "59.00"),
 };
 
 export const PLAN_DESCRIPTIONS: Record<string, string> = {
