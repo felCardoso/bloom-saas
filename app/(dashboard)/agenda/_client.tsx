@@ -10,7 +10,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { formatDate } from "@/lib/utils";
-import type { ScheduleEvent } from "@/lib/types";
+import type { ScheduleEvent, Client } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { usePlan } from "@/lib/plan-context";
 import { UpgradeModal } from "@/components/ui/UpgradeModal";
@@ -33,9 +33,10 @@ const emptyForm = {
 
 interface Props {
   initialEvents: ScheduleEvent[];
+  clients: Client[];
 }
 
-export default function AgendaClient({ initialEvents }: Props) {
+export default function AgendaClient({ initialEvents, clients }: Props) {
   const { canAdd, usage, setUsage } = usePlan();
   const [events, setEvents] = useState<ScheduleEvent[]>(initialEvents);
   const [addOpen, setAddOpen] = useState(false);
@@ -552,11 +553,17 @@ export default function AgendaClient({ initialEvents }: Props) {
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
             placeholder="Ex: Ligar para apresentar catálogo"
           />
-          <Input
+          <Select
             label="Cliente"
-            value={form.client_name}
-            onChange={(e) => setForm((f) => ({ ...f, client_name: e.target.value }))}
-            placeholder="Nome da cliente (opcional)"
+            value={clients.find((c) => c.name === form.client_name)?.id ?? ""}
+            onChange={(e) => {
+              const client = clients.find((c) => c.id === e.target.value);
+              setForm((f) => ({ ...f, client_name: client?.name ?? "" }));
+            }}
+            options={[
+              { value: "", label: "Nenhuma cliente" },
+              ...clients.map((c) => ({ value: c.id, label: c.name })),
+            ]}
           />
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Descrição</label>
@@ -609,11 +616,17 @@ export default function AgendaClient({ initialEvents }: Props) {
             onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
             placeholder="Ex: Ligar para apresentar catálogo"
           />
-          <Input
+          <Select
             label="Cliente"
-            value={editForm.client_name}
-            onChange={(e) => setEditForm((f) => ({ ...f, client_name: e.target.value }))}
-            placeholder="Nome da cliente (opcional)"
+            value={clients.find((c) => c.name === editForm.client_name)?.id ?? ""}
+            onChange={(e) => {
+              const client = clients.find((c) => c.id === e.target.value);
+              setEditForm((f) => ({ ...f, client_name: client?.name ?? "" }));
+            }}
+            options={[
+              { value: "", label: "Nenhuma cliente" },
+              ...clients.map((c) => ({ value: c.id, label: c.name })),
+            ]}
           />
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Descrição</label>
