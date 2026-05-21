@@ -11,7 +11,13 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
 }
 
-export function Pagination({ page, totalPages, totalItems, pageSize, onPageChange }: PaginationProps) {
+export function Pagination({
+  page,
+  totalPages,
+  totalItems,
+  pageSize,
+  onPageChange,
+}: PaginationProps) {
   if (totalPages <= 1) return null;
 
   const start = (page - 1) * pageSize + 1;
@@ -20,8 +26,14 @@ export function Pagination({ page, totalPages, totalItems, pageSize, onPageChang
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-card">
       <p className="text-xs text-neutral-500 dark:text-neutral-400">
-        Mostrando <span className="font-semibold text-neutral-700 dark:text-neutral-300">{start}–{end}</span> de{" "}
-        <span className="font-semibold text-neutral-700 dark:text-neutral-300">{totalItems}</span>
+        Mostrando{" "}
+        <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+          {start}–{end}
+        </span>{" "}
+        de{" "}
+        <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+          {totalItems}
+        </span>
       </p>
       <div className="flex items-center gap-1">
         <button

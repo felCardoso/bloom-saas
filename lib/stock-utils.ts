@@ -11,7 +11,7 @@ type MovimentoData = {
 
 export async function logMovimento(
   supabase: SupabaseClient,
-  data: MovimentoData
+  data: MovimentoData,
 ): Promise<void> {
   await supabase.from("movimentacoes_estoque").insert(data);
 }

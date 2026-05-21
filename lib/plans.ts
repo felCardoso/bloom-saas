@@ -1,7 +1,7 @@
 export type PlanId = "free" | "pro" | "premium";
 
 export interface PlanLimits {
-  clients: number;        // -1 = ilimitado
+  clients: number; // -1 = ilimitado
   ordersPerMonth: number;
   products: number;
   events: number;
@@ -16,7 +16,7 @@ export interface PlanFeatures {
   whatsappLink: boolean;
   stockAlerts: boolean;
   csvExport: boolean;
-  multipleUsers: number;  // 0 = só o titular
+  multipleUsers: number; // 0 = só o titular
   support: "community" | "email" | "priority";
 }
 

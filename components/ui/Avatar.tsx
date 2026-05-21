@@ -34,7 +34,7 @@ export function Avatar({ name, src, size = "md", className }: AvatarProps) {
     return (
       <div
         className={cn(
-          "relative rounded-full overflow-hidden flex-shrink-0",
+          "relative rounded-full overflow-hidden shrink-0",
           sizeClasses[size],
           className
         )}
@@ -47,7 +47,7 @@ export function Avatar({ name, src, size = "md", className }: AvatarProps) {
   return (
     <div
       className={cn(
-        "rounded-full flex items-center justify-center font-semibold flex-shrink-0",
+        "rounded-full flex items-center justify-center font-semibold shrink-0",
         sizeClasses[size],
         getColorByName(name),
         className

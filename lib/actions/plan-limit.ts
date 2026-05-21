@@ -4,12 +4,17 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { PLANS, RESOURCE_LABELS } from "@/lib/plans";
 import type { PlanId } from "@/lib/plans";
 
-type LimitResource = "clients" | "products" | "ordersPerMonth" | "events" | "messageTemplates";
+type LimitResource =
+  | "clients"
+  | "products"
+  | "ordersPerMonth"
+  | "events"
+  | "messageTemplates";
 
 export async function checkPlanLimit(
   supabase: SupabaseClient,
   userId: string,
-  resource: LimitResource
+  resource: LimitResource,
 ): Promise<{ error?: string }> {
   const { data: profile } = await supabase
     .from("perfis_usuarios")

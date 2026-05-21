@@ -42,7 +42,11 @@ export function LockedFeature({
             </p>
           </button>
         </div>
-        <UpgradeModal open={open} onClose={() => setOpen(false)} feature={feature} />
+        <UpgradeModal
+          open={open}
+          onClose={() => setOpen(false)}
+          feature={feature}
+        />
       </>
     );
   }
@@ -53,14 +57,18 @@ export function LockedFeature({
         onClick={() => setOpen(true)}
         className={cn(
           "flex items-center gap-1.5 text-neutral-400 cursor-pointer hover:text-neutral-600 transition-colors",
-          className
+          className,
         )}
         title={`${FEATURE_LABELS[feature]} — disponível em planos superiores`}
       >
         {children}
-        <Lock className="w-3.5 h-3.5 flex-shrink-0" />
+        <Lock className="w-3.5 h-3.5 shrink-0" />
       </button>
-      <UpgradeModal open={open} onClose={() => setOpen(false)} feature={feature} />
+      <UpgradeModal
+        open={open}
+        onClose={() => setOpen(false)}
+        feature={feature}
+      />
     </>
   );
 }

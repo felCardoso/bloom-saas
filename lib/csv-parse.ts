@@ -1,7 +1,3 @@
-/**
- * Reads a CSV or XLSX file into Record<string,string>[] keyed by the header row.
- * XLSX support is dynamically imported to keep the bundle small.
- */
 export async function parseFile(file: File): Promise<Record<string, string>[]> {
   const lower = file.name.toLowerCase();
   if (lower.endsWith(".xlsx") || lower.endsWith(".xls")) {
@@ -27,10 +23,6 @@ export async function parseFile(file: File): Promise<Record<string, string>[]> {
   return parseCsv(text);
 }
 
-/**
- * Minimal RFC 4180-compliant CSV parser.
- * Returns an array of objects keyed by the header row (first row).
- */
 export function parseCsv(text: string): Record<string, string>[] {
   const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   const nonEmpty = lines.filter((l) => l.trim() !== "");
@@ -76,7 +68,7 @@ function splitRow(row: string): string[] {
 /** Maps flexible header aliases to canonical field names */
 export function normalizeHeaders(
   row: Record<string, string>,
-  aliases: Record<string, string[]>
+  aliases: Record<string, string[]>,
 ): Record<string, string> {
   const result: Record<string, string> = {};
   for (const [canonical, keys] of Object.entries(aliases)) {

@@ -100,7 +100,7 @@ export async function sendOrderConfirmationEmail(
     orderId: string;
     items: { name: string; quantity: number; unitPrice: number }[];
     total: number;
-  }
+  },
 ) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://usebloom.app";
 
@@ -113,7 +113,7 @@ export async function sendOrderConfirmationEmail(
         <td style="padding:8px 0;font-size:14px;color:#374151;border-bottom:1px solid #f3f4f6;text-align:right;">
           R$ ${item.unitPrice.toFixed(2).replace(".", ",")}
         </td>
-      </tr>`
+      </tr>`,
     )
     .join("");
 
@@ -169,9 +169,10 @@ export async function sendBirthdayReminderEmail(
   await sendEmail({
     from: FROM,
     to,
-    subject: count === 1
-      ? `🎂 ${clients[0].name} faz aniversário amanhã`
-      : `🎂 ${count} clientes fazem aniversário amanhã`,
+    subject:
+      count === 1
+        ? `🎂 ${clients[0].name} faz aniversário amanhã`
+        : `🎂 ${count} clientes fazem aniversário amanhã`,
     html: baseTemplate(`
       <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">
         ${count === 1 ? "Aniversário amanhã" : "Aniversários amanhã"}
@@ -214,17 +215,20 @@ export async function sendLowStockEmail(
   await sendEmail({
     from: FROM,
     to,
-    subject: count === 1
-      ? `Estoque baixo: ${products[0].name}`
-      : `${count} produtos com estoque baixo`,
+    subject:
+      count === 1
+        ? `Estoque baixo: ${products[0].name}`
+        : `${count} produtos com estoque baixo`,
     html: baseTemplate(`
       <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">
         Estoque baixo
       </h1>
       <p style="margin:0 0 20px;font-size:14px;color:#6b7280;line-height:1.6;">
-        ${count === 1
-          ? "Um produto está com estoque baixo. Reponha o quanto antes para não perder vendas."
-          : `${count} produtos estão com estoque baixo. Reponha o quanto antes para não perder vendas.`}
+        ${
+          count === 1
+            ? "Um produto está com estoque baixo. Reponha o quanto antes para não perder vendas."
+            : `${count} produtos estão com estoque baixo. Reponha o quanto antes para não perder vendas.`
+        }
       </p>
       <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
         ${listItems}
@@ -280,16 +284,18 @@ export async function sendPendingOrdersEmail(
   exampleClient?: string,
 ) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://usebloom.app";
-  const intro = count === 1
-    ? `Você tem 1 pedido${exampleClient ? ` de <strong>${exampleClient}</strong>` : ""} pendente há mais de 7 dias.`
-    : `Você tem ${count} pedidos pendentes há mais de 7 dias.`;
+  const intro =
+    count === 1
+      ? `Você tem 1 pedido${exampleClient ? ` de <strong>${exampleClient}</strong>` : ""} pendente há mais de 7 dias.`
+      : `Você tem ${count} pedidos pendentes há mais de 7 dias.`;
 
   await sendEmail({
     from: FROM,
     to,
-    subject: count === 1
-      ? "Você tem um pedido pendente há mais de 7 dias"
-      : `${count} pedidos pendentes há mais de 7 dias`,
+    subject:
+      count === 1
+        ? "Você tem um pedido pendente há mais de 7 dias"
+        : `${count} pedidos pendentes há mais de 7 dias`,
     html: baseTemplate(`
       <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">
         Pedidos aguardando atualização

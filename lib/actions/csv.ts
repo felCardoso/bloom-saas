@@ -38,7 +38,7 @@ async function checkPlanCsvExport(userId: string) {
 }
 
 export async function importClientesCSV(
-  rows: ImportClienteRow[]
+  rows: ImportClienteRow[],
 ): Promise<{ imported: number; skipped: number; error?: string }> {
   const supabase = await createClient();
   const {
@@ -47,7 +47,12 @@ export async function importClientesCSV(
   if (!user) return { imported: 0, skipped: 0, error: "Não autenticado" };
 
   const allowed = await checkPlanCsvExport(user.id);
-  if (!allowed) return { imported: 0, skipped: 0, error: "Disponível apenas no plano Premium" };
+  if (!allowed)
+    return {
+      imported: 0,
+      skipped: 0,
+      error: "Disponível apenas no plano Premium",
+    };
 
   const validStatuses: ClientStatus[] = ["ativa", "inativa", "prospect"];
 
@@ -70,7 +75,11 @@ export async function importClientesCSV(
 
     const remaining = limit - (count ?? 0);
     if (remaining <= 0) {
-      return { imported: 0, skipped: rows.length, error: `Limite de ${limit} clientes atingido.` };
+      return {
+        imported: 0,
+        skipped: rows.length,
+        error: `Limite de ${limit} clientes atingido.`,
+      };
     }
     if (rowsToInsert.length > remaining) {
       skipped += rowsToInsert.length - remaining;
@@ -97,7 +106,7 @@ export async function importClientesCSV(
 }
 
 export async function importProdutosCSV(
-  rows: ImportProdutoRow[]
+  rows: ImportProdutoRow[],
 ): Promise<{ imported: number; skipped: number; error?: string }> {
   const supabase = await createClient();
   const {
@@ -106,7 +115,12 @@ export async function importProdutosCSV(
   if (!user) return { imported: 0, skipped: 0, error: "Não autenticado" };
 
   const allowed = await checkPlanCsvExport(user.id);
-  if (!allowed) return { imported: 0, skipped: 0, error: "Disponível apenas no plano Premium" };
+  if (!allowed)
+    return {
+      imported: 0,
+      skipped: 0,
+      error: "Disponível apenas no plano Premium",
+    };
 
   const { data: perfil } = await supabase
     .from("perfis_usuarios")
@@ -128,7 +142,11 @@ export async function importProdutosCSV(
 
     const remaining = limit - (count ?? 0);
     if (remaining <= 0) {
-      return { imported: 0, skipped: rows.length, error: `Limite de ${limit} produtos atingido.` };
+      return {
+        imported: 0,
+        skipped: rows.length,
+        error: `Limite de ${limit} produtos atingido.`,
+      };
     }
     if (rowsToInsert.length > remaining) {
       skipped += rowsToInsert.length - remaining;

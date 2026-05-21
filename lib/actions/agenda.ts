@@ -31,7 +31,9 @@ export async function addEvento(form: {
   date: string;
 }): Promise<{ error?: string }> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: "Não autenticado" };
 
   const limitCheck = await checkPlanLimit(supabase, user.id, "events");
@@ -50,7 +52,10 @@ export async function addEvento(form: {
   return {};
 }
 
-export async function toggleEvento(id: string, completed: boolean): Promise<{ error?: string }> {
+export async function toggleEvento(
+  id: string,
+  completed: boolean,
+): Promise<{ error?: string }> {
   const supabase = await createClient();
   const { error } = await supabase
     .from("eventos_agenda")
@@ -63,10 +68,7 @@ export async function toggleEvento(id: string, completed: boolean): Promise<{ er
 
 export async function deleteEvento(id: string): Promise<{ error?: string }> {
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("eventos_agenda")
-    .delete()
-    .eq("id", id);
+  const { error } = await supabase.from("eventos_agenda").delete().eq("id", id);
   if (error) return { error: error.message };
   revalidatePath("/agenda");
   return {};
@@ -80,7 +82,7 @@ export async function updateEvento(
     title: string;
     description: string;
     date: string;
-  }
+  },
 ): Promise<{ error?: string }> {
   const supabase = await createClient();
   const { error } = await supabase

@@ -19,7 +19,7 @@ export function Card({ children, className, padding = "md" }: CardProps) {
       className={cn(
         "bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-card",
         paddingClasses[padding],
-        className
+        className,
       )}
     >
       {children}
@@ -35,12 +35,7 @@ export function CardHeader({
   className?: string;
 }) {
   return (
-    <div
-      className={cn(
-        "flex items-center justify-between mb-4",
-        className
-      )}
-    >
+    <div className={cn("flex items-center justify-between mb-4", className)}>
       {children}
     </div>
   );
@@ -54,7 +49,12 @@ export function CardTitle({
   className?: string;
 }) {
   return (
-    <h3 className={cn("text-base font-semibold text-neutral-800 dark:text-neutral-100", className)}>
+    <h3
+      className={cn(
+        "text-base font-semibold text-neutral-800 dark:text-neutral-100",
+        className,
+      )}
+    >
       {children}
     </h3>
   );

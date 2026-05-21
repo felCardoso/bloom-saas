@@ -83,7 +83,7 @@ export async function addCliente(form: {
 
 export async function updateClienteStatus(
   id: string,
-  status: ClientStatus
+  status: ClientStatus,
 ): Promise<{ error?: string }> {
   const supabase = await createClient();
   const { error } = await supabase
@@ -113,7 +113,7 @@ export async function updateCliente(
     status: ClientStatus;
     notes: string;
     birthday: string;
-  }
+  },
 ): Promise<{ error?: string }> {
   const supabase = await createClient();
   const { error } = await supabase

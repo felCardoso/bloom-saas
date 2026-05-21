@@ -1,11 +1,12 @@
 import webpush from "web-push";
 
-const VAPID_SUBJECT = process.env.VAPID_SUBJECT ?? "mailto:contato@bloom.app.br";
+const VAPID_SUBJECT =
+  process.env.VAPID_SUBJECT ?? "mailto:contato@bloom.app.br";
 
 webpush.setVapidDetails(
   VAPID_SUBJECT,
   process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
+  process.env.VAPID_PRIVATE_KEY!,
 );
 
 export type PushPayload = {
@@ -19,7 +20,7 @@ export type PushPayload = {
 
 export async function sendPushNotification(
   subscription: webpush.PushSubscription,
-  payload: PushPayload
+  payload: PushPayload,
 ): Promise<"ok" | "expired" | "error"> {
   try {
     await webpush.sendNotification(subscription, JSON.stringify(payload));

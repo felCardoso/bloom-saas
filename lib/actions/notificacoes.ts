@@ -14,7 +14,9 @@ export type Notificacao = {
 
 export async function getNotificacoes(): Promise<Notificacao[]> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return [];
 
   const { data } = await supabase
@@ -34,7 +36,9 @@ export async function markAsRead(id: string): Promise<void> {
 
 export async function markAllAsRead(): Promise<void> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return;
   await supabase
     .from("notificacoes")

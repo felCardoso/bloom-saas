@@ -5,7 +5,10 @@ export const metadata: Metadata = {
   title: "Política de Privacidade",
   description:
     "Saiba como o Bloom coleta, usa e protege seus dados pessoais, em conformidade com a LGPD.",
-  openGraph: { title: "Política de Privacidade — Bloom", description: "Privacidade e proteção de dados no Bloom (LGPD)." },
+  openGraph: {
+    title: "Política de Privacidade — Bloom",
+    description: "Privacidade e proteção de dados no Bloom (LGPD).",
+  },
 };
 
 const highlights = [
@@ -38,7 +41,7 @@ const sections = [
 
 Para fins da Lei Geral de Proteção de Dados (LGPD), atuamos como controlador dos dados pessoais dos usuários da plataforma e como operador dos dados de clientes inseridos pelas revendedoras.
 
-Encarregada de Dados (DPO): privacidade@rosecrm.com.br`,
+Encarregada de Dados (DPO): privacidade@bloom.com.br`,
   },
   {
     title: "2. Dados que coletamos",
@@ -137,7 +140,7 @@ Você pode gerenciar cookies nas configurações do seu navegador. A desativaç�
 • Revogação do consentimento a qualquer momento
 • Oposição ao tratamento em caso de descumprimento da LGPD
 
-Para exercer qualquer direito, envie um e-mail para privacidade@rosecrm.com.br. Responderemos em até 15 dias.`,
+Para exercer qualquer direito, envie um e-mail para privacidade@bloom.com.br. Responderemos em até 15 dias.`,
   },
   {
     title: "9. Retenção de dados",
@@ -216,7 +219,7 @@ export default function PrivacidadePage() {
       {/* Contact */}
       <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <a
-          href="mailto:privacidade@rosecrm.com.br"
+          href="mailto:privacidade@bloom.com.br"
           className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
         >
           <div className="w-9 h-9 bg-white dark:bg-neutral-800 rounded-xl flex items-center justify-center shadow-sm">
@@ -227,7 +230,7 @@ export default function PrivacidadePage() {
               DPO / Privacidade
             </p>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              privacidade@rosecrm.com.br
+              privacidade@bloom.com.br
             </p>
           </div>
         </a>
@@ -242,7 +245,9 @@ export default function PrivacidadePage() {
             <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
               Central de Suporte
             </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">Dúvidas e solicitações</p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              Dúvidas e solicitações
+            </p>
           </div>
         </a>
       </div>

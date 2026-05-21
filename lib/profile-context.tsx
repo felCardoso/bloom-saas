@@ -26,7 +26,9 @@ export function ProfileProvider({
   const [avatarUrl, setAvatarUrl] = useState<string | null>(initialAvatarUrl);
 
   return (
-    <ProfileContext.Provider value={{ name: initialName, avatarUrl, setAvatarUrl }}>
+    <ProfileContext.Provider
+      value={{ name: initialName, avatarUrl, setAvatarUrl }}
+    >
       {children}
     </ProfileContext.Provider>
   );

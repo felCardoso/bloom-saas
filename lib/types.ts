@@ -1,6 +1,11 @@
 export type ClientStatus = "ativa" | "inativa" | "prospect";
 export type OrderStatus = "pendente" | "confirmado" | "entregue" | "cancelado";
-export type PaymentMethod = "pix" | "dinheiro" | "cartao_credito" | "cartao_debito" | "fiado";
+export type PaymentMethod =
+  | "pix"
+  | "dinheiro"
+  | "cartao_credito"
+  | "cartao_debito"
+  | "fiado";
 
 export interface Client {
   id: string;
@@ -73,7 +78,12 @@ export interface ScheduleEvent {
   completed: boolean;
 }
 
-export type WaTemplateType = "aniversario" | "pedido_pendente" | "promocao" | "pos_venda" | "personalizado";
+export type WaTemplateType =
+  | "aniversario"
+  | "pedido_pendente"
+  | "promocao"
+  | "pos_venda"
+  | "personalizado";
 
 export interface WhatsAppTemplate {
   id: string;

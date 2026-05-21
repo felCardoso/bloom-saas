@@ -26,7 +26,7 @@ self.addEventListener("install", (event) => {
         return self.clients.matchAll().then((clients) => {
           if (clients.length === 0) self.skipWaiting();
         });
-      })
+      }),
   );
 });
 
@@ -36,9 +36,11 @@ self.addEventListener("activate", (event) => {
     caches
       .keys()
       .then((keys) =>
-        Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k)))
+        Promise.all(
+          keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k)),
+        ),
       )
-      .then(() => self.clients.claim())
+      .then(() => self.clients.claim()),
   );
 });
 
@@ -71,10 +73,10 @@ self.addEventListener("fetch", (event) => {
         return response;
       })
       .catch(() =>
-        caches.match(request).then(
-          (cached) => cached ?? caches.match("/~offline")
-        )
-      )
+        caches
+          .match(request)
+          .then((cached) => cached ?? caches.match("/~offline")),
+      ),
   );
 });
 
@@ -96,7 +98,7 @@ self.addEventListener("push", (event) => {
       badge: badge ?? "/icons/icon-192.png",
       tag: tag,
       data: { url: url ?? "/dashboard" },
-    })
+    }),
   );
 });
 
@@ -107,14 +109,16 @@ self.addEventListener("notificationclick", (event) => {
     self.clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((clients) => {
-        const existing = clients.find((c) => c.url.includes(self.location.origin));
+        const existing = clients.find((c) =>
+          c.url.includes(self.location.origin),
+        );
         if (existing) {
           existing.focus();
           existing.navigate(targetUrl);
         } else {
           self.clients.openWindow(targetUrl);
         }
-      })
+      }),
   );
 });
 

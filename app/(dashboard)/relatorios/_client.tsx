@@ -36,6 +36,14 @@ import { cn } from "@/lib/utils";
 import { getRelatorios } from "@/lib/actions/relatorios";
 import type { RelatoriosData, Period } from "@/lib/actions/relatorios";
 
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    value: number; // Define que dentro do payload existe um 'value' numérico
+  }>;
+  label?: string;
+}
+
 const PERIOD_LABELS: Record<Period, string> = {
   "1m": "Este mês",
   "3m": "3 meses",
@@ -59,7 +67,7 @@ function EmptyChart({ label }: { label: string }) {
   );
 }
 
-function CustomTooltipBar({ active, payload, label }: any) {
+function CustomTooltipBar({ active, payload, label }: CustomTooltipProps) {
   if (active && payload?.length) {
     return (
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-elevated px-3 py-2 text-sm">
@@ -75,7 +83,7 @@ function CustomTooltipBar({ active, payload, label }: any) {
   return null;
 }
 
-function CustomTooltipCount({ active, payload, label }: any) {
+function CustomTooltipCount({ active, payload, label }: CustomTooltipProps) {
   if (active && payload?.length) {
     return (
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-elevated px-3 py-2 text-sm">
@@ -91,13 +99,7 @@ function CustomTooltipCount({ active, payload, label }: any) {
   return null;
 }
 
-function Delta({
-  current,
-  prev,
-}: {
-  current: number;
-  prev: number | null;
-}) {
+function Delta({ current, prev }: { current: number; prev: number | null }) {
   if (prev === null || prev === 0) return null;
   const pct = ((current - prev) / prev) * 100;
   const up = pct >= 0;
@@ -323,7 +325,11 @@ export default function RelatoriosClient({
                     }}
                     content={<CustomTooltipBar />}
                   />
-                  <Bar dataKey="revenue" fill={color500} radius={[6, 6, 0, 0]} />
+                  <Bar
+                    dataKey="revenue"
+                    fill={color500}
+                    radius={[6, 6, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>

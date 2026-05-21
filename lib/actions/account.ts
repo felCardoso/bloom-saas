@@ -4,12 +4,19 @@ import { redirect } from "next/navigation";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { asaasRequest } from "@/lib/asaas";
 
-export async function deleteAccount(confirmEmail: string): Promise<{ error?: string }> {
+export async function deleteAccount(
+  confirmEmail: string,
+): Promise<{ error?: string }> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: "Não autenticado" };
 
-  if (!user.email || confirmEmail.trim().toLowerCase() !== user.email.toLowerCase()) {
+  if (
+    !user.email ||
+    confirmEmail.trim().toLowerCase() !== user.email.toLowerCase()
+  ) {
     return { error: "O e-mail digitado não confere com o da conta." };
   }
 
@@ -21,8 +28,9 @@ export async function deleteAccount(confirmEmail: string): Promise<{ error?: str
     .single();
 
   if (profile?.asaas_subscription_id) {
-    await asaasRequest(`/subscriptions/${profile.asaas_subscription_id}`, { method: "DELETE" })
-      .catch(() => null);
+    await asaasRequest(`/subscriptions/${profile.asaas_subscription_id}`, {
+      method: "DELETE",
+    }).catch(() => null);
   }
 
   // Delete from auth — cascades to perfis_usuarios and all user data via FK CASCADE

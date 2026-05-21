@@ -19,12 +19,21 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
   "/agenda": { title: "Agenda", subtitle: "Follow-ups e lembretes" },
   "/relatorios": { title: "Relatórios", subtitle: "Análise de desempenho" },
   "/pricing": { title: "Planos", subtitle: "Gerencie sua assinatura" },
-  "/configuracoes": { title: "Configurações", subtitle: "Preferências da conta" },
+  "/configuracoes": {
+    title: "Configurações",
+    subtitle: "Preferências da conta",
+  },
   "/feedback": { title: "Feedback", subtitle: "Ajude-nos a melhorar o Bloom" },
 };
 
 /* ── Search box reutilizável ── */
-function SearchBox({ autoFocus = false, onClose }: { autoFocus?: boolean; onClose?: () => void }) {
+function SearchBox({
+  autoFocus = false,
+  onClose,
+}: {
+  autoFocus?: boolean;
+  onClose?: () => void;
+}) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResultItem[]>([]);
@@ -34,24 +43,26 @@ function SearchBox({ autoFocus = false, onClose }: { autoFocus?: boolean; onClos
 
   useEffect(() => {
     const trimmed = query.trim();
-    if (trimmed.length < 2) {
-      setResults([]);
-      setOpen(false);
-      return;
-    }
-    setLoading(true);
+
+    if (trimmed.length < 2) return;
+
     const timer = setTimeout(async () => {
+      setLoading(true);
       const r = await searchGlobal(trimmed);
       setResults(r);
       setOpen(true);
       setLoading(false);
     }, 300);
+
     return () => clearTimeout(timer);
   }, [query]);
 
   useEffect(() => {
     function handle(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     }
@@ -74,8 +85,23 @@ function SearchBox({ autoFocus = false, onClose }: { autoFocus?: boolean; onClos
     }
   }
 
-  const clientes = results.filter((r: SearchResultItem) => r.type === "cliente");
-  const produtos = results.filter((r: SearchResultItem) => r.type === "produto");
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const val = e.target.value;
+    setQuery(val);
+
+    // Limpeza síncrona na hora da digitação
+    if (val.trim().length < 2) {
+      setResults([]);
+      setOpen(false);
+    }
+  }
+
+  const clientes = results.filter(
+    (r: SearchResultItem) => r.type === "cliente",
+  );
+  const produtos = results.filter(
+    (r: SearchResultItem) => r.type === "produto",
+  );
   const showDropdown = open || loading;
 
   return (
@@ -85,7 +111,7 @@ function SearchBox({ autoFocus = false, onClose }: { autoFocus?: boolean; onClos
         autoFocus={autoFocus}
         type="text"
         value={query}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
+        onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         placeholder="Buscar cliente ou produto..."
         className="pl-9 pr-4 py-2 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-700 dark:text-neutral-200 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent w-full transition-all"
@@ -120,9 +146,13 @@ function SearchBox({ autoFocus = false, onClose }: { autoFocus?: boolean; onClos
                         <Users className="w-3.5 h-3.5 text-rose-400" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-neutral-800 dark:text-neutral-100 truncate">{r.title}</p>
+                        <p className="text-sm font-medium text-neutral-800 dark:text-neutral-100 truncate">
+                          {r.title}
+                        </p>
                         {r.subtitle && (
-                          <p className="text-xs text-neutral-400 dark:text-neutral-500 truncate">{r.subtitle}</p>
+                          <p className="text-xs text-neutral-400 dark:text-neutral-500 truncate">
+                            {r.subtitle}
+                          </p>
                         )}
                       </div>
                     </button>
@@ -145,9 +175,13 @@ function SearchBox({ autoFocus = false, onClose }: { autoFocus?: boolean; onClos
                         <Package className="w-3.5 h-3.5 text-violet-400" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-neutral-800 dark:text-neutral-100 truncate">{r.title}</p>
+                        <p className="text-sm font-medium text-neutral-800 dark:text-neutral-100 truncate">
+                          {r.title}
+                        </p>
                         {r.subtitle && (
-                          <p className="text-xs text-neutral-400 dark:text-neutral-500 truncate">{r.subtitle}</p>
+                          <p className="text-xs text-neutral-400 dark:text-neutral-500 truncate">
+                            {r.subtitle}
+                          </p>
                         )}
                       </div>
                     </button>
@@ -176,7 +210,10 @@ export function Header() {
   useEffect(() => {
     if (!profileOpen) return;
     function handleClick(e: MouseEvent) {
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(e.target as Node)
+      ) {
         setProfileOpen(false);
       }
     }
@@ -201,8 +238,12 @@ export function Header() {
             <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-100 dark:border-neutral-800">
               <Avatar name={name || "U"} src={avatarUrl} size="sm" />
               <div className="min-w-0">
-                <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-100 truncate">{name || "Minha Conta"}</p>
-                <p className="text-[10px] text-neutral-400 dark:text-neutral-500 capitalize">{planId}</p>
+                <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-100 truncate">
+                  {name || "Minha Conta"}
+                </p>
+                <p className="text-[10px] text-neutral-400 dark:text-neutral-500 capitalize">
+                  {planId}
+                </p>
               </div>
             </div>
             <div className="py-1">
@@ -215,7 +256,10 @@ export function Header() {
                 Configurações
               </Link>
               <button
-                onClick={() => { setProfileOpen(false); startTransition(() => signOut()); }}
+                onClick={() => {
+                  setProfileOpen(false);
+                  startTransition(() => signOut());
+                }}
                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
               >
                 <LogOut className="w-4 h-4" />

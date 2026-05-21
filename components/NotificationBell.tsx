@@ -34,8 +34,7 @@ export function NotificationBell() {
 
   const unread = notifs.filter((n) => !n.read).length;
 
-  const load = async () => {
-    setLoading(true);
+  const fetchNotifs = async () => {
     const data = await getNotificacoes();
     setNotifs(data);
     setLoading(false);
@@ -43,7 +42,11 @@ export function NotificationBell() {
 
   // Initial load + realtime subscription for badge
   useEffect(() => {
-    load();
+    getNotificacoes().then((data) => {
+      setNotifs(data);
+      setLoading(false);
+    });
+
     const supabase = createClient();
     const channel = supabase
       .channel("notificacoes-realtime")
@@ -52,17 +55,28 @@ export function NotificationBell() {
         { event: "INSERT", schema: "public", table: "notificacoes" },
         (payload) => {
           setNotifs((prev) => [payload.new as Notificacao, ...prev]);
-        }
+        },
       )
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
-  // Reload on open
-  useEffect(() => {
-    if (open) load();
-  }, [open]);
+  // useEffect(() => {
+  //   if (open) load();
+  // }, [open]);
+
+  const handleTogglePanel = () => {
+    const willOpen = !open;
+    setOpen(willOpen);
+
+    if (willOpen) {
+      setLoading(true);
+      fetchNotifs();
+    }
+  };
 
   // Close on outside click
   useEffect(() => {
@@ -77,7 +91,9 @@ export function NotificationBell() {
   }, [open]);
 
   const handleMarkRead = (id: string) => {
-    setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    setNotifs((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
+    );
     startTransition(() => markAsRead(id));
   };
 
@@ -89,7 +105,7 @@ export function NotificationBell() {
   return (
     <div className="relative" ref={panelRef}>
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={handleTogglePanel}
         className="relative p-2 rounded-xl text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
         aria-label="Notificações"
       >
@@ -151,13 +167,13 @@ export function NotificationBell() {
                     onClick={() => !n.read && handleMarkRead(n.id)}
                     className={cn(
                       "w-full text-left flex items-start gap-3 px-4 py-3 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/60",
-                      !n.read && "bg-rose-50/40 dark:bg-rose-900/10"
+                      !n.read && "bg-rose-50/40 dark:bg-rose-900/10",
                     )}
                   >
                     <div
                       className={cn(
                         "w-7 h-7 rounded-xl flex items-center justify-center shrink-0 mt-0.5",
-                        TYPE_COLOR[n.type]
+                        TYPE_COLOR[n.type],
                       )}
                     >
                       <Icon className="w-3.5 h-3.5" />
@@ -168,7 +184,7 @@ export function NotificationBell() {
                           "text-sm font-medium truncate",
                           n.read
                             ? "text-neutral-500 dark:text-neutral-400"
-                            : "text-neutral-800 dark:text-neutral-100"
+                            : "text-neutral-800 dark:text-neutral-100",
                         )}
                       >
                         {n.title}

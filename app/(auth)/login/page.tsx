@@ -11,7 +11,11 @@ import { GoogleButton } from "@/components/auth/GoogleButton";
 export default function LoginPage() {
   const [showPw, setShowPw] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [form, setForm] = useState({ email: "", password: "", remember: false });
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    remember: false,
+  });
   const [error, setError] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -22,7 +26,10 @@ export default function LoginPage() {
     }
     setError("");
     startTransition(async () => {
-      const result = await signIn({ email: form.email, password: form.password });
+      const result = await signIn({
+        email: form.email,
+        password: form.password,
+      });
       if (result?.error) setError(result.error);
     });
   };
@@ -31,12 +38,24 @@ export default function LoginPage() {
     <div className="w-full max-w-sm py-6">
       {/* Mobile logo */}
       <Link href="/" className="flex items-center gap-2 mb-8 lg:hidden w-fit">
-        <Image src="/logo.svg" width={32} height={32} className="w-8 h-8" alt="Bloom" />
-        <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">Bloom</span>
+        <Image
+          src="/logo.svg"
+          width={32}
+          height={32}
+          className="w-8 h-8"
+          alt="Bloom"
+        />
+        <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">
+          Bloom
+        </span>
       </Link>
 
-      <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-1">Bem-vinda de volta</h1>
-      <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-7">Entre na sua conta para continuar.</p>
+      <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-1">
+        Bem-vinda de volta
+      </h1>
+      <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-7">
+        Entre na sua conta para continuar.
+      </p>
 
       {error && (
         <div className="mb-5 px-4 py-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">
@@ -56,7 +75,9 @@ export default function LoginPage() {
 
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-neutral-700">Senha</label>
+            <label className="text-sm font-medium text-neutral-700">
+              Senha
+            </label>
             <Link
               href="/recuperar-senha"
               className="text-xs text-rose-500 hover:text-rose-600 font-medium transition-colors"
@@ -79,7 +100,11 @@ export default function LoginPage() {
               className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
               aria-label={showPw ? "Ocultar senha" : "Mostrar senha"}
             >
-              {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showPw ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
             </button>
           </div>
         </div>
@@ -91,7 +116,9 @@ export default function LoginPage() {
             onChange={(e) => setForm({ ...form, remember: e.target.checked })}
             className="w-4 h-4 accent-rose-500 rounded"
           />
-          <span className="text-sm text-neutral-600 dark:text-neutral-400">Lembrar de mim</span>
+          <span className="text-sm text-neutral-600 dark:text-neutral-400">
+            Lembrar de mim
+          </span>
         </label>
 
         <button
@@ -120,7 +147,10 @@ export default function LoginPage() {
 
       <p className="text-sm text-center text-neutral-500 dark:text-neutral-400 mt-8">
         Não tem uma conta?{" "}
-        <Link href="/registro" className="text-rose-500 hover:text-rose-600 font-semibold transition-colors">
+        <Link
+          href="/registro"
+          className="text-rose-500 hover:text-rose-600 font-semibold transition-colors"
+        >
           Criar conta grátis
         </Link>
       </p>

@@ -30,7 +30,7 @@ const faqItems = [
       },
       {
         q: "Existe período de teste gratuito?",
-        a: "Sim! O plano Pro tem 14 dias de teste gratuito, sem necessidade de cartão de crédito. Você pode experimentar todas as funcionalidades e cancelar antes do vencimento sem nenhum custo.",
+        a: "Sim! O plano Plus tem 7 dias de teste gratuito, sem necessidade de cartão de crédito. Você pode experimentar todas as funcionalidades e cancelar antes do vencimento sem nenhum custo.",
       },
     ],
   },
@@ -93,9 +93,10 @@ const supportChannels = [
     title: "WhatsApp",
     desc: "Resposta rápida nos horários de atendimento",
     action: "Iniciar conversa",
-    href: "https://wa.me/5511999999999",
-    plans: ["Pro", "Premium"],
-    color: "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-900",
+    href: "https://wa.me/31986991278",
+    plans: ["Premium"],
+    color:
+      "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-900",
     iconColor: "text-emerald-600 dark:text-emerald-400",
     iconBg: "bg-emerald-100 dark:bg-emerald-900/40",
   },
@@ -104,9 +105,10 @@ const supportChannels = [
     title: "E-mail",
     desc: "Suporte técnico detalhado, todos os planos",
     action: "Enviar e-mail",
-    href: "mailto:suporte@rosecrm.com.br",
-    plans: ["Grátis", "Pro", "Premium"],
-    color: "bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-900",
+    href: "mailto:suporte@bloom.com.br",
+    plans: ["Grátis", "Plus", "Premium"],
+    color:
+      "bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-900",
     iconColor: "text-blue-600 dark:text-blue-400",
     iconBg: "bg-blue-100 dark:bg-blue-900/40",
   },
@@ -120,7 +122,7 @@ const slaTable = [
     color: "text-neutral-500",
   },
   {
-    plan: "Pro",
+    plan: "Plus",
     channel: "E-mail",
     sla: "Resposta em até 48h",
     color: "text-blue-600",
@@ -226,7 +228,9 @@ export default function SuporteClient({ isPremium }: { isPremium: boolean }) {
                     ))}
                   </div>
                 </div>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">{ch.desc}</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  {ch.desc}
+                </p>
                 <p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mt-2 underline flex items-center gap-1">
                   {locked && <Lock className="w-3 h-3" />}
                   {locked ? "Disponível no Premium →" : `${ch.action} →`}
@@ -345,7 +349,7 @@ export default function SuporteClient({ isPremium }: { isPremium: boolean }) {
           </p>
         </div>
         <a
-          href="mailto:suporte@rosecrm.com.br"
+          href="mailto:suporte@bloom.com.br"
           className="shrink-0 px-4 py-2.5 bg-rose-500 text-white text-sm font-semibold rounded-xl hover:bg-rose-600 transition-colors"
         >
           Enviar e-mail

@@ -10,7 +10,11 @@ export function CookieBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!localStorage.getItem(STORAGE_KEY)) setVisible(true);
+    Promise.resolve().then(() => {
+      if (!localStorage.getItem(STORAGE_KEY)) {
+        setVisible(true);
+      }
+    });
   }, []);
 
   const accept = (value: "all" | "essential") => {
@@ -32,9 +36,12 @@ export function CookieBanner() {
             Usamos cookies 🍪
           </p>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
-            Cookies essenciais mantêm o app funcionando. Cookies analíticos nos ajudam a melhorar sua experiência.
-            Em conformidade com a{" "}
-            <Link href="/privacidade" className="text-rose-500 hover:underline font-medium">
+            Cookies essenciais mantêm o app funcionando. Cookies analíticos nos
+            ajudam a melhorar sua experiência. Em conformidade com a{" "}
+            <Link
+              href="/privacidade"
+              className="text-rose-500 hover:underline font-medium"
+            >
               LGPD
             </Link>
             , você escolhe o que aceita.

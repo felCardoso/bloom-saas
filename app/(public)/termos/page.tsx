@@ -4,7 +4,10 @@ export const metadata: Metadata = {
   title: "Termos de Uso",
   description:
     "Leia os Termos de Uso do Bloom: condições de uso da plataforma, responsabilidades, planos e pagamentos.",
-  openGraph: { title: "Termos de Uso — Bloom", description: "Condições de uso da plataforma Bloom." },
+  openGraph: {
+    title: "Termos de Uso — Bloom",
+    description: "Condições de uso da plataforma Bloom.",
+  },
 };
 
 const sections = [
@@ -104,7 +107,7 @@ O uso continuado da plataforma após a vigência das alterações implica na ace
     title: "12. Legislação Aplicável",
     content: `Estes Termos de Uso são regidos pelas leis brasileiras. Qualquer disputa será submetida ao foro da comarca de São Paulo — SP, com renúncia expressa a qualquer outro foro, por mais privilegiado que seja.
 
-Para dúvidas ou questões jurídicas, entre em contato pelo e-mail: juridico@rosecrm.com.br`,
+Para dúvidas ou questões jurídicas, entre em contato pelo e-mail: juridico@bloom.com.br`,
   },
 ];
 
@@ -120,7 +123,8 @@ export default function TermosPage() {
           Última atualização: 1º de maio de 2026 · Vigência imediata
         </p>
         <p className="mt-4 text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed">
-          Leia estes termos com atenção antes de utilizar o Bloom. Eles definem seus direitos e obrigações ao usar nossa plataforma.
+          Leia estes termos com atenção antes de utilizar o Bloom. Eles definem
+          seus direitos e obrigações ao usar nossa plataforma.
         </p>
       </div>
 
@@ -140,14 +144,22 @@ export default function TermosPage() {
 
       {/* Contact */}
       <div className="mt-12 p-5 bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800">
-        <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-1">Dúvidas sobre os Termos?</p>
+        <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-1">
+          Dúvidas sobre os Termos?
+        </p>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
           Entre em contato pelo e-mail{" "}
-          <a href="mailto:juridico@rosecrm.com.br" className="text-rose-500 hover:underline font-medium">
-            juridico@rosecrm.com.br
+          <a
+            href="mailto:juridico@bloom.com.br"
+            className="text-rose-500 hover:underline font-medium"
+          >
+            juridico@bloom.com.br
           </a>{" "}
           ou acesse nossa página de{" "}
-          <a href="/suporte" className="text-rose-500 hover:underline font-medium">
+          <a
+            href="/suporte"
+            className="text-rose-500 hover:underline font-medium"
+          >
             suporte
           </a>
           .

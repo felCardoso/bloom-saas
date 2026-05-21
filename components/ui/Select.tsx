@@ -38,7 +38,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               error
                 ? "border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20"
                 : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-600",
-              className
+              className,
             )}
             {...props}
           >
@@ -58,7 +58,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         {error && <p className="text-xs text-red-500">{error}</p>}
       </div>
     );
-  }
+  },
 );
 
 Select.displayName = "Select";

@@ -3,7 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-const DEFAULT_CATEGORIES = ["Maquiagem", "Skincare", "Perfumaria", "Cabelos", "Corpo"];
+const DEFAULT_CATEGORIES = [
+  "Maquiagem",
+  "Skincare",
+  "Perfumaria",
+  "Cabelos",
+  "Corpo",
+];
 
 export interface Categoria {
   id: string;
@@ -27,7 +33,10 @@ export async function getCategorias(): Promise<Categoria[]> {
     .order("created_at", { ascending: true });
 
   if (!data || data.length === 0) {
-    const inserts = DEFAULT_CATEGORIES.map((nome) => ({ user_id: user.id, nome }));
+    const inserts = DEFAULT_CATEGORIES.map((nome) => ({
+      user_id: user.id,
+      nome,
+    }));
     const { data: seeded } = await supabase
       .from("categorias_produto")
       .insert(inserts)
@@ -76,7 +85,7 @@ export async function deleteCategoria(id: string): Promise<{ error?: string }> {
 
 export async function renameCategoria(
   id: string,
-  nome: string
+  nome: string,
 ): Promise<{ error?: string }> {
   const supabase = await createClient();
   const { error } = await supabase

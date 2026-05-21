@@ -1,8 +1,13 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useTransition } from "react"; // useEffect
 import { useRouter } from "next/navigation";
-import { addVenda, updateVendaStatus, deleteVenda, confirmPayment } from "@/lib/actions/vendas";
+import {
+  addVenda,
+  updateVendaStatus,
+  deleteVenda,
+  confirmPayment,
+} from "@/lib/actions/vendas";
 import { Plus, Search, ShoppingBag, Trash2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -12,7 +17,14 @@ import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
 import { Toast } from "@/components/ui/Toast";
 import { formatCurrency, formatDate, cn } from "@/lib/utils";
-import type { Order, OrderStatus, OrderItem, Client, Product, PaymentMethod } from "@/lib/types";
+import type {
+  Order,
+  OrderStatus,
+  OrderItem,
+  Client,
+  Product,
+  PaymentMethod,
+} from "@/lib/types";
 import { usePlan } from "@/lib/plan-context";
 import { UpgradeModal } from "@/components/ui/UpgradeModal";
 import { usePagination } from "@/lib/use-pagination";
@@ -21,7 +33,10 @@ import { isOrderPaid, isOrderPendingRevenue } from "@/lib/order-utils";
 
 const statusMap: Record<
   OrderStatus,
-  { label: string; variant: "rose" | "green" | "yellow" | "gray" | "red" | "blue" }
+  {
+    label: string;
+    variant: "rose" | "green" | "yellow" | "gray" | "red" | "blue";
+  }
 > = {
   pendente: { label: "Pendente", variant: "yellow" },
   confirmado: { label: "Confirmado", variant: "blue" },
@@ -50,6 +65,7 @@ export function PedidosView({
   const { canAdd } = usePlan();
   const [isPending, startTransition] = useTransition();
   const [orders, setOrders] = useState<Order[]>(initialOrders);
+  const [prevInitial, setPrevInitial] = useState(initialOrders);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
@@ -66,21 +82,25 @@ export function PedidosView({
   const [addingProductId, setAddingProductId] = useState("");
   const [toast, setToast] = useState<string | null>(null);
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   setOrders(initialOrders);
+  // }, [initialOrders]);
+
+  if (initialOrders !== prevInitial) {
+    setPrevInitial(initialOrders);
     setOrders(initialOrders);
-  }, [initialOrders]);
+  }
 
   const filtered = orders.filter((o) => {
-    const matchSearch = o.client_name.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = o.client_name
+      .toLowerCase()
+      .includes(search.toLowerCase());
     const matchStatus = statusFilter === "all" || o.status === statusFilter;
     return matchSearch && matchStatus;
   });
 
-  const { paginated, page, setPage, totalPages, totalItems, pageSize } = usePagination(
-    filtered,
-    20,
-    `${search}|${statusFilter}`,
-  );
+  const { paginated, page, setPage, totalPages, totalItems, pageSize } =
+    usePagination(filtered, 20, `${search}|${statusFilter}`);
 
   function addOrIncrement(productId: string) {
     if (!productId) return;
@@ -95,7 +115,9 @@ export function PedidosView({
     const currentQty = existing?.quantity ?? 0;
     const available = product.stock - currentQty;
     if (available <= 0) {
-      setToast(`Estoque insuficiente. Disponível: ${product.stock} unidade(s).`);
+      setToast(
+        `Estoque insuficiente. Disponível: ${product.stock} unidade(s).`,
+      );
       setAddingProductId("");
       return;
     }
@@ -104,8 +126,12 @@ export function PedidosView({
         ...o,
         items: o.items.map((i) =>
           i.product_id === productId
-            ? { ...i, quantity: i.quantity + 1, subtotal: i.unit_price * (i.quantity + 1) }
-            : i
+            ? {
+                ...i,
+                quantity: i.quantity + 1,
+                subtotal: i.unit_price * (i.quantity + 1),
+              }
+            : i,
         ),
       }));
     } else {
@@ -126,13 +152,18 @@ export function PedidosView({
     if (!existing) return;
     const newQty = existing.quantity + delta;
     if (newQty <= 0) {
-      setNewOrder((o) => ({ ...o, items: o.items.filter((i) => i.product_id !== productId) }));
+      setNewOrder((o) => ({
+        ...o,
+        items: o.items.filter((i) => i.product_id !== productId),
+      }));
       return;
     }
     if (delta > 0) {
       const product = products.find((p) => p.id === productId);
       if (product && newQty > product.stock) {
-        setToast(`Estoque insuficiente. Disponível: ${product.stock} unidade(s).`);
+        setToast(
+          `Estoque insuficiente. Disponível: ${product.stock} unidade(s).`,
+        );
         return;
       }
     }
@@ -141,7 +172,7 @@ export function PedidosView({
       items: o.items.map((i) =>
         i.product_id === productId
           ? { ...i, quantity: newQty, subtotal: i.unit_price * newQty }
-          : i
+          : i,
       ),
     }));
   }
@@ -171,7 +202,13 @@ export function PedidosView({
       created_at: new Date().toISOString(),
     };
     setOrders((prev) => [optimistic, ...prev]);
-    setNewOrder({ client_id: "", status: "pendente", payment_method: "dinheiro", notes: "", items: [] });
+    setNewOrder({
+      client_id: "",
+      status: "pendente",
+      payment_method: "dinheiro",
+      notes: "",
+      items: [],
+    });
     setAddingProductId("");
     setAddOpen(false);
     startTransition(async () => {
@@ -195,8 +232,11 @@ export function PedidosView({
 
   function handleConfirmPayment(id: string) {
     const now = new Date().toISOString();
-    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, paid_at: now } : o)));
-    if (selected?.id === id) setSelected((s) => (s ? { ...s, paid_at: now } : s));
+    setOrders((prev) =>
+      prev.map((o) => (o.id === id ? { ...o, paid_at: now } : o)),
+    );
+    if (selected?.id === id)
+      setSelected((s) => (s ? { ...s, paid_at: now } : s));
     startTransition(async () => {
       await confirmPayment(id);
     });
@@ -265,13 +305,33 @@ export function PedidosView({
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
           { label: "Pedidos", value: filtered.length },
-          { label: "Pendentes", value: filtered.filter((o) => o.status === "pendente").length },
-          { label: "Receita", value: formatCurrency(confirmedRevenue), accent: "text-emerald-600 dark:text-emerald-400" },
-          { label: "Receita pendente", value: formatCurrency(pendingRevenue), accent: "text-amber-600 dark:text-amber-400" },
+          {
+            label: "Pendentes",
+            value: filtered.filter((o) => o.status === "pendente").length,
+          },
+          {
+            label: "Receita",
+            value: formatCurrency(confirmedRevenue),
+            accent: "text-emerald-600 dark:text-emerald-400",
+          },
+          {
+            label: "Receita pendente",
+            value: formatCurrency(pendingRevenue),
+            accent: "text-amber-600 dark:text-amber-400",
+          },
         ].map((s) => (
           <Card key={s.label} padding="sm">
-            <p className={cn("text-lg lg:text-xl font-bold", s.accent ?? "text-neutral-800 dark:text-neutral-100")}>{s.value}</p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">{s.label}</p>
+            <p
+              className={cn(
+                "text-lg lg:text-xl font-bold",
+                s.accent ?? "text-neutral-800 dark:text-neutral-100",
+              )}
+            >
+              {s.value}
+            </p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              {s.label}
+            </p>
           </Card>
         ))}
       </div>
@@ -282,7 +342,9 @@ export function PedidosView({
           <Card>
             <div className="py-12 text-center">
               <ShoppingBag className="w-8 h-8 mx-auto mb-2 text-neutral-300" />
-              <p className="text-neutral-400 text-sm">Nenhum pedido encontrado</p>
+              <p className="text-neutral-400 text-sm">
+                Nenhum pedido encontrado
+              </p>
             </div>
           </Card>
         ) : (
@@ -317,7 +379,9 @@ export function PedidosView({
                       <p className="text-xs text-neutral-400 dark:text-neutral-500 whitespace-nowrap">
                         {formatDate(order.created_at)}
                       </p>
-                      <span className="text-xs text-neutral-300 dark:text-neutral-600">·</span>
+                      <span className="text-xs text-neutral-300 dark:text-neutral-600">
+                        ·
+                      </span>
                       <p className="text-xs text-neutral-400 dark:text-neutral-500 whitespace-nowrap">
                         {paymentLabels[order.payment_method]}
                       </p>
@@ -328,13 +392,16 @@ export function PedidosView({
                       {formatCurrency(order.total)}
                     </p>
                     <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                      {order.items.length} {order.items.length === 1 ? "item" : "itens"}
+                      {order.items.length}{" "}
+                      {order.items.length === 1 ? "item" : "itens"}
                     </p>
                   </div>
                 </div>
 
                 {/* Quick actions */}
-                {(order.status === "pendente" || order.status === "confirmado" || fiadoPending) && (
+                {(order.status === "pendente" ||
+                  order.status === "confirmado" ||
+                  fiadoPending) && (
                   <div
                     className="border-t border-neutral-100 dark:border-neutral-800 px-4 py-2.5 flex gap-2"
                     onClick={(e) => e.stopPropagation()}
@@ -388,17 +455,34 @@ export function PedidosView({
         onPageChange={setPage}
       />
 
-      {toast && <Toast message={toast} variant="warning" onClose={() => setToast(null)} />}
+      {toast && (
+        <Toast
+          message={toast}
+          variant="warning"
+          onClose={() => setToast(null)}
+        />
+      )}
 
-      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} resource="ordersPerMonth" />
+      <UpgradeModal
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        resource="ordersPerMonth"
+      />
 
       {/* Add modal */}
-      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Novo Pedido" size="lg">
+      <Modal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        title="Novo Pedido"
+        size="lg"
+      >
         <div className="space-y-4">
           <Select
             label="Cliente *"
             value={newOrder.client_id}
-            onChange={(e) => setNewOrder((o) => ({ ...o, client_id: e.target.value }))}
+            onChange={(e) =>
+              setNewOrder((o) => ({ ...o, client_id: e.target.value }))
+            }
             options={clients.map((c) => ({ value: c.id, label: c.name }))}
             placeholder="Selecione a cliente"
           />
@@ -407,7 +491,10 @@ export function PedidosView({
               label="Status inicial"
               value={newOrder.status}
               onChange={(e) =>
-                setNewOrder((o) => ({ ...o, status: e.target.value as OrderStatus }))
+                setNewOrder((o) => ({
+                  ...o,
+                  status: e.target.value as OrderStatus,
+                }))
               }
               options={[
                 { value: "pendente", label: "Pendente" },
@@ -419,7 +506,10 @@ export function PedidosView({
               label="Forma de pagamento"
               value={newOrder.payment_method}
               onChange={(e) =>
-                setNewOrder((o) => ({ ...o, payment_method: e.target.value as PaymentMethod }))
+                setNewOrder((o) => ({
+                  ...o,
+                  payment_method: e.target.value as PaymentMethod,
+                }))
               }
               options={[
                 { value: "dinheiro", label: "Dinheiro" },
@@ -433,7 +523,8 @@ export function PedidosView({
 
           {newOrder.payment_method === "fiado" && (
             <div className="px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 rounded-xl text-sm text-amber-700 dark:text-amber-400">
-              Pedido registrado como fiado. Um botão de confirmação de pagamento aparecerá após a entrega.
+              Pedido registrado como fiado. Um botão de confirmação de pagamento
+              aparecerá após a entrega.
             </div>
           )}
 
@@ -490,7 +581,11 @@ export function PedidosView({
                 ))}
                 <div className="flex justify-between pt-1 text-sm font-bold text-neutral-800 dark:text-neutral-100 border-t border-neutral-200 dark:border-neutral-700">
                   <span>Total</span>
-                  <span>{formatCurrency(newOrder.items.reduce((s, i) => s + i.subtotal, 0))}</span>
+                  <span>
+                    {formatCurrency(
+                      newOrder.items.reduce((s, i) => s + i.subtotal, 0),
+                    )}
+                  </span>
                 </div>
               </div>
             )}
@@ -502,7 +597,9 @@ export function PedidosView({
             </label>
             <textarea
               value={newOrder.notes}
-              onChange={(e) => setNewOrder((o) => ({ ...o, notes: e.target.value }))}
+              onChange={(e) =>
+                setNewOrder((o) => ({ ...o, notes: e.target.value }))
+              }
               rows={2}
               placeholder="Endereço de entrega, notas especiais..."
               className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"
@@ -510,7 +607,11 @@ export function PedidosView({
           </div>
 
           <div className="flex gap-3 pt-1">
-            <Button variant="secondary" className="flex-1" onClick={() => setAddOpen(false)}>
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={() => setAddOpen(false)}
+            >
               Cancelar
             </Button>
             <Button className="flex-1" onClick={handleCreate}>
@@ -545,8 +646,12 @@ export function PedidosView({
 
             {/* Payment method */}
             <div className="flex items-center justify-between px-4 py-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl">
-              <span className="text-sm text-neutral-500 dark:text-neutral-400">Forma de pagamento</span>
-              <span className={`text-sm font-semibold ${selected.payment_method === "fiado" ? "text-amber-600 dark:text-amber-400" : "text-neutral-800 dark:text-neutral-100"}`}>
+              <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                Forma de pagamento
+              </span>
+              <span
+                className={`text-sm font-semibold ${selected.payment_method === "fiado" ? "text-amber-600 dark:text-amber-400" : "text-neutral-800 dark:text-neutral-100"}`}
+              >
                 {paymentLabels[selected.payment_method]}
                 {selected.payment_method === "fiado" && selected.paid_at && (
                   <span className="ml-2 text-xs font-normal text-emerald-600 dark:text-emerald-400">
@@ -575,11 +680,16 @@ export function PedidosView({
 
             <div className="bg-neutral-50 dark:bg-neutral-800 rounded-2xl p-4 space-y-2.5">
               {selected.items.map((item, i) => (
-                <div key={i} className="flex items-center justify-between text-sm">
+                <div
+                  key={i}
+                  className="flex items-center justify-between text-sm"
+                >
                   <span className="text-neutral-700 dark:text-neutral-300 flex-1 mr-2 truncate">
                     {item.product_name}
                   </span>
-                  <span className="text-neutral-400 dark:text-neutral-500 mr-3">×{item.quantity}</span>
+                  <span className="text-neutral-400 dark:text-neutral-500 mr-3">
+                    ×{item.quantity}
+                  </span>
                   <span className="font-medium text-neutral-800 dark:text-neutral-100 whitespace-nowrap">
                     {formatCurrency(item.subtotal)}
                   </span>
@@ -597,30 +707,35 @@ export function PedidosView({
               </p>
             )}
 
-            {selected.status !== "entregue" && selected.status !== "cancelado" && (
-              <div className="flex gap-2">
-                {selected.status === "pendente" && (
+            {selected.status !== "entregue" &&
+              selected.status !== "cancelado" && (
+                <div className="flex gap-2">
+                  {selected.status === "pendente" && (
+                    <Button
+                      variant="secondary"
+                      className="flex-1"
+                      onClick={() => updateStatus(selected.id, "cancelado")}
+                    >
+                      Cancelar Pedido
+                    </Button>
+                  )}
                   <Button
-                    variant="secondary"
                     className="flex-1"
-                    onClick={() => updateStatus(selected.id, "cancelado")}
+                    onClick={() =>
+                      updateStatus(
+                        selected.id,
+                        selected.status === "pendente"
+                          ? "confirmado"
+                          : "entregue",
+                      )
+                    }
                   >
-                    Cancelar Pedido
+                    {selected.status === "pendente"
+                      ? "Confirmar"
+                      : "Marcar Entregue"}
                   </Button>
-                )}
-                <Button
-                  className="flex-1"
-                  onClick={() =>
-                    updateStatus(
-                      selected.id,
-                      selected.status === "pendente" ? "confirmado" : "entregue"
-                    )
-                  }
-                >
-                  {selected.status === "pendente" ? "Confirmar" : "Marcar Entregue"}
-                </Button>
-              </div>
-            )}
+                </div>
+              )}
 
             {/* Delete section */}
             <div className="pt-1 border-t border-neutral-100 dark:border-neutral-800">

@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+  useMemo,
+} from "react";
 import { usePathname } from "next/navigation";
 
 export type Theme = "light" | "dark";
@@ -31,7 +38,9 @@ const DASHBOARD_PREFIXES = [
 ];
 
 function isDashboardPath(p: string): boolean {
-  return DASHBOARD_PREFIXES.some((prefix) => p === prefix || p.startsWith(prefix + "/"));
+  return DASHBOARD_PREFIXES.some(
+    (prefix) => p === prefix || p.startsWith(prefix + "/"),
+  );
 }
 
 function applyPrimary(color: PrimaryColor) {
@@ -47,15 +56,21 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
   const [primaryColor, setPrimaryColorState] = useState<PrimaryColor>("rose");
   const pathname = usePathname();
-  const onDashboard = useMemo(() => isDashboardPath(pathname ?? "/"), [pathname]);
+  const onDashboard = useMemo(
+    () => isDashboardPath(pathname ?? "/"),
+    [pathname],
+  );
 
   // Load saved theme/color from localStorage once.
   useEffect(() => {
-    const t = (localStorage.getItem("bloom-theme") as Theme) || "light";
-    const c = (localStorage.getItem("bloom-primary") as PrimaryColor) || "rose";
-    setThemeState(t);
-    setPrimaryColorState(c);
-    document.documentElement.classList.toggle("dark", t === "dark");
+    Promise.resolve().then(() => {
+      const t = (localStorage.getItem("bloom-theme") as Theme) || "light";
+      const c =
+        (localStorage.getItem("bloom-primary") as PrimaryColor) || "rose";
+      setThemeState(t);
+      setPrimaryColorState(c);
+      document.documentElement.classList.toggle("dark", t === "dark");
+    });
   }, []);
 
   // Apply primary based on whether we're on a dashboard route.
@@ -80,7 +95,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, primaryColor, setPrimaryColor }}>
+    <ThemeContext.Provider
+      value={{ theme, setTheme, primaryColor, setPrimaryColor }}
+    >
       {children}
     </ThemeContext.Provider>
   );
@@ -93,9 +110,16 @@ export function useTheme() {
 }
 
 const ROSE_DEFAULTS: Record<number, string> = {
-  50: "#FDF2F6", 100: "#FAE6EE", 200: "#F5CCE0", 300: "#EDA8C8",
-  400: "#E07AAA", 500: "#D4829C", 600: "#C4687F", 700: "#A85C78",
-  800: "#8C4D65", 900: "#6B3A4D",
+  50: "#FDF2F6",
+  100: "#FAE6EE",
+  200: "#F5CCE0",
+  300: "#EDA8C8",
+  400: "#E07AAA",
+  500: "#D4829C",
+  600: "#C4687F",
+  700: "#A85C78",
+  800: "#8C4D65",
+  900: "#6B3A4D",
 };
 
 export function useThemeColor(shade: number): string {
@@ -103,10 +127,12 @@ export function useThemeColor(shade: number): string {
   const [color, setColor] = useState(ROSE_DEFAULTS[shade] ?? "#D4829C");
 
   useEffect(() => {
-    const v = getComputedStyle(document.documentElement)
-      .getPropertyValue(`--color-rose-${shade}`)
-      .trim();
-    if (v) setColor(v);
+    Promise.resolve().then(() => {
+      const v = getComputedStyle(document.documentElement)
+        .getPropertyValue(`--color-rose-${shade}`)
+        .trim();
+      if (v) setColor(v);
+    });
   }, [primaryColor, shade]);
 
   return color;
@@ -121,13 +147,17 @@ export function useThemePalette(): string[] {
   );
 
   useEffect(() => {
-    const root = document.documentElement;
-    setPalette(
-      PALETTE_SHADES.map((s) => {
-        const v = getComputedStyle(root).getPropertyValue(`--color-rose-${s}`).trim();
-        return v || ROSE_DEFAULTS[s];
-      }),
-    );
+    Promise.resolve().then(() => {
+      const root = document.documentElement;
+      setPalette(
+        PALETTE_SHADES.map((s) => {
+          const v = getComputedStyle(root)
+            .getPropertyValue(`--color-rose-${s}`)
+            .trim();
+          return v || ROSE_DEFAULTS[s];
+        }),
+      );
+    });
   }, [primaryColor]);
 
   return palette;

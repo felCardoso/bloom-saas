@@ -30,7 +30,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             error
               ? "border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20"
               : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-600",
-            className
+            className,
           )}
           {...props}
         />
@@ -38,7 +38,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {hint && !error && <p className="text-xs text-neutral-500">{hint}</p>}
       </div>
     );
-  }
+  },
 );
 
 Input.displayName = "Input";
