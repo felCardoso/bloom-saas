@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const footerLinks = [
   { href: "/sobre", label: "Sobre" },
@@ -41,12 +42,15 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             ))}
           </div>
 
-          <Link
-            href="/login"
-            className="text-sm font-semibold bg-rose-500 text-white px-4 py-2 rounded-xl hover:bg-rose-600 transition-colors shadow-sm"
-          >
-            Entrar
-          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Link
+              href="/login"
+              className="text-sm font-semibold bg-rose-500 text-white px-4 py-2 rounded-xl hover:bg-rose-600 transition-colors shadow-sm"
+            >
+              Entrar
+            </Link>
+          </div>
         </div>
       </nav>
 

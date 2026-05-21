@@ -15,6 +15,7 @@ import {
   X,
   Bell,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const features = [
   {
@@ -120,7 +121,8 @@ export default function LandingPage() {
           </div>
 
           {/* Desktop links */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2">
+            <ThemeToggle />
             <Link
               href="/login"
               className="text-sm text-neutral-600 dark:text-neutral-300 hover:text-neutral-800 dark:hover:text-neutral-100 font-medium px-4 py-2 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
@@ -135,17 +137,21 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setMenuOpen((v) => !v)}
-            className="sm:hidden p-2 rounded-xl text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-          >
-            {menuOpen ? (
-              <X className="w-5 h-5" />
-            ) : (
-              <Menu className="w-5 h-5" />
-            )}
-          </button>
+          {/* Mobile actions */}
+          <div className="sm:hidden flex items-center gap-1">
+            <ThemeToggle />
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              className="p-2 rounded-xl text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+              aria-label="Menu"
+            >
+              {menuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Mobile menu dropdown */}
