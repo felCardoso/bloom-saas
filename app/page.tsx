@@ -96,7 +96,6 @@ const plans = [
       "Pedidos ilimitados",
       "Relatórios avançados",
       "Exportação de dados (CSV)",
-      "Até 3 usuários",
       "Suporte prioritário",
     ],
     cta: "Assinar Premium",

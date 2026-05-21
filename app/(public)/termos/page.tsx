@@ -28,7 +28,7 @@ O serviço é oferecido em três modalidades: plano Grátis, plano Pro e plano P
 • Todas as atividades realizadas sob sua conta
 • Notificar imediatamente qualquer uso não autorizado da sua conta
 
-É vedado o compartilhamento de credenciais entre múltiplas pessoas, exceto nos planos que preveem múltiplos usuários.`,
+É vedado o compartilhamento de credenciais de acesso com terceiros.`,
   },
   {
     title: "4. Uso Permitido",

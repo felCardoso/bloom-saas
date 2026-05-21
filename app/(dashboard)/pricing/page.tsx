@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import {
   Check, X, Users, ShoppingBag, Package, Calendar,
-  BarChart3, MessageCircle, Bell, Download, UsersRound, HeadphonesIcon,
+  BarChart3, MessageCircle, Bell, Download, HeadphonesIcon,
   Clock, AlertTriangle, Info,
 } from "lucide-react";
 import { usePlan } from "@/lib/plan-context";
@@ -24,7 +24,6 @@ const FEATURES_TABLE = [
     { label: "Link WhatsApp", icon: MessageCircle, values: { free: false, pro: true, premium: true } },
     { label: "Alertas estoque", icon: Package, values: { free: false, pro: true, premium: true } },
     { label: "Exportar CSV", icon: Download, values: { free: false, pro: false, premium: true } },
-    { label: "Múltiplos usuários", icon: UsersRound, values: { free: false, pro: false, premium: "até 3" } },
     { label: "Suporte", icon: HeadphonesIcon, values: { free: "E-mail", pro: "E-mail", premium: "Prioritário (24h)" } },
   ]},
 ];
@@ -49,7 +48,6 @@ function planKey(p: (typeof PLANS)[PlanId]) {
     p.features.stockAlerts && "Alertas de estoque baixo",
     p.features.whatsappLink && "Link rápido para WhatsApp",
     p.features.csvExport && "Exportar dados (CSV)",
-    p.features.multipleUsers > 0 && `Até ${p.features.multipleUsers} usuários`,
     supportLabel,
   ].filter(Boolean) as string[];
   return [...limits, ...extras];
