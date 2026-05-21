@@ -34,6 +34,7 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/Input";
+import { Modal } from "@/components/ui/Modal";
 import { usePlan } from "@/lib/plan-context";
 import { useTheme, type PrimaryColor } from "@/lib/theme-context";
 
@@ -211,31 +212,240 @@ function PerfilTab({ initialProfile }: {
   );
 }
 
-function ManageSubscriptionButton() {
-  const [loading, setLoading] = useState(false);
+interface SubscriptionData {
+  id: string;
+  value: number;
+  nextDueDate: string;
+  cycle: string;
+  billingType: string;
+  status: string;
+  plan: string;
+}
+interface PendingPaymentData {
+  id: string;
+  value: number;
+  status: string;
+  dueDate: string;
+  invoiceUrl: string;
+}
 
-  const handleClick = async () => {
-    setLoading(true);
-    const res = await fetch("/api/asaas/portal", { method: "POST" });
-    const { url, error } = await res.json();
-    if (url) window.location.href = url;
-    else { console.error(error); setLoading(false); }
-  };
+const BILLING_TYPE_OPTIONS: { value: string; label: string; description: string }[] = [
+  { value: "UNDEFINED", label: "Cliente escolhe", description: "Mostra todas as opções no checkout" },
+  { value: "PIX", label: "PIX", description: "Pagamento instantâneo" },
+  { value: "BOLETO", label: "Boleto bancário", description: "Vence em até 3 dias" },
+  { value: "CREDIT_CARD", label: "Cartão de crédito", description: "Cobrança automática mensal" },
+];
+
+function billingLabel(type: string): string {
+  return BILLING_TYPE_OPTIONS.find((o) => o.value === type)?.label ?? type;
+}
+
+function ManagePaymentButton() {
+  const [open, setOpen] = useState(false);
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900">
       <div>
-        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Gerenciar assinatura</p>
-        <p className="text-xs text-neutral-400 mt-0.5">Altere o método de pagamento, veja faturas ou cancele.</p>
+        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Gerenciar pagamento</p>
+        <p className="text-xs text-neutral-400 mt-0.5">Altere a forma de pagamento ou quite faturas em aberto.</p>
       </div>
       <button
-        onClick={handleClick}
-        disabled={loading}
-        className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-rose-500 hover:bg-rose-600 rounded-xl transition-colors disabled:opacity-60 sm:shrink-0"
+        onClick={() => setOpen(true)}
+        className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-rose-500 hover:bg-rose-600 rounded-xl transition-colors sm:shrink-0"
       >
-        {loading ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : "Gerenciar pagamento"}
+        Gerenciar pagamento
       </button>
+      <ManagePaymentModal open={open} onClose={() => setOpen(false)} />
     </div>
+  );
+}
+
+function ManagePaymentModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [data, setData] = useState<{ subscription: SubscriptionData; pendingPayment: PendingPaymentData | null } | null>(null);
+  const [selectedType, setSelectedType] = useState<string>("");
+  const [saving, setSaving] = useState(false);
+  const [savedMsg, setSavedMsg] = useState("");
+
+  useEffect(() => {
+    if (!open) return;
+    let aborted = false;
+    setLoading(true);
+    setError("");
+    setSavedMsg("");
+    fetch("/api/asaas/subscription")
+      .then((r) => r.json())
+      .then((json) => {
+        if (aborted) return;
+        if (json.error) {
+          setError(json.error);
+        } else {
+          setData(json);
+          setSelectedType(json.subscription.billingType);
+        }
+      })
+      .catch(() => !aborted && setError("Erro ao carregar dados da assinatura"))
+      .finally(() => !aborted && setLoading(false));
+    return () => { aborted = true; };
+  }, [open]);
+
+  const changed = data ? selectedType !== data.subscription.billingType : false;
+
+  async function handleSave() {
+    if (!changed) return;
+    setSaving(true);
+    setError("");
+    setSavedMsg("");
+    const res = await fetch("/api/asaas/subscription", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ billingType: selectedType }),
+    });
+    const json = await res.json();
+    setSaving(false);
+    if (json.error) {
+      setError(json.error);
+      return;
+    }
+    setSavedMsg("Forma de pagamento atualizada.");
+    if (data) setData({ ...data, subscription: { ...data.subscription, billingType: selectedType } });
+  }
+
+  const subscription = data?.subscription;
+  const pending = data?.pendingPayment;
+  const formattedDue = subscription
+    ? new Date(subscription.nextDueDate + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })
+    : null;
+  const formattedPendingDue = pending
+    ? new Date(pending.dueDate + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })
+    : null;
+
+  return (
+    <Modal open={open} onClose={onClose} title="Gerenciar pagamento" size="md">
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <span className="w-6 h-6 border-2 border-neutral-200 border-t-rose-500 rounded-full animate-spin" />
+        </div>
+      ) : error && !subscription ? (
+        <div className="text-center py-8">
+          <p className="text-sm text-red-500">{error}</p>
+          <button
+            onClick={onClose}
+            className="mt-4 px-4 py-2 rounded-xl text-sm font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+          >
+            Fechar
+          </button>
+        </div>
+      ) : subscription ? (
+        <div className="space-y-5">
+          {/* Resumo */}
+          <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800">
+            <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-2">Assinatura</p>
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 capitalize">
+                Plano {subscription.plan === "pro" ? "Plus" : subscription.plan}
+              </span>
+              <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">
+                R$ {Number(subscription.value).toFixed(2).replace(".", ",")}<span className="text-xs font-normal text-neutral-400">/mês</span>
+              </span>
+            </div>
+            {formattedDue && (
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
+                Próxima cobrança em <strong className="text-neutral-700 dark:text-neutral-200">{formattedDue}</strong>
+              </p>
+            )}
+            <p className="text-xs text-neutral-400 mt-1">
+              Forma atual: <span className="text-neutral-600 dark:text-neutral-300">{billingLabel(subscription.billingType)}</span>
+            </p>
+          </div>
+
+          {/* Fatura pendente */}
+          {pending && (
+            <div className="p-4 rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-900/20">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                    Fatura em aberto
+                  </p>
+                  <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                    R$ {Number(pending.value).toFixed(2).replace(".", ",")} · vence em {formattedPendingDue}
+                  </p>
+                </div>
+                <a
+                  href={pending.invoiceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-lg transition-colors"
+                >
+                  Pagar agora
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* Forma de pagamento */}
+          <div>
+            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-2">Forma de pagamento</p>
+            <p className="text-xs text-neutral-400 mb-3">A alteração se aplica às próximas cobranças.</p>
+            <div className="space-y-2">
+              {BILLING_TYPE_OPTIONS.map((opt) => {
+                const checked = selectedType === opt.value;
+                return (
+                  <label
+                    key={opt.value}
+                    className={cn(
+                      "flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors",
+                      checked
+                        ? "border-rose-300 dark:border-rose-700 bg-rose-50 dark:bg-rose-900/20"
+                        : "border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="billingType"
+                      value={opt.value}
+                      checked={checked}
+                      onChange={() => setSelectedType(opt.value)}
+                      className="mt-0.5 accent-rose-500"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-neutral-800 dark:text-neutral-100">{opt.label}</p>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{opt.description}</p>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          {error && <p className="text-xs text-red-500">{error}</p>}
+          {savedMsg && <p className="text-xs text-emerald-600 dark:text-emerald-400">{savedMsg}</p>}
+
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={onClose}
+              className="flex-1 py-2.5 px-4 rounded-xl border border-neutral-200 dark:border-neutral-700 text-sm font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+            >
+              Fechar
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={!changed || saving}
+              className="flex-1 py-2.5 px-4 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {saving ? (
+                <span className="inline-flex items-center gap-2 justify-center">
+                  <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  Salvando...
+                </span>
+              ) : "Salvar alterações"}
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </Modal>
   );
 }
 
@@ -263,7 +473,7 @@ function CancelSubscriptionButton({ onCancelled }: { onCancelled: (expiresAt: st
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Cancelar assinatura</p>
-            <p className="text-xs text-neutral-400 mt-0.5">Seu plano volta para Free imediatamente.</p>
+            <p className="text-xs text-neutral-400 mt-0.5">Você continua com acesso até o fim do período já pago.</p>
           </div>
           <button
             onClick={() => setConfirm(true)}
@@ -275,7 +485,7 @@ function CancelSubscriptionButton({ onCancelled }: { onCancelled: (expiresAt: st
       ) : (
         <div className="space-y-3">
           <p className="text-sm text-neutral-700 dark:text-neutral-300">
-            Tem certeza? Você perderá acesso às funcionalidades do plano atual <strong>imediatamente</strong>.
+            Tem certeza? Você mantém acesso às funcionalidades do plano atual <strong>até o fim do período já pago</strong>. Depois disso, a conta volta para o plano Free.
           </p>
           {error && <p className="text-xs text-red-500">{error}</p>}
           <div className="flex gap-2">
@@ -429,7 +639,7 @@ function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }
       ) : (
         plan.price > 0 && (
           <>
-            <ManageSubscriptionButton />
+            <ManagePaymentButton />
             <CancelSubscriptionButton onCancelled={(expiresAt) => setPeriodEnd(expiresAt)} />
           </>
         )
