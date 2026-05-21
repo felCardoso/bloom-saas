@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import {
   Sparkles,
@@ -113,12 +114,12 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-neutral-950/90 backdrop-blur-md border-b border-neutral-100 dark:border-neutral-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <img src="/logo.svg" className="w-7 h-7 sm:w-8 sm:h-8" alt="Bloom" />
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/logo.svg" width={32} height={32} className="w-7 h-7 sm:w-8 sm:h-8" alt="Bloom" />
             <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">
               Bloom
             </span>
-          </div>
+          </Link>
 
           {/* Desktop links */}
           <div className="hidden sm:flex items-center gap-2">
@@ -413,12 +414,12 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="py-8 sm:py-10 px-4 sm:px-6 border-t border-neutral-100 dark:border-neutral-800">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <img src="/logo.svg" className="w-6 h-6" alt="Bloom" />
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/logo.svg" width={24} height={24} className="w-6 h-6" alt="Bloom" />
             <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">
               Bloom
             </span>
-          </div>
+          </Link>
           <div className="flex flex-wrap justify-center gap-4">
             {[
               { href: "/sobre", label: "Sobre" },

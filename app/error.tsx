@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { RefreshCw } from "lucide-react";
 
 export default function Error({
@@ -18,7 +19,7 @@ export default function Error({
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-neutral-50 dark:bg-neutral-950 p-6 text-center">
       <Link href="/" className="flex items-center gap-2 mb-10">
-        <img src="/logo.svg" className="w-8 h-8" alt="Bloom" />
+        <Image src="/logo.svg" width={32} height={32} className="w-8 h-8" alt="Bloom" />
         <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">Bloom</span>
       </Link>
 
