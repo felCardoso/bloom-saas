@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
+import { useThemeColor } from "@/lib/theme-context";
 
 interface DataPoint {
   month: string;
@@ -38,6 +39,9 @@ function CustomTooltip({ active, payload, label }: any) {
 }
 
 export function RevenueChart({ data }: RevenueChartProps) {
+  const color500 = useThemeColor(500);
+  const color600 = useThemeColor(600);
+
   return (
     <Card className="col-span-2">
       <CardHeader>
@@ -48,9 +52,9 @@ export function RevenueChart({ data }: RevenueChartProps) {
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
             <defs>
-              <linearGradient id="roseGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#D4829C" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="#D4829C" stopOpacity={0} />
+              <linearGradient id="primaryGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={color500} stopOpacity={0.15} />
+                <stop offset="95%" stopColor={color500} stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
@@ -70,11 +74,11 @@ export function RevenueChart({ data }: RevenueChartProps) {
             <Area
               type="monotone"
               dataKey="revenue"
-              stroke="#D4829C"
+              stroke={color500}
               strokeWidth={2.5}
-              fill="url(#roseGrad)"
-              dot={{ fill: "#D4829C", strokeWidth: 0, r: 3 }}
-              activeDot={{ r: 5, fill: "#C4687F", strokeWidth: 0 }}
+              fill="url(#primaryGrad)"
+              dot={{ fill: color500, strokeWidth: 0, r: 3 }}
+              activeDot={{ r: 5, fill: color600, strokeWidth: 0 }}
             />
           </AreaChart>
         </ResponsiveContainer>

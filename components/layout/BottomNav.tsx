@@ -10,6 +10,7 @@ import {
   MoreHorizontal,
   Package,
   BarChart3,
+  Calendar,
   Settings,
   X,
   Zap,
@@ -25,6 +26,7 @@ const mainItems = [
 ];
 
 const moreItems = [
+  { href: "/agenda", icon: Calendar, label: "Agenda" },
   { href: "/mensagens", icon: MessageCircle, label: "Mensagens" },
   { href: "/relatorios", icon: BarChart3, label: "Relatórios" },
   { href: "/pricing", icon: Zap, label: "Planos" },

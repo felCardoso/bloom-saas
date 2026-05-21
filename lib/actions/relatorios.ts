@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { isOrderPaid } from "@/lib/order-utils";
 
 export type Period = "1m" | "3m" | "6m" | "1y" | "all";
 
@@ -93,6 +94,8 @@ type VendaRow = {
   status: string;
   data_venda: string;
   cliente_id: string;
+  payment_method?: string;
+  paid_at?: string | null;
   itens_venda: {
     quantidade: number;
     preco_unitario_no_momento: number;
@@ -112,7 +115,7 @@ export async function getRelatorios(
   let vendasQ = supabase
     .from("vendas")
     .select(
-      "id, valor_total, status, data_venda, cliente_id, itens_venda(quantidade, preco_unitario_no_momento, produtos(categoria, nome))",
+      "id, valor_total, status, data_venda, cliente_id, payment_method, paid_at, itens_venda(quantidade, preco_unitario_no_momento, produtos(categoria, nome))",
     )
     .neq("status", "cancelado");
   if (start) vendasQ = vendasQ.gte("data_venda", start);
@@ -128,12 +131,18 @@ export async function getRelatorios(
       prevRange
         ? supabase
             .from("vendas")
-            .select("id, valor_total")
+            .select("id, valor_total, status, payment_method, paid_at")
             .neq("status", "cancelado")
             .gte("data_venda", prevRange.start)
             .lte("data_venda", prevRange.end)
         : Promise.resolve({
-            data: [] as { id: string; valor_total: number }[],
+            data: [] as {
+              id: string;
+              valor_total: number;
+              status: string;
+              payment_method?: string;
+              paid_at?: string | null;
+            }[],
           }),
     ]);
 
@@ -142,26 +151,31 @@ export async function getRelatorios(
   const prevRows = (prevVendasRes.data ?? []) as {
     id: string;
     valor_total: number;
+    status: string;
+    payment_method?: string;
+    paid_at?: string | null;
   }[];
 
-  const totalRevenue = rows.reduce((s, v) => s + Number(v.valor_total), 0);
-  const totalOrders = rows.length;
-  const avgTicket = totalOrders ? totalRevenue / totalOrders : 0;
+  const paidRows = rows.filter(isOrderPaid);
+  const totalRevenue = paidRows.reduce((s, v) => s + Number(v.valor_total), 0);
+  const totalOrders = rows.length; // count all non-cancelled (kept the same — "pedidos" means orders, not paid orders)
+  const avgTicket = paidRows.length ? totalRevenue / paidRows.length : 0;
   const totalClients = clientes.length;
   const activeClients = clientes.filter((c) => c.status === "ativa").length;
 
+  const prevPaidRows = prevRange ? prevRows.filter(isOrderPaid) : [];
   const prevTotalRevenue = prevRange
-    ? prevRows.reduce((s, v) => s + Number(v.valor_total), 0)
+    ? prevPaidRows.reduce((s, v) => s + Number(v.valor_total), 0)
     : null;
   const prevTotalOrders = prevRange ? prevRows.length : null;
   const prevAvgTicket =
-    prevTotalOrders && prevTotalOrders > 0
-      ? (prevTotalRevenue ?? 0) / prevTotalOrders
+    prevPaidRows.length > 0
+      ? (prevTotalRevenue ?? 0) / prevPaidRows.length
       : null;
 
-  // Monthly revenue
+  // Monthly revenue (paid orders only)
   const monthlyMap: Record<string, number> = {};
-  rows.forEach((v) => {
+  paidRows.forEach((v) => {
     const m = v.data_venda?.substring(0, 7);
     if (m) monthlyMap[m] = (monthlyMap[m] ?? 0) + Number(v.valor_total);
   });
@@ -194,9 +208,9 @@ export async function getRelatorios(
       count,
     }));
 
-  // Category revenue
+  // Category revenue (paid orders only)
   const catMap: Record<string, number> = {};
-  rows.forEach((v) => {
+  paidRows.forEach((v) => {
     v.itens_venda?.forEach((item) => {
       const cat = item.produtos?.categoria ?? "Outros";
       catMap[cat] =
@@ -209,12 +223,12 @@ export async function getRelatorios(
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5);
 
-  // Top products
+  // Top products (paid orders only)
   const prodMap: Record<
     string,
     { name: string; quantity: number; revenue: number }
   > = {};
-  rows.forEach((v) => {
+  paidRows.forEach((v) => {
     v.itens_venda?.forEach((item) => {
       const name = item.produtos?.nome ?? "Produto removido";
       if (!prodMap[name]) prodMap[name] = { name, quantity: 0, revenue: 0 };
@@ -227,9 +241,9 @@ export async function getRelatorios(
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5);
 
-  // Top clients
+  // Top clients (paid orders only)
   const clientRevMap: Record<string, number> = {};
-  rows.forEach((v) => {
+  paidRows.forEach((v) => {
     clientRevMap[v.cliente_id] =
       (clientRevMap[v.cliente_id] ?? 0) + Number(v.valor_total);
   });

@@ -86,6 +86,11 @@ export async function POST(request: Request) {
 
       if (list.data.length > 0) {
         customerId = list.data[0].id;
+        // Update CPF on existing customer — may have been created without it
+        await asaasRequest(`/customers/${customerId}`, {
+          method: "PUT",
+          body: JSON.stringify({ cpfCnpj }),
+        }).catch(() => null); // non-fatal — proceed even if update fails
       } else {
         const customer = await asaasRequest<AsaasCustomer>("/customers", {
           method: "POST",
@@ -103,6 +108,10 @@ export async function POST(request: Request) {
         .from("perfis_usuarios")
         .update({ asaas_customer_id: customerId })
         .eq("id", user.id);
+    }
+
+    if (!customerId) {
+      return NextResponse.json({ error: "Não foi possível identificar o cliente no Asaas." }, { status: 502 });
     }
 
     // Next due date = tomorrow (avoids same-day charge)

@@ -29,14 +29,12 @@ import {
   BarChart3,
 } from "lucide-react";
 import { usePlan } from "@/lib/plan-context";
-import { useTheme } from "@/lib/theme-context";
+import { useTheme, useThemeColor, useThemePalette } from "@/lib/theme-context";
 import { LockedFeature } from "@/components/ui/LockedFeature";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getRelatorios } from "@/lib/actions/relatorios";
 import type { RelatoriosData, Period } from "@/lib/actions/relatorios";
-
-const ROSE_PALETTE = ["#D4829C", "#E8A4B8", "#A85C78", "#F2C4D4", "#8C4D65"];
 
 const PERIOD_LABELS: Record<Period, string> = {
   "1m": "Este mês",
@@ -148,6 +146,9 @@ export default function RelatoriosClient({
   const { hasFeature } = usePlan();
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const palette = useThemePalette();
+  const color500 = useThemeColor(500);
+  const color700 = useThemeColor(700);
   const [data, setData] = useState(initialData);
   const [isPending, startTransition] = useTransition();
 
@@ -322,7 +323,7 @@ export default function RelatoriosClient({
                     }}
                     content={<CustomTooltipBar />}
                   />
-                  <Bar dataKey="revenue" fill="#D4829C" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="revenue" fill={color500} radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -352,7 +353,7 @@ export default function RelatoriosClient({
                       {data.categoryRevenue.map((_, i) => (
                         <Cell
                           key={i}
-                          fill={ROSE_PALETTE[i % ROSE_PALETTE.length]}
+                          fill={palette[i % palette.length]}
                           stroke={isDark ? "#171717" : "#ffffff"}
                         />
                       ))}
@@ -423,7 +424,7 @@ export default function RelatoriosClient({
                   }}
                   content={<CustomTooltipCount />}
                 />
-                <Bar dataKey="count" fill="#A85C78" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="count" fill={color700} radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -466,7 +467,7 @@ export default function RelatoriosClient({
                           className="h-full rounded-full"
                           style={{
                             width: `${(product.revenue / maxRev) * 100}%`,
-                            background: ROSE_PALETTE[i],
+                            background: palette[i % palette.length],
                           }}
                         />
                       </div>
@@ -526,7 +527,7 @@ export default function RelatoriosClient({
                         className="h-full rounded-full"
                         style={{
                           width: `${(client.total_spent / maxSpent) * 100}%`,
-                          background: ROSE_PALETTE[i],
+                          background: palette[i % palette.length],
                         }}
                       />
                     </div>
