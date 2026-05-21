@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { asaasRequest, PLAN_TO_VALUE, PLAN_DESCRIPTIONS } from "@/lib/asaas";
+import type { PlanId } from "@/lib/plans";
 
 interface AsaasCustomer { id: string }
 interface AsaasCustomerList { data: AsaasCustomer[]; totalCount: number }
 interface AsaasSubscription { id: string; nextDueDate: string }
 interface AsaasPayment { invoiceUrl: string }
 interface AsaasPaymentList { data: AsaasPayment[] }
+
+const PLAN_RANK: Record<PlanId, number> = { free: 0, pro: 1, premium: 2 };
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -27,7 +30,7 @@ export async function POST(request: Request) {
 
   const { data: profile } = await supabase
     .from("perfis_usuarios")
-    .select("asaas_customer_id, asaas_subscription_id, nome_completo, email, cpf_cnpj")
+    .select("asaas_customer_id, asaas_subscription_id, nome_completo, email, cpf_cnpj, plano")
     .eq("id", user.id)
     .single();
 
@@ -40,8 +43,53 @@ export async function POST(request: Request) {
   }
 
   const existingSubId = profile?.asaas_subscription_id as string | null;
+  const currentPlan = (profile?.plano as PlanId | null) ?? "free";
+  const newPlan = planId as PlanId;
+  const isDowngrade = PLAN_RANK[newPlan] < PLAN_RANK[currentPlan];
 
-  // Mid-cycle plan switch: update existing subscription instead of creating a new one
+  // Downgrade with active subscription: schedule the change for period end
+  // so the user keeps the current (higher) plan they already paid for.
+  if (existingSubId && isDowngrade) {
+    let nextDueDate: string;
+    try {
+      const sub = await asaasRequest<AsaasSubscription>(`/subscriptions/${existingSubId}`);
+      nextDueDate = sub.nextDueDate;
+    } catch {
+      return NextResponse.json({ error: "Erro ao consultar assinatura" }, { status: 502 });
+    }
+
+    try {
+      // Lower the recurring value for the next cycle (current cycle already paid).
+      await asaasRequest(`/subscriptions/${existingSubId}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          value,
+          description: PLAN_DESCRIPTIONS[planId],
+          externalReference: `${user.id}:${planId}`,
+        }),
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro ao agendar downgrade";
+      return NextResponse.json({ error: msg }, { status: 502 });
+    }
+
+    await supabase
+      .from("perfis_usuarios")
+      .update({
+        pending_plan: newPlan,
+        asaas_period_end: nextDueDate,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id);
+
+    return NextResponse.json({
+      scheduled: true,
+      pendingPlan: newPlan,
+      expiresAt: nextDueDate,
+    });
+  }
+
+  // Mid-cycle UPGRADE: update existing subscription and apply plan immediately.
   if (existingSubId) {
     try {
       await asaasRequest<AsaasSubscription>(`/subscriptions/${existingSubId}`, {
@@ -53,12 +101,14 @@ export async function POST(request: Request) {
         }),
       });
 
-      // Update plan immediately — webhook will confirm on next payment
+      // Update plan immediately — webhook will confirm on next payment.
+      // Also clear any previously-scheduled downgrade.
       await supabase
         .from("perfis_usuarios")
         .update({
           plano: planId,
           asaas_period_end: null,
+          pending_plan: null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", user.id);

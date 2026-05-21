@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import {
   Check, X, Users, ShoppingBag, Package, Calendar,
   BarChart3, MessageCircle, Bell, Download, UsersRound, HeadphonesIcon,
+  Clock, AlertTriangle, Info,
 } from "lucide-react";
 import { usePlan } from "@/lib/plan-context";
 import { PLANS, PLAN_ORDER, PlanId } from "@/lib/plans";
@@ -54,12 +55,22 @@ function planKey(p: (typeof PLANS)[PlanId]) {
   return [...limits, ...extras];
 }
 
+function formatLongDate(iso: string): string {
+  return new Date(iso.length === 10 ? iso + "T00:00:00" : iso).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
+
 export default function PricingPage() {
-  const { planId, setPlanId } = usePlan();
+  const { planId, pendingPlan, scheduledDowngradeAt } = usePlan();
   const [confirming, setConfirming] = useState<PlanId | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState<PlanId | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-  const [flash, setFlash] = useState<"success" | "canceled" | null>(null);
+  const [flash, setFlash] = useState<"success" | "canceled" | "scheduled" | null>(null);
+  const [scheduledInfo, setScheduledInfo] = useState<{ plan: PlanId; date: string } | null>(null);
+  const [revertLoading, setRevertLoading] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -75,34 +86,81 @@ export default function PricingPage() {
 
   async function confirmSwitch() {
     if (!confirming) return;
-    if (confirming !== "free") {
-      setCheckoutLoading(confirming);
-      setCheckoutError(null);
-      setConfirming(null);
-      try {
-        const res = await fetch("/api/asaas/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ planId: confirming }),
-        });
-        const json = await res.json().catch(() => ({})) as { url?: string; error?: string };
-        if (json.url) {
-          window.location.href = json.url;
-        } else {
-          setCheckoutError(json.error ?? `Erro ${res.status} ao iniciar checkout. Tente novamente.`);
-        }
-      } catch {
-        setCheckoutError("Erro ao iniciar checkout. Tente novamente.");
-      } finally {
-        setCheckoutLoading(null);
-      }
-      return;
-    }
-    setPlanId("free");
+    const target = confirming;
+    const isDowngrade = PLAN_ORDER.indexOf(target) < PLAN_ORDER.indexOf(planId);
+    setCheckoutLoading(target);
+    setCheckoutError(null);
     setConfirming(null);
+    try {
+      // Downgrade to free with an active paid plan → cancel subscription (keeps access until period end)
+      if (target === "free" && planId !== "free") {
+        const res = await fetch("/api/asaas/cancel", { method: "POST" });
+        const json = await res.json().catch(() => ({})) as { expiresAt?: string; error?: string };
+        if (json.expiresAt) {
+          setScheduledInfo({ plan: "free", date: json.expiresAt });
+          setFlash("scheduled");
+        } else {
+          setCheckoutError(json.error ?? "Erro ao cancelar assinatura.");
+        }
+        return;
+      }
+
+      // No paid plan and target is free → nothing to do
+      if (target === "free") {
+        return;
+      }
+
+      // Paid plan switch (upgrade or paid→paid downgrade)
+      const res = await fetch("/api/asaas/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId: target }),
+      });
+      const json = await res.json().catch(() => ({})) as {
+        url?: string;
+        error?: string;
+        scheduled?: boolean;
+        pendingPlan?: PlanId;
+        expiresAt?: string;
+      };
+
+      if (json.scheduled && json.pendingPlan && json.expiresAt) {
+        setScheduledInfo({ plan: json.pendingPlan, date: json.expiresAt });
+        setFlash("scheduled");
+        return;
+      }
+      if (json.url) {
+        window.location.href = json.url;
+        return;
+      }
+      setCheckoutError(json.error ?? `Erro ${res.status} ao iniciar checkout. Tente novamente.`);
+    } catch {
+      setCheckoutError(isDowngrade ? "Erro ao agendar downgrade. Tente novamente." : "Erro ao iniciar checkout. Tente novamente.");
+    } finally {
+      setCheckoutLoading(null);
+    }
+  }
+
+  async function revertDowngrade() {
+    setRevertLoading(true);
+    setCheckoutError(null);
+    try {
+      const res = await fetch("/api/asaas/revert-downgrade", { method: "POST" });
+      const json = await res.json().catch(() => ({})) as { error?: string };
+      if (json.error) {
+        setCheckoutError(json.error);
+      } else {
+        window.location.reload();
+      }
+    } catch {
+      setCheckoutError("Erro ao reverter downgrade.");
+    } finally {
+      setRevertLoading(false);
+    }
   }
 
   const currentIdx = PLAN_ORDER.indexOf(planId);
+  const hasPendingDowngrade = !!(pendingPlan && scheduledDowngradeAt);
 
   return (
     <div className="space-y-4">
@@ -115,6 +173,33 @@ export default function PricingPage() {
       {flash === "canceled" && (
         <div className="px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-600 dark:text-neutral-400">
           Checkout cancelado. Você pode tentar novamente quando quiser.
+        </div>
+      )}
+      {flash === "scheduled" && scheduledInfo && (
+        <div className="px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl text-sm text-amber-800 dark:text-amber-300 flex items-start gap-2">
+          <Clock className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>
+            Downgrade agendado para <strong>{formatLongDate(scheduledInfo.date)}</strong>. Você continua com acesso ao plano <strong>{PLANS[planId].name}</strong> até essa data. Depois passa para <strong>{PLANS[scheduledInfo.plan].name}</strong> automaticamente.
+          </span>
+        </div>
+      )}
+
+      {/* Persistent banner for pending downgrade */}
+      {hasPendingDowngrade && pendingPlan && scheduledDowngradeAt && !flash && (
+        <div className="px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-start gap-2">
+            <Clock className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+            <p className="text-sm text-amber-800 dark:text-amber-300">
+              Downgrade agendado: <strong>{PLANS[planId].name}</strong> → <strong>{PLANS[pendingPlan].name}</strong> em <strong>{formatLongDate(scheduledDowngradeAt)}</strong>.
+            </p>
+          </div>
+          <button
+            onClick={revertDowngrade}
+            disabled={revertLoading}
+            className="self-start sm:self-auto px-3 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg transition-colors disabled:opacity-60 shrink-0"
+          >
+            {revertLoading ? "Revertendo..." : "Cancelar downgrade"}
+          </button>
         </div>
       )}
       {checkoutError && (
@@ -294,40 +379,121 @@ export default function PricingPage() {
 
       {/* Confirm switch modal */}
       {confirming && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-            onClick={() => setConfirming(null)}
-          />
-          <div className="relative bg-white dark:bg-neutral-900 w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl p-6 shadow-elevated">
-            <div className="flex justify-center mb-3 sm:hidden">
-              <div className="w-10 h-1 bg-neutral-200 dark:bg-neutral-700 rounded-full" />
-            </div>
-            <h3 className="text-base font-bold text-neutral-800 dark:text-neutral-100 mb-1">
-              Mudar para o plano {PLANS[confirming].name}?
-            </h3>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-5">
-              {PLAN_ORDER.indexOf(confirming) < PLAN_ORDER.indexOf(planId)
-                ? "Você perderá acesso a algumas funcionalidades. Seus dados são mantidos."
-                : "Você terá acesso imediato às funcionalidades do novo plano."}
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setConfirming(null)}
-                className="flex-1 py-2.5 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={confirmSwitch}
-                className="flex-1 py-2.5 bg-rose-500 text-white rounded-xl text-sm font-semibold hover:bg-rose-600 transition-colors"
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmSwitchModal
+          targetPlan={confirming}
+          currentPlan={planId}
+          onClose={() => setConfirming(null)}
+          onConfirm={confirmSwitch}
+        />
       )}
+    </div>
+  );
+}
+
+function ConfirmSwitchModal({
+  targetPlan,
+  currentPlan,
+  onClose,
+  onConfirm,
+}: {
+  targetPlan: PlanId;
+  currentPlan: PlanId;
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  const target = PLANS[targetPlan];
+  const current = PLANS[currentPlan];
+  const isDowngrade = PLAN_ORDER.indexOf(targetPlan) < PLAN_ORDER.indexOf(currentPlan);
+  const isUpgrade = PLAN_ORDER.indexOf(targetPlan) > PLAN_ORDER.indexOf(currentPlan);
+  const isDowngradeToFree = isDowngrade && targetPlan === "free";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white dark:bg-neutral-900 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-elevated">
+        <div className="flex justify-center mb-3 sm:hidden">
+          <div className="w-10 h-1 bg-neutral-200 dark:bg-neutral-700 rounded-full" />
+        </div>
+
+        <h3 className="text-base font-bold text-neutral-800 dark:text-neutral-100 mb-1">
+          {isDowngrade
+            ? `Fazer downgrade para ${target.name}?`
+            : isUpgrade
+              ? `Assinar o plano ${target.name}?`
+              : `Mudar para ${target.name}?`}
+        </h3>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+          Plano atual: <strong>{current.name}</strong> {current.price > 0 && `(R$ ${current.price}/mês)`}
+          {target.price > 0 && (
+            <> · Novo plano: <strong>{target.name}</strong> (R$ {target.price}/mês)</>
+          )}
+        </p>
+
+        {/* What will happen — transparent breakdown */}
+        <div className="space-y-2 mb-5">
+          {isUpgrade && (
+            <>
+              <Row icon="check" label="Acesso imediato às funcionalidades do plano nova." />
+              <Row icon="check" label={`A próxima fatura virá com o valor de R$ ${target.price}/mês.`} />
+              <Row icon="info" label="Faturas anteriores não são alteradas." />
+            </>
+          )}
+
+          {isDowngradeToFree && (
+            <>
+              <Row icon="clock" label={`Você mantém o plano ${current.name} até o fim do período já pago.`} />
+              <Row icon="clock" label="Depois disso, sua conta volta para o plano Free automaticamente." />
+              <Row icon="info" label="Não há cobranças futuras. Seus dados são preservados." />
+              <Row icon="alert" label="Faturas já pagas não são reembolsadas." />
+            </>
+          )}
+
+          {isDowngrade && !isDowngradeToFree && (
+            <>
+              <Row icon="clock" label={`Você mantém o ${current.name} até o fim do período já pago.`} />
+              <Row icon="clock" label={`Depois, sua assinatura passa para o ${target.name} (R$ ${target.price}/mês) automaticamente.`} />
+              <Row icon="info" label="Você pode reverter o downgrade a qualquer momento antes da troca." />
+              <Row icon="alert" label="Faturas já pagas não são reembolsadas." />
+            </>
+          )}
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+          >
+            Voltar
+          </button>
+          <button
+            onClick={onConfirm}
+            className={cn(
+              "flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors",
+              isDowngrade
+                ? "bg-neutral-800 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-900 dark:hover:bg-white"
+                : "bg-rose-500 text-white hover:bg-rose-600",
+            )}
+          >
+            {isDowngrade ? "Confirmar downgrade" : isUpgrade ? "Continuar para pagamento" : "Confirmar"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Row({ icon, label }: { icon: "check" | "clock" | "info" | "alert"; label: string }) {
+  const Icon = { check: Check, clock: Clock, info: Info, alert: AlertTriangle }[icon];
+  const color = {
+    check: "text-emerald-500",
+    clock: "text-amber-500",
+    info: "text-neutral-400",
+    alert: "text-amber-600 dark:text-amber-400",
+  }[icon];
+  return (
+    <div className="flex items-start gap-2.5">
+      <Icon className={cn("w-4 h-4 shrink-0 mt-0.5", color)} />
+      <p className="text-sm text-neutral-700 dark:text-neutral-300">{label}</p>
     </div>
   );
 }

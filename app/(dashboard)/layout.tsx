@@ -4,18 +4,19 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { PlanProvider } from "@/lib/plan-context";
 import { ProfileProvider } from "@/lib/profile-context";
 import { UsageBanner } from "@/components/ui/UsageBanner";
-import { getUserPlan, getUsageCounts, getProfile, getTrialInfo } from "@/lib/actions/profile";
+import { getUserPlan, getUsageCounts, getProfile, getTrialInfo, getPendingDowngrade } from "@/lib/actions/profile";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [initialPlan, initialUsage, profile, trialInfo] = await Promise.all([
+  const [initialPlan, initialUsage, profile, trialInfo, pendingDowngrade] = await Promise.all([
     getUserPlan(),
     getUsageCounts(),
     getProfile(),
     getTrialInfo(),
+    getPendingDowngrade(),
   ]);
 
   return (
@@ -24,6 +25,8 @@ export default async function DashboardLayout({
       initialUsage={initialUsage}
       initialTrialDaysLeft={trialInfo.daysLeft}
       initialTrialClaimed={trialInfo.claimed}
+      initialPendingPlan={pendingDowngrade.pendingPlan}
+      initialScheduledDowngradeAt={pendingDowngrade.scheduledFor}
     >
       <ProfileProvider initialName={profile.name} initialAvatarUrl={profile.avatarUrl}>
         <div className="flex min-h-screen bg-neutral-50 dark:bg-neutral-950">

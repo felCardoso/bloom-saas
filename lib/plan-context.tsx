@@ -35,6 +35,8 @@ interface PlanContextType {
   trialDaysLeft: number | null;
   trialClaimed: boolean;
   isOnTrial: boolean;
+  pendingPlan: PlanId | null;
+  scheduledDowngradeAt: string | null;
 }
 
 const PlanContext = createContext<PlanContextType | null>(null);
@@ -52,16 +54,22 @@ export function PlanProvider({
   initialUsage,
   initialTrialDaysLeft = null,
   initialTrialClaimed = false,
+  initialPendingPlan = null,
+  initialScheduledDowngradeAt = null,
 }: {
   children: ReactNode;
   initialPlan?: PlanId;
   initialUsage?: Partial<Usage>;
   initialTrialDaysLeft?: number | null;
   initialTrialClaimed?: boolean;
+  initialPendingPlan?: PlanId | null;
+  initialScheduledDowngradeAt?: string | null;
 }) {
   const [planId, _setPlanId] = useState<PlanId>(initialPlan);
   const trialDaysLeft = initialTrialDaysLeft;
   const trialClaimed = initialTrialClaimed;
+  const pendingPlan = initialPendingPlan;
+  const scheduledDowngradeAt = initialScheduledDowngradeAt;
 
   const setPlanId = useCallback((id: PlanId) => {
     _setPlanId(id);
@@ -145,6 +153,8 @@ export function PlanProvider({
         trialDaysLeft,
         trialClaimed,
         isOnTrial,
+        pendingPlan,
+        scheduledDowngradeAt,
       }}
     >
       {children}

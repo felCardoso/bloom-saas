@@ -12,7 +12,7 @@ export async function getUserPlan(): Promise<PlanId> {
 
   const { data } = await supabase
     .from("perfis_usuarios")
-    .select("plano, asaas_period_end, trial_ends_at")
+    .select("plano, asaas_period_end, trial_ends_at, pending_plan")
     .eq("id", user.id)
     .single();
 
@@ -20,14 +20,20 @@ export async function getUserPlan(): Promise<PlanId> {
 
   if (plan === "pro" || plan === "premium") {
     const periodEnd = data?.asaas_period_end as string | null;
+    const pendingPlan = data?.pending_plan as PlanId | null;
     if (periodEnd) {
       const expired = new Date(periodEnd) <= new Date();
       if (expired) {
-        await supabase
-          .from("perfis_usuarios")
-          .update({ plano: "free", asaas_period_end: null, updated_at: new Date().toISOString() })
-          .eq("id", user.id);
-        return "free";
+        const next: PlanId = pendingPlan ?? "free";
+        const patch: Record<string, unknown> = {
+          plano: next,
+          asaas_period_end: null,
+          pending_plan: null,
+          updated_at: new Date().toISOString(),
+        };
+        if (next === "free") patch.asaas_subscription_id = null;
+        await supabase.from("perfis_usuarios").update(patch).eq("id", user.id);
+        return next;
       }
     }
     return plan;
@@ -107,6 +113,27 @@ export async function getPlanPeriodEnd(): Promise<string | null> {
   if (!periodEnd) return null;
   // Return null if already expired (plan was just downgraded by getUserPlan)
   return new Date(periodEnd) > new Date() ? periodEnd : null;
+}
+
+export async function getPendingDowngrade(): Promise<{
+  pendingPlan: PlanId | null;
+  scheduledFor: string | null;
+}> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { pendingPlan: null, scheduledFor: null };
+
+  const { data } = await supabase
+    .from("perfis_usuarios")
+    .select("pending_plan, asaas_period_end")
+    .eq("id", user.id)
+    .single();
+
+  const pending = data?.pending_plan as PlanId | null;
+  const periodEnd = data?.asaas_period_end as string | null;
+  if (!pending || !periodEnd) return { pendingPlan: null, scheduledFor: null };
+  if (new Date(periodEnd) <= new Date()) return { pendingPlan: null, scheduledFor: null };
+  return { pendingPlan: pending, scheduledFor: periodEnd };
 }
 
 export async function getUsageCounts(): Promise<Partial<Usage>> {

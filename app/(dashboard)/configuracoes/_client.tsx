@@ -534,7 +534,9 @@ const INVOICE_STATUS: Record<string, { label: string; className: string }> = {
 };
 
 function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }) {
-  const { planId, plan, isOnTrial, trialDaysLeft, trialClaimed } = usePlan();
+  const { planId, plan, isOnTrial, trialDaysLeft, trialClaimed, pendingPlan, scheduledDowngradeAt } = usePlan();
+  const [revertLoading, setRevertLoading] = useState(false);
+  const [revertError, setRevertError] = useState("");
   const [periodEnd, setPeriodEnd] = useState<string | null>(initialPeriodEnd);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
@@ -628,13 +630,52 @@ function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }
         </div>
       </div>
 
-      {/* Cancellation banner / management buttons */}
+      {/* Cancellation / scheduled-downgrade banner OR management buttons */}
       {isCancelling && formattedExpiry ? (
-        <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-200 dark:border-amber-800">
-          <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Cancelamento agendado</p>
-          <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-            Seu plano permanece ativo até <strong>{formattedExpiry}</strong>. Após essa data, a conta retorna automaticamente para o plano Free.
-          </p>
+        <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-200 dark:border-amber-800 space-y-3">
+          {pendingPlan && pendingPlan !== "free" ? (
+            <>
+              <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                Downgrade agendado para {pendingPlan === "pro" ? "Plus" : pendingPlan === "premium" ? "Premium" : pendingPlan}
+              </p>
+              <ul className="text-xs text-amber-700 dark:text-amber-400 space-y-1.5">
+                <li>• Você mantém o plano <strong>{plan.name}</strong> até <strong>{formattedExpiry}</strong> — sem mudanças até lá.</li>
+                <li>• Nessa data, sua assinatura passa para <strong>{pendingPlan === "pro" ? "Plus" : "Premium"}</strong> automaticamente.</li>
+                <li>• A próxima cobrança virá com o valor do novo plano.</li>
+                <li>• Faturas já pagas não são reembolsadas.</li>
+              </ul>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Cancelamento agendado</p>
+              <ul className="text-xs text-amber-700 dark:text-amber-400 space-y-1.5">
+                <li>• Você mantém o plano <strong>{plan.name}</strong> até <strong>{formattedExpiry}</strong>.</li>
+                <li>• Nessa data, a conta volta para o plano <strong>Free</strong> automaticamente.</li>
+                <li>• Não há novas cobranças. Seus dados continuam preservados.</li>
+                <li>• Faturas já pagas não são reembolsadas.</li>
+              </ul>
+            </>
+          )}
+          {pendingPlan && (
+            <div className="pt-2 border-t border-amber-200 dark:border-amber-800/60">
+              <button
+                onClick={async () => {
+                  setRevertLoading(true);
+                  setRevertError("");
+                  const res = await fetch("/api/asaas/revert-downgrade", { method: "POST" });
+                  const json = await res.json().catch(() => ({}));
+                  setRevertLoading(false);
+                  if (json.error) setRevertError(json.error);
+                  else window.location.reload();
+                }}
+                disabled={revertLoading}
+                className="text-xs font-semibold text-amber-800 dark:text-amber-300 underline hover:no-underline disabled:opacity-50"
+              >
+                {revertLoading ? "Revertendo..." : "Reverter agendamento e manter o plano atual"}
+              </button>
+              {revertError && <p className="text-xs text-red-500 mt-1">{revertError}</p>}
+            </div>
+          )}
         </div>
       ) : (
         plan.price > 0 && (
