@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const footerLinks = [
   { href: "/sobre", label: "Sobre" },
@@ -21,7 +23,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           {/* Logo → / */}
           <Link href="/" className="flex items-center gap-2">
-            <img src="/logo.svg" className="w-7 h-7" alt="Bloom" />
+            <Image src="/logo.svg" width={28} height={28} className="w-7 h-7" alt="Bloom" />
             <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">Bloom</span>
           </Link>
 
@@ -41,12 +43,15 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             ))}
           </div>
 
-          <Link
-            href="/login"
-            className="text-sm font-semibold bg-rose-500 text-white px-4 py-2 rounded-xl hover:bg-rose-600 transition-colors shadow-sm"
-          >
-            Entrar
-          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Link
+              href="/login"
+              className="text-sm font-semibold bg-rose-500 text-white px-4 py-2 rounded-xl hover:bg-rose-600 transition-colors shadow-sm"
+            >
+              Entrar
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -65,10 +70,10 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       {/* Footer */}
       <footer className="border-t border-neutral-100 dark:border-neutral-800 py-8 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <img src="/logo.svg" className="w-5 h-5" alt="Bloom" />
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/logo.svg" width={20} height={20} className="w-5 h-5" alt="Bloom" />
             <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400">Bloom</span>
-          </div>
+          </Link>
           <div className="flex flex-wrap justify-center gap-4">
             {footerLinks.map((l) => (
               <Link

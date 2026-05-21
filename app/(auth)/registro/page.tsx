@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useTransition } from "react";
 import { Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
@@ -79,7 +80,7 @@ export default function RegistroPage() {
     <div className="w-full max-w-sm py-6">
       {/* Mobile logo */}
       <Link href="/" className="flex items-center gap-2 mb-8 lg:hidden w-fit">
-        <img src="/logo.svg" className="w-8 h-8" alt="Bloom" />
+        <Image src="/logo.svg" width={32} height={32} className="w-8 h-8" alt="Bloom" />
         <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">Bloom</span>
       </Link>
 

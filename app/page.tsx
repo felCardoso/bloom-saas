@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import {
   Sparkles,
@@ -15,6 +16,7 @@ import {
   X,
   Bell,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const features = [
   {
@@ -112,15 +114,16 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-neutral-950/90 backdrop-blur-md border-b border-neutral-100 dark:border-neutral-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <img src="/logo.svg" className="w-7 h-7 sm:w-8 sm:h-8" alt="Bloom" />
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/logo.svg" width={32} height={32} className="w-7 h-7 sm:w-8 sm:h-8" alt="Bloom" />
             <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">
               Bloom
             </span>
-          </div>
+          </Link>
 
           {/* Desktop links */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2">
+            <ThemeToggle />
             <Link
               href="/login"
               className="text-sm text-neutral-600 dark:text-neutral-300 hover:text-neutral-800 dark:hover:text-neutral-100 font-medium px-4 py-2 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
@@ -135,17 +138,21 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setMenuOpen((v) => !v)}
-            className="sm:hidden p-2 rounded-xl text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-          >
-            {menuOpen ? (
-              <X className="w-5 h-5" />
-            ) : (
-              <Menu className="w-5 h-5" />
-            )}
-          </button>
+          {/* Mobile actions */}
+          <div className="sm:hidden flex items-center gap-1">
+            <ThemeToggle />
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              className="p-2 rounded-xl text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+              aria-label="Menu"
+            >
+              {menuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Mobile menu dropdown */}
@@ -407,12 +414,12 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="py-8 sm:py-10 px-4 sm:px-6 border-t border-neutral-100 dark:border-neutral-800">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <img src="/logo.svg" className="w-6 h-6" alt="Bloom" />
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/logo.svg" width={24} height={24} className="w-6 h-6" alt="Bloom" />
             <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">
               Bloom
             </span>
-          </div>
+          </Link>
           <div className="flex flex-wrap justify-center gap-4">
             {[
               { href: "/sobre", label: "Sobre" },

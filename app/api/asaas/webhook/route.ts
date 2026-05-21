@@ -43,12 +43,25 @@ export async function POST(request: Request) {
       if (subscriptionId && externalRef) {
         const planId = externalRef.split(":")[1];
         if (planId === "pro" || planId === "premium") {
+          // If the user has a scheduled downgrade (period_end in the future),
+          // don't apply the new plan yet — the current paid period is still valid.
+          // getUserPlan will lazily switch when period_end passes.
+          const { data: existing } = await supabase
+            .from("perfis_usuarios")
+            .select("asaas_period_end")
+            .eq("asaas_customer_id", payment.customer)
+            .single();
+          const periodEnd = existing?.asaas_period_end as string | null;
+          const stillInPaidPeriod = periodEnd && new Date(periodEnd) > new Date();
+          if (stillInPaidPeriod) break;
+
           await supabase
             .from("perfis_usuarios")
             .update({
               plano: planId,
               asaas_subscription_id: subscriptionId,
-              asaas_period_end: null, // clear any pending cancellation
+              asaas_period_end: null,
+              pending_plan: null,
               updated_at: new Date().toISOString(),
             })
             .eq("asaas_customer_id", payment.customer);

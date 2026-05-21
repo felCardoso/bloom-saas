@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTransition } from "react";
 import {
@@ -55,7 +56,7 @@ export function Sidebar() {
       {/* Logo → /dashboard */}
       <div className="px-5 py-5 border-b border-neutral-100 dark:border-neutral-800">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <img src="/logo.svg" className="w-8 h-8" alt="Bloom" />
+          <Image src="/logo.svg" width={32} height={32} className="w-8 h-8" alt="Bloom" />
           <div>
             <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100 tracking-tight">
               Bloom

@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from "react";
+import { usePathname } from "next/navigation";
 
 export type Theme = "light" | "dark";
 export type PrimaryColor = "rose" | "violet" | "blue" | "teal" | "amber";
@@ -14,6 +15,25 @@ interface ThemeCtx {
 
 const ThemeContext = createContext<ThemeCtx | null>(null);
 
+// Routes where the user's chosen primary color should apply.
+// Everywhere else (landing, marketing, auth) stays on the default rose palette.
+const DASHBOARD_PREFIXES = [
+  "/dashboard",
+  "/clientes",
+  "/pedidos",
+  "/produtos",
+  "/agenda",
+  "/mensagens",
+  "/relatorios",
+  "/configuracoes",
+  "/pricing",
+  "/feedback",
+];
+
+function isDashboardPath(p: string): boolean {
+  return DASHBOARD_PREFIXES.some((prefix) => p === prefix || p.startsWith(prefix + "/"));
+}
+
 function applyPrimary(color: PrimaryColor) {
   const root = document.documentElement;
   if (color === "rose") {
@@ -26,15 +46,26 @@ function applyPrimary(color: PrimaryColor) {
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
   const [primaryColor, setPrimaryColorState] = useState<PrimaryColor>("rose");
+  const pathname = usePathname();
+  const onDashboard = useMemo(() => isDashboardPath(pathname ?? "/"), [pathname]);
 
+  // Load saved theme/color from localStorage once.
   useEffect(() => {
     const t = (localStorage.getItem("bloom-theme") as Theme) || "light";
     const c = (localStorage.getItem("bloom-primary") as PrimaryColor) || "rose";
     setThemeState(t);
     setPrimaryColorState(c);
     document.documentElement.classList.toggle("dark", t === "dark");
-    applyPrimary(c);
   }, []);
+
+  // Apply primary based on whether we're on a dashboard route.
+  useEffect(() => {
+    if (onDashboard) {
+      applyPrimary(primaryColor);
+    } else {
+      document.documentElement.removeAttribute("data-primary");
+    }
+  }, [onDashboard, primaryColor]);
 
   const setTheme = (t: Theme) => {
     setThemeState(t);
@@ -44,8 +75,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const setPrimaryColor = (c: PrimaryColor) => {
     setPrimaryColorState(c);
-    applyPrimary(c);
     localStorage.setItem("bloom-primary", c);
+    // The effect above will (re)apply or skip based on the current route.
   };
 
   return (

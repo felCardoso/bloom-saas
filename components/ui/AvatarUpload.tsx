@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { updateAvatar } from "@/lib/actions/profile";
 import { getInitials } from "@/lib/utils";
@@ -77,10 +78,12 @@ export function AvatarUpload({ name, avatarUrl, onUpdate }: Props) {
           aria-label="Alterar foto de perfil"
         >
           {preview ? (
-            <img
+            <Image
               src={preview}
               alt="Foto de perfil"
-              className="w-full h-full object-cover"
+              fill
+              sizes="64px"
+              className="object-cover"
             />
           ) : (
             <div className="w-full h-full bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center">

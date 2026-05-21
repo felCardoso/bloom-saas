@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import { Star } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -32,14 +34,14 @@ export default function AuthLayout({
         <div className="absolute top-1/2 right-8 w-32 h-32 rounded-full bg-white/5" />
 
         {/* Logo */}
-        <div className="relative flex items-center gap-2.5 mb-auto">
+        <Link href="/" className="relative flex items-center gap-2.5 mb-auto w-fit">
           <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-            <img src="/logo.svg" className="w-6 h-6" alt="Bloom" style={{ filter: "brightness(0) invert(1)" }} />
+            <Image src="/logo.svg" width={24} height={24} className="w-6 h-6" alt="Bloom" style={{ filter: "brightness(0) invert(1)" }} />
           </div>
           <span className="text-lg font-bold text-white tracking-tight">
             Bloom
           </span>
-        </div>
+        </Link>
 
         {/* Center content */}
         <div className="relative py-10">
