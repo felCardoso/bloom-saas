@@ -89,7 +89,7 @@ export function UpgradeModal({ open, onClose, resource, feature }: UpgradeModalP
               </div>
               <div className="text-right">
                 <span className="text-2xl font-bold">
-                  {suggestedPlan.price === 0 ? "Grátis" : `R$ ${suggestedPlan.price}`}
+                  {suggestedPlan.price === 0 ? "Free" : `R$ ${suggestedPlan.price}`}
                 </span>
                 <span className="text-sm text-rose-200">{suggestedPlan.period}</span>
               </div>

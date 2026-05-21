@@ -63,7 +63,7 @@ export function PedidosView({
     notes: "",
     items: [] as OrderItem[],
   });
-  const [addingItem, setAddingItem] = useState({ product_id: "", quantity: 1 });
+  const [addingProductId, setAddingProductId] = useState("");
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
@@ -82,30 +82,68 @@ export function PedidosView({
     `${search}|${statusFilter}`,
   );
 
-  function addItem() {
-    const product = products.find((p) => p.id === addingItem.product_id);
+  function addOrIncrement(productId: string) {
+    if (!productId) return;
+    const product = products.find((p) => p.id === productId);
     if (!product) return;
     if (product.stock === 0) {
       setToast("Produto sem estoque disponível.");
+      setAddingProductId("");
       return;
     }
-    const alreadyQueued = newOrder.items
-      .filter((i) => i.product_id === product.id)
-      .reduce((s, i) => s + i.quantity, 0);
-    const available = product.stock - alreadyQueued;
-    if (addingItem.quantity > available) {
-      setToast(`Estoque insuficiente. Disponível: ${available} unidade(s).`);
+    const existing = newOrder.items.find((i) => i.product_id === productId);
+    const currentQty = existing?.quantity ?? 0;
+    const available = product.stock - currentQty;
+    if (available <= 0) {
+      setToast(`Estoque insuficiente. Disponível: ${product.stock} unidade(s).`);
+      setAddingProductId("");
       return;
     }
-    const item: OrderItem = {
-      product_id: product.id,
-      product_name: product.name,
-      quantity: addingItem.quantity,
-      unit_price: product.sale_price,
-      subtotal: product.sale_price * addingItem.quantity,
-    };
-    setNewOrder((o) => ({ ...o, items: [...o.items, item] }));
-    setAddingItem({ product_id: "", quantity: 1 });
+    if (existing) {
+      setNewOrder((o) => ({
+        ...o,
+        items: o.items.map((i) =>
+          i.product_id === productId
+            ? { ...i, quantity: i.quantity + 1, subtotal: i.unit_price * (i.quantity + 1) }
+            : i
+        ),
+      }));
+    } else {
+      const item: OrderItem = {
+        product_id: product.id,
+        product_name: product.name,
+        quantity: 1,
+        unit_price: product.sale_price,
+        subtotal: product.sale_price,
+      };
+      setNewOrder((o) => ({ ...o, items: [...o.items, item] }));
+    }
+    setAddingProductId("");
+  }
+
+  function changeItemQty(productId: string, delta: number) {
+    const existing = newOrder.items.find((i) => i.product_id === productId);
+    if (!existing) return;
+    const newQty = existing.quantity + delta;
+    if (newQty <= 0) {
+      setNewOrder((o) => ({ ...o, items: o.items.filter((i) => i.product_id !== productId) }));
+      return;
+    }
+    if (delta > 0) {
+      const product = products.find((p) => p.id === productId);
+      if (product && newQty > product.stock) {
+        setToast(`Estoque insuficiente. Disponível: ${product.stock} unidade(s).`);
+        return;
+      }
+    }
+    setNewOrder((o) => ({
+      ...o,
+      items: o.items.map((i) =>
+        i.product_id === productId
+          ? { ...i, quantity: newQty, subtotal: i.unit_price * newQty }
+          : i
+      ),
+    }));
   }
 
   function handleAddClick() {
@@ -134,6 +172,7 @@ export function PedidosView({
     };
     setOrders((prev) => [optimistic, ...prev]);
     setNewOrder({ client_id: "", status: "pendente", payment_method: "dinheiro", notes: "", items: [] });
+    setAddingProductId("");
     setAddOpen(false);
     startTransition(async () => {
       const result = await addVenda(snapshot);
@@ -403,44 +442,48 @@ export function PedidosView({
             <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
               Adicionar Produto
             </p>
-            <div className="flex gap-2">
-              <select
-                value={addingItem.product_id}
-                onChange={(e) => setAddingItem((i) => ({ ...i, product_id: e.target.value }))}
-                className="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
-              >
-                <option value="">Selecione o produto</option>
-                {products.map((p) => (
-                  <option key={p.id} value={p.id} disabled={p.stock === 0}>
-                    {p.name} — {formatCurrency(p.sale_price)}
-                    {p.stock === 0 ? " (sem estoque)" : ` (${p.stock} un.)`}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="number"
-                min={1}
-                value={addingItem.quantity}
-                onChange={(e) => setAddingItem((i) => ({ ...i, quantity: Number(e.target.value) }))}
-                className="w-14 px-2 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-800 dark:text-neutral-100 text-center focus:outline-none focus:ring-2 focus:ring-rose-400"
-              />
-              <Button variant="secondary" size="sm" onClick={addItem}>
-                +
-              </Button>
-            </div>
+            <select
+              value={addingProductId}
+              onChange={(e) => addOrIncrement(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
+            >
+              <option value="">Selecione o produto para adicionar...</option>
+              {products.map((p) => (
+                <option key={p.id} value={p.id} disabled={p.stock === 0}>
+                  {p.name} — {formatCurrency(p.sale_price)}
+                  {p.stock === 0 ? " (sem estoque)" : ` (${p.stock} un.)`}
+                </option>
+              ))}
+            </select>
 
             {newOrder.items.length > 0 && (
               <div className="space-y-2 pt-1">
-                {newOrder.items.map((item, i) => (
+                {newOrder.items.map((item) => (
                   <div
-                    key={i}
-                    className="flex items-center justify-between text-sm bg-white dark:bg-neutral-900 rounded-xl px-3 py-2.5 border border-neutral-100 dark:border-neutral-700"
+                    key={item.product_id}
+                    className="flex items-center gap-2 bg-white dark:bg-neutral-900 rounded-xl px-3 py-2.5 border border-neutral-100 dark:border-neutral-700"
                   >
-                    <span className="text-neutral-700 dark:text-neutral-300 truncate flex-1 mr-2">
+                    <span className="text-sm text-neutral-700 dark:text-neutral-300 truncate flex-1 min-w-0">
                       {item.product_name}
                     </span>
-                    <span className="text-neutral-400 dark:text-neutral-500 mr-3">×{item.quantity}</span>
-                    <span className="font-semibold text-neutral-800 dark:text-neutral-100 whitespace-nowrap">
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() => changeItemQty(item.product_id, -1)}
+                        className="w-7 h-7 rounded-lg border border-neutral-200 dark:border-neutral-600 flex items-center justify-center text-sm font-bold text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                      >
+                        −
+                      </button>
+                      <span className="w-7 text-center text-sm font-semibold text-neutral-800 dark:text-neutral-100">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => changeItemQty(item.product_id, 1)}
+                        className="w-7 h-7 rounded-lg border border-neutral-200 dark:border-neutral-600 flex items-center justify-center text-sm font-bold text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 whitespace-nowrap ml-1">
                       {formatCurrency(item.subtotal)}
                     </span>
                   </div>

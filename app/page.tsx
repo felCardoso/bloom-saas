@@ -51,7 +51,7 @@ const features = [
 
 const plans = [
   {
-    name: "Grátis",
+    name: "Free",
     price: "Grátis",
     period: "",
     desc: "Para quem está começando",
@@ -67,7 +67,7 @@ const plans = [
     primary: false,
   },
   {
-    name: "Pro",
+    name: "Plus",
     price: "R$ 29",
     period: "/mês",
     desc: "Para revendedoras em crescimento",

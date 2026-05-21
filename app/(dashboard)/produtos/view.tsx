@@ -3,7 +3,7 @@
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { addProduto, updateProduto, deleteProduto } from "@/lib/actions/produtos";
-import { getMovimentacoes } from "@/lib/actions/estoque";
+import { getMovimentacoes, adicionarEstoque } from "@/lib/actions/estoque";
 import { importProdutosCSV } from "@/lib/actions/csv";
 import { parseFile, normalizeHeaders } from "@/lib/csv-parse";
 import type { ImportProdutoRow } from "@/lib/actions/csv";
@@ -63,10 +63,19 @@ export function ProdutosView({
   const [movements, setMovements] = useState<StockMovement[]>([]);
   const [movementsLoading, setMovementsLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [stockAddOpen, setStockAddOpen] = useState(false);
+  const [stockQty, setStockQty] = useState(1);
+  const [stockMotivo, setStockMotivo] = useState("");
 
   useEffect(() => {
     setProducts(initialProducts);
   }, [initialProducts]);
+
+  useEffect(() => {
+    setStockAddOpen(false);
+    setStockQty(1);
+    setStockMotivo("");
+  }, [detailProduct?.id]);
 
   const filtered = products.filter((p) => {
     const matchSearch =
@@ -169,6 +178,25 @@ export function ProdutosView({
   function handleCloseDetail() {
     setDetailProduct(null);
     setConfirmDelete(false);
+  }
+
+  function handleAddStock() {
+    if (!detailProduct || stockQty <= 0) return;
+    startTransition(async () => {
+      const result = await adicionarEstoque(detailProduct.id, stockQty, stockMotivo || undefined);
+      if (result.error) {
+        setToast(result.error);
+      } else {
+        const newStock = result.newStock!;
+        setDetailProduct((p) => (p ? { ...p, stock: newStock } : p));
+        setProducts((prev) =>
+          prev.map((p) => (p.id === detailProduct.id ? { ...p, stock: newStock } : p))
+        );
+        setStockAddOpen(false);
+        setStockQty(1);
+        setStockMotivo("");
+      }
+    });
   }
 
   async function openHistory(product: Product) {
@@ -526,6 +554,63 @@ export function ProdutosView({
               <History className="w-4 h-4" />
               Ver histórico de estoque
             </button>
+
+            {/* Add stock */}
+            {!confirmDelete && (
+              stockAddOpen ? (
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-2xl space-y-3">
+                  <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Adicionar estoque</p>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setStockQty((q) => Math.max(1, q - 1))}
+                      className="w-9 h-9 rounded-xl border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 flex items-center justify-center text-lg font-bold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                    >
+                      −
+                    </button>
+                    <span className="text-xl font-bold text-neutral-800 dark:text-neutral-100 w-10 text-center">
+                      {stockQty}
+                    </span>
+                    <button
+                      onClick={() => setStockQty((q) => q + 1)}
+                      className="w-9 h-9 rounded-xl border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 flex items-center justify-center text-lg font-bold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                    >
+                      +
+                    </button>
+                    <span className="text-sm text-neutral-500 dark:text-neutral-400">unidades</span>
+                  </div>
+                  <input
+                    type="text"
+                    value={stockMotivo}
+                    onChange={(e) => setStockMotivo(e.target.value)}
+                    placeholder="Motivo (opcional)"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { setStockAddOpen(false); setStockQty(1); setStockMotivo(""); }}
+                      className="flex-1 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-sm font-medium text-neutral-600 dark:text-neutral-300 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleAddStock}
+                      disabled={isPending}
+                      className="flex-1 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold transition-colors disabled:opacity-60"
+                    >
+                      {isPending ? "Salvando..." : `Confirmar +${stockQty}`}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setStockAddOpen(true)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 text-sm font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Adicionar estoque
+                </button>
+              )
+            )}
 
             {/* Actions */}
             <div className="pt-1 border-t border-neutral-100 dark:border-neutral-800">

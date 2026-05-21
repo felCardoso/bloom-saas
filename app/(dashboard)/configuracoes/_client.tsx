@@ -37,7 +37,7 @@ import { Input } from "@/components/ui/Input";
 import { usePlan } from "@/lib/plan-context";
 import { useTheme, type PrimaryColor } from "@/lib/theme-context";
 
-import { updateProfile, updateNotificationPrefs, type NotificationPrefs } from "@/lib/actions/profile";
+import { updateProfile, updateNotificationPrefs, startTrial, type NotificationPrefs } from "@/lib/actions/profile";
 import { savePushSubscription, deletePushSubscription } from "@/lib/actions/push";
 import { addCategoria, deleteCategoria, renameCategoria, type Categoria } from "@/lib/actions/categorias";
 import { deleteAccount } from "@/lib/actions/account";
@@ -263,7 +263,7 @@ function CancelSubscriptionButton({ onCancelled }: { onCancelled: (expiresAt: st
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Cancelar assinatura</p>
-            <p className="text-xs text-neutral-400 mt-0.5">Seu plano volta para Grátis imediatamente.</p>
+            <p className="text-xs text-neutral-400 mt-0.5">Seu plano volta para Free imediatamente.</p>
           </div>
           <button
             onClick={() => setConfirm(true)}
@@ -324,21 +324,37 @@ const INVOICE_STATUS: Record<string, { label: string; className: string }> = {
 };
 
 function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }) {
-  const { planId, plan } = usePlan();
+  const { planId, plan, isOnTrial, trialDaysLeft, trialClaimed } = usePlan();
   const [periodEnd, setPeriodEnd] = useState<string | null>(initialPeriodEnd);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
+  const [trialLoading, setTrialLoading] = useState(false);
+  const [trialError, setTrialError] = useState("");
+  const [trialStarted, setTrialStarted] = useState(false);
   const isCancelling = periodEnd !== null;
 
   useEffect(() => {
-    if (planId === "free") return;
+    if (planId === "free" || isOnTrial) return;
     setInvoicesLoading(true);
     fetch("/api/asaas/invoices")
       .then((r) => r.json())
       .then((data) => setInvoices(data.invoices ?? []))
       .catch(() => {})
       .finally(() => setInvoicesLoading(false));
-  }, [planId]);
+  }, [planId, isOnTrial]);
+
+  async function handleStartTrial() {
+    setTrialError("");
+    setTrialLoading(true);
+    const result = await startTrial();
+    setTrialLoading(false);
+    if (result?.error) {
+      setTrialError(result.error);
+    } else {
+      setTrialStarted(true);
+      window.location.reload();
+    }
+  }
 
   const featureList: string[] = {
     free:    ["Até 30 clientes", "Até 20 pedidos/mês", "Até 20 produtos", "Suporte por e-mail"],
@@ -357,16 +373,21 @@ function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
             <span className={cn("text-xs font-bold px-2.5 py-1 rounded-full", PLAN_BADGE[planId])}>
-              Plano {plan.name}
+              {isOnTrial ? "Trial Plus" : `Plano ${plan.name}`}
             </span>
-            {isCancelling && (
+            {isOnTrial && (
+              <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
+                {trialDaysLeft}d restantes
+              </span>
+            )}
+            {isCancelling && !isOnTrial && (
               <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
                 Cancelamento agendado
               </span>
             )}
             <div className="flex items-baseline gap-1 mt-3">
               <span className={cn("text-3xl font-bold", PLAN_ACCENT[planId])}>
-                {plan.price === 0 ? "Grátis" : `R$ ${plan.price}`}
+                {plan.price === 0 ? "Free" : `R$ ${plan.price}`}
               </span>
               {plan.price > 0 && <span className="text-sm text-neutral-500 dark:text-neutral-400">/mês</span>}
             </div>
@@ -374,7 +395,7 @@ function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }
               <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">Acesso ativo até {formattedExpiry}</p>
             )}
           </div>
-          {planId !== "premium" && !isCancelling && (
+          {planId !== "premium" && !isCancelling && !isOnTrial && (
             <Link
               href="/pricing"
               className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-500 text-white rounded-xl text-xs font-semibold hover:bg-rose-600 transition-colors shadow-sm shrink-0"
@@ -402,7 +423,7 @@ function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }
         <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-200 dark:border-amber-800">
           <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Cancelamento agendado</p>
           <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-            Seu plano permanece ativo até <strong>{formattedExpiry}</strong>. Após essa data, a conta retorna automaticamente para o plano Grátis.
+            Seu plano permanece ativo até <strong>{formattedExpiry}</strong>. Após essa data, a conta retorna automaticamente para o plano Free.
           </p>
         </div>
       ) : (
@@ -414,15 +435,53 @@ function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }
         )
       )}
 
-      {/* Upgrade CTA for free plan */}
-      {planId === "free" && (
+      {/* Trial banner when on trial */}
+      {isOnTrial && (
+        <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-200 dark:border-amber-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
+              Trial Plus ativo — {trialDaysLeft} {trialDaysLeft === 1 ? "dia restante" : "dias restantes"}
+            </p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+              Assine antes de expirar para não perder o acesso às funcionalidades Plus.
+            </p>
+          </div>
+          <Link href="/pricing" className="self-start sm:self-auto px-4 py-2 bg-rose-500 text-white text-sm font-semibold rounded-xl hover:bg-rose-600 transition-colors shrink-0">
+            Assinar Plus
+          </Link>
+        </div>
+      )}
+
+      {/* Start trial CTA for free plan (not claimed) */}
+      {planId === "free" && !trialClaimed && !trialStarted && (
+        <div className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">Experimente o Plus grátis por 7 dias</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Sem cartão de crédito. Ative e explore todos os recursos.</p>
+            </div>
+            <button
+              onClick={handleStartTrial}
+              disabled={trialLoading}
+              className="self-start sm:self-auto inline-flex items-center gap-2 px-4 py-2 bg-rose-500 text-white text-sm font-semibold rounded-xl hover:bg-rose-600 transition-colors disabled:opacity-60 shrink-0"
+            >
+              {trialLoading ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : null}
+              Iniciar 7 dias grátis
+            </button>
+          </div>
+          {trialError && <p className="text-xs text-red-500 mt-2">{trialError}</p>}
+        </div>
+      )}
+
+      {/* Upgrade CTA after trial expired */}
+      {planId === "free" && trialClaimed && (
         <div className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">Experimente o plano Pro grátis</p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">14 dias, sem cartão de crédito.</p>
+            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">Upgrade para o Plus</p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Continue com todos os recursos que você experimentou.</p>
           </div>
           <Link href="/pricing" className="self-start sm:self-auto px-4 py-2 bg-rose-500 text-white text-sm font-semibold rounded-xl hover:bg-rose-600 transition-colors">
-            Testar Pro
+            Ver planos
           </Link>
         </div>
       )}

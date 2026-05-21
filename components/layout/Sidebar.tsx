@@ -14,6 +14,7 @@ import {
   Settings,
   Zap,
   LogOut,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePlan } from "@/lib/plan-context";
@@ -30,6 +31,7 @@ const navItems = [
   { href: "/mensagens", icon: MessageCircle, label: "Mensagens" },
   { href: "/relatorios", icon: BarChart3, label: "Relatórios" },
   { href: "/pricing", icon: Zap, label: "Planos" },
+  { href: "/feedback", icon: MessageSquare, label: "Feedback" },
 ];
 
 const PLAN_COLORS: Record<string, string> = {

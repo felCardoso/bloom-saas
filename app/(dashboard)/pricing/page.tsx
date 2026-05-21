@@ -181,7 +181,7 @@ export default function PricingPage() {
                       "text-2xl font-bold",
                       isFeatured ? "text-white" : "text-neutral-800 dark:text-neutral-100",
                     )}>
-                      {p.price === 0 ? "Grátis" : `R$ ${p.price}`}
+                      {p.price === 0 ? "Free" : `R$ ${p.price}`}
                     </span>
                     {p.period && (
                       <span className={cn(
