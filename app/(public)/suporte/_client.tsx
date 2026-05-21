@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   MessageCircle,
   Mail,
@@ -8,6 +9,7 @@ import {
   ChevronUp,
   Clock,
   Search,
+  Lock,
 } from "lucide-react";
 
 const faqItems = [
@@ -157,7 +159,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   );
 }
 
-export default function SuporteClient() {
+export default function SuporteClient({ isPremium }: { isPremium: boolean }) {
   const [search, setSearch] = useState("");
 
   const filteredFaq = faqItems
@@ -186,42 +188,53 @@ export default function SuporteClient() {
 
       {/* Channels */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
-        {supportChannels.map((ch) => (
-          <a
-            key={ch.title}
-            href={ch.href}
-            target={ch.href.startsWith("http") ? "_blank" : undefined}
-            rel="noopener noreferrer"
-            className={`flex items-start gap-3 p-4 rounded-2xl border hover:shadow-sm transition-all ${ch.color}`}
-          >
-            <div
-              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${ch.iconBg}`}
+        {supportChannels.map((ch) => {
+          const isWhatsApp = ch.title === "WhatsApp";
+          const locked = isWhatsApp && !isPremium;
+          const Tag = locked ? Link : "a";
+          const linkProps = locked
+            ? { href: "/pricing" }
+            : {
+                href: ch.href,
+                target: ch.href.startsWith("http") ? "_blank" : undefined,
+                rel: "noopener noreferrer",
+              };
+          return (
+            <Tag
+              key={ch.title}
+              {...(linkProps as { href: string })}
+              className={`flex items-start gap-3 p-4 rounded-2xl border hover:shadow-sm transition-all ${ch.color}`}
             >
-              <ch.icon className={`w-5 h-5 ${ch.iconColor}`} />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-0.5">
-                <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
-                  {ch.title}
-                </p>
-                <div className="flex gap-1">
-                  {ch.plans.map((p) => (
-                    <span
-                      key={p}
-                      className="text-[10px] bg-white/70 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 px-1.5 py-0.5 rounded-md font-medium"
-                    >
-                      {p}
-                    </span>
-                  ))}
-                </div>
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${ch.iconBg}`}
+              >
+                <ch.icon className={`w-5 h-5 ${ch.iconColor}`} />
               </div>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">{ch.desc}</p>
-              <p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mt-2 underline">
-                {ch.action} →
-              </p>
-            </div>
-          </a>
-        ))}
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
+                    {ch.title}
+                  </p>
+                  <div className="flex gap-1">
+                    {ch.plans.map((p) => (
+                      <span
+                        key={p}
+                        className="text-[10px] bg-white/70 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 px-1.5 py-0.5 rounded-md font-medium"
+                      >
+                        {p}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">{ch.desc}</p>
+                <p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mt-2 underline flex items-center gap-1">
+                  {locked && <Lock className="w-3 h-3" />}
+                  {locked ? "Disponível no Premium →" : `${ch.action} →`}
+                </p>
+              </div>
+            </Tag>
+          );
+        })}
       </div>
 
       {/* SLA table */}

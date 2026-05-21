@@ -3,9 +3,9 @@
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { addProduto, updateProduto, deleteProduto } from "@/lib/actions/produtos";
-import { getMovimentacoes } from "@/lib/actions/estoque";
+import { getMovimentacoes, adicionarEstoque } from "@/lib/actions/estoque";
 import { importProdutosCSV } from "@/lib/actions/csv";
-import { parseCsv, normalizeHeaders } from "@/lib/csv-parse";
+import { parseFile, normalizeHeaders } from "@/lib/csv-parse";
 import type { ImportProdutoRow } from "@/lib/actions/csv";
 import { Plus, Search, Package, AlertTriangle, Pencil, Trash2, Upload, FileText, History, ArrowUpCircle, ArrowDownCircle, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -20,6 +20,9 @@ import { usePlan } from "@/lib/plan-context";
 import { UpgradeModal } from "@/components/ui/UpgradeModal";
 import { LockedFeature } from "@/components/ui/LockedFeature";
 import { cn } from "@/lib/utils";
+import { usePagination } from "@/lib/use-pagination";
+import { Pagination } from "@/components/ui/Pagination";
+import { Toast } from "@/components/ui/Toast";
 
 const emptyForm = {
   name: "",
@@ -59,10 +62,20 @@ export function ProdutosView({
   const [historyOpen, setHistoryOpen] = useState(false);
   const [movements, setMovements] = useState<StockMovement[]>([]);
   const [movementsLoading, setMovementsLoading] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const [stockAddOpen, setStockAddOpen] = useState(false);
+  const [stockQty, setStockQty] = useState(1);
+  const [stockMotivo, setStockMotivo] = useState("");
 
   useEffect(() => {
     setProducts(initialProducts);
   }, [initialProducts]);
+
+  useEffect(() => {
+    setStockAddOpen(false);
+    setStockQty(1);
+    setStockMotivo("");
+  }, [detailProduct?.id]);
 
   const filtered = products.filter((p) => {
     const matchSearch =
@@ -71,6 +84,12 @@ export function ProdutosView({
     const matchCat = catFilter === "all" || p.category === catFilter;
     return matchSearch && matchCat;
   });
+
+  const { paginated, page, setPage, totalPages, totalItems, pageSize } = usePagination(
+    filtered,
+    24,
+    `${search}|${catFilter}`,
+  );
 
   function handleAddClick() {
     if (!canAdd("products")) {
@@ -82,10 +101,27 @@ export function ProdutosView({
 
   function handleAdd() {
     if (!form.name || !form.sale_price) return;
+    const snapshot = { ...form };
+    const optimistic: Product = {
+      id: `temp_${Date.now()}`,
+      name: snapshot.name,
+      brand: snapshot.brand,
+      category: snapshot.category,
+      cost_price: Number(snapshot.cost_price) || 0,
+      sale_price: Number(snapshot.sale_price) || 0,
+      stock: Number(snapshot.stock) || 0,
+      created_at: new Date().toISOString(),
+    };
+    setProducts((prev) => [optimistic, ...prev]);
+    setForm({ ...emptyForm, category: categories[0] ?? "" });
+    setAddOpen(false);
     startTransition(async () => {
-      await addProduto(form);
-      setForm({ ...emptyForm, category: categories[0] ?? "" });
-      setAddOpen(false);
+      const result = await addProduto(snapshot);
+      if (result?.error) {
+        setProducts((prev) => prev.filter((p) => p.id !== optimistic.id));
+        setToast(result.error);
+        return;
+      }
       router.refresh();
     });
   }
@@ -107,19 +143,24 @@ export function ProdutosView({
   function handleEdit() {
     if (!editingProduct || !editForm.name || !editForm.sale_price) return;
     const id = editingProduct.id;
+    const previous = editingProduct;
+    const updated: Product = {
+      ...editingProduct,
+      name: editForm.name,
+      brand: editForm.brand,
+      category: editForm.category,
+      cost_price: Number(editForm.cost_price) || 0,
+      sale_price: Number(editForm.sale_price),
+      stock: Number(editForm.stock) || 0,
+    };
+    setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)));
+    setEditOpen(false);
     startTransition(async () => {
-      await updateProduto(id, editForm);
-      const updated: Product = {
-        ...editingProduct,
-        name: editForm.name,
-        brand: editForm.brand,
-        category: editForm.category,
-        cost_price: Number(editForm.cost_price) || 0,
-        sale_price: Number(editForm.sale_price),
-        stock: Number(editForm.stock) || 0,
-      };
-      setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)));
-      setEditOpen(false);
+      const result = await updateProduto(id, editForm);
+      if (result?.error) {
+        setProducts((prev) => prev.map((p) => (p.id === id ? previous : p)));
+        setToast(result.error);
+      }
     });
   }
 
@@ -139,6 +180,25 @@ export function ProdutosView({
     setConfirmDelete(false);
   }
 
+  function handleAddStock() {
+    if (!detailProduct || stockQty <= 0) return;
+    startTransition(async () => {
+      const result = await adicionarEstoque(detailProduct.id, stockQty, stockMotivo || undefined);
+      if (result.error) {
+        setToast(result.error);
+      } else {
+        const newStock = result.newStock!;
+        setDetailProduct((p) => (p ? { ...p, stock: newStock } : p));
+        setProducts((prev) =>
+          prev.map((p) => (p.id === detailProduct.id ? { ...p, stock: newStock } : p))
+        );
+        setStockAddOpen(false);
+        setStockQty(1);
+        setStockMotivo("");
+      }
+    });
+  }
+
   async function openHistory(product: Product) {
     setDetailProduct(null);
     setHistoryOpen(true);
@@ -149,13 +209,12 @@ export function ProdutosView({
     setMovementsLoading(false);
   }
 
-  function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const text = ev.target?.result as string;
-      const parsed = parseCsv(text);
+    try {
+      const parsed = await parseFile(file);
       const aliases = {
         name: ["nome", "name", "produto"],
         brand: ["marca", "brand"],
@@ -180,9 +239,9 @@ export function ProdutosView({
       setImportRows(rows);
       setImportResult(null);
       setImportError(null);
-    };
-    reader.readAsText(file, "UTF-8");
-    e.target.value = "";
+    } catch {
+      setImportError("Não foi possível ler o arquivo. Verifique se é um CSV ou XLSX válido.");
+    }
   }
 
   function handleImportOpen() {
@@ -272,7 +331,7 @@ export function ProdutosView({
         </Card>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4">
-          {filtered.map((product) => {
+          {paginated.map((product) => {
             const m = margin(product);
             const lowStock = product.stock <= 5;
             return (
@@ -338,6 +397,16 @@ export function ProdutosView({
           })}
         </div>
       )}
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageChange={setPage}
+      />
+
+      {toast && <Toast message={toast} variant="warning" onClose={() => setToast(null)} />}
 
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} resource="products" />
 
@@ -486,6 +555,63 @@ export function ProdutosView({
               Ver histórico de estoque
             </button>
 
+            {/* Add stock */}
+            {!confirmDelete && (
+              stockAddOpen ? (
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-2xl space-y-3">
+                  <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Adicionar estoque</p>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setStockQty((q) => Math.max(1, q - 1))}
+                      className="w-9 h-9 rounded-xl border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 flex items-center justify-center text-lg font-bold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                    >
+                      −
+                    </button>
+                    <span className="text-xl font-bold text-neutral-800 dark:text-neutral-100 w-10 text-center">
+                      {stockQty}
+                    </span>
+                    <button
+                      onClick={() => setStockQty((q) => q + 1)}
+                      className="w-9 h-9 rounded-xl border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 flex items-center justify-center text-lg font-bold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                    >
+                      +
+                    </button>
+                    <span className="text-sm text-neutral-500 dark:text-neutral-400">unidades</span>
+                  </div>
+                  <input
+                    type="text"
+                    value={stockMotivo}
+                    onChange={(e) => setStockMotivo(e.target.value)}
+                    placeholder="Motivo (opcional)"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { setStockAddOpen(false); setStockQty(1); setStockMotivo(""); }}
+                      className="flex-1 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-sm font-medium text-neutral-600 dark:text-neutral-300 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleAddStock}
+                      disabled={isPending}
+                      className="flex-1 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold transition-colors disabled:opacity-60"
+                    >
+                      {isPending ? "Salvando..." : `Confirmar +${stockQty}`}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setStockAddOpen(true)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 text-sm font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Adicionar estoque
+                </button>
+              )
+            )}
+
             {/* Actions */}
             <div className="pt-1 border-t border-neutral-100 dark:border-neutral-800">
               {confirmDelete ? (
@@ -584,7 +710,7 @@ export function ProdutosView({
       <Modal
         open={importOpen}
         onClose={() => setImportOpen(false)}
-        title="Importar produtos (CSV)"
+        title="Importar produtos"
         size="lg"
       >
         <div className="space-y-5">
@@ -623,9 +749,14 @@ export function ProdutosView({
                 <Upload className="w-8 h-8 text-neutral-300 dark:text-neutral-600 group-hover:text-rose-400 transition-colors" />
                 <div className="text-center">
                   <p className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Clique para selecionar o arquivo</p>
-                  <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">Arquivo .csv, codificação UTF-8</p>
+                  <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">Arquivo .csv (UTF-8) ou .xlsx</p>
                 </div>
-                <input type="file" accept=".csv,text/csv" onChange={handleImportFile} className="hidden" />
+                <input
+                  type="file"
+                  accept=".csv,text/csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                  onChange={handleImportFile}
+                  className="hidden"
+                />
               </label>
 
               {importError && (

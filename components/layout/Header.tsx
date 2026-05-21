@@ -20,6 +20,7 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
   "/relatorios": { title: "Relatórios", subtitle: "Análise de desempenho" },
   "/pricing": { title: "Planos", subtitle: "Gerencie sua assinatura" },
   "/configuracoes": { title: "Configurações", subtitle: "Preferências da conta" },
+  "/feedback": { title: "Feedback", subtitle: "Ajude-nos a melhorar o Bloom" },
 };
 
 /* ── Search box reutilizável ── */
@@ -167,7 +168,7 @@ export function Header() {
   const page = pageTitles[pathname] || { title: "Bloom", subtitle: "" };
   const [searchOpen, setSearchOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const { planId } = usePlan();
+  const { planId, isOnTrial, trialDaysLeft } = usePlan();
   const { name, avatarUrl } = useProfile();
   const [, startTransition] = useTransition();
   const profileRef = useRef<HTMLDivElement>(null);
@@ -236,14 +237,24 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Trial badge */}
+        {isOnTrial && (
+          <Link
+            href="/configuracoes"
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-xl text-xs font-semibold border border-amber-100 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors"
+          >
+            Plus · {trialDaysLeft}d
+          </Link>
+        )}
+
         {/* Upgrade chip */}
-        {planId !== "premium" && (
+        {planId !== "premium" && !isOnTrial && (
           <Link
             href="/pricing"
             className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-semibold hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors border border-rose-100 dark:border-rose-800"
           >
             <Zap className="w-3.5 h-3.5" />
-            {planId === "free" ? "Upgrade" : "Plano Pro"}
+            {planId === "free" ? "Upgrade" : "Plano Plus"}
           </Link>
         )}
 

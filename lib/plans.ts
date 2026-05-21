@@ -34,7 +34,7 @@ export interface Plan {
 export const PLANS: Record<PlanId, Plan> = {
   free: {
     id: "free",
-    name: "Grátis",
+    name: "Free",
     price: 0,
     period: "",
     description: "Para quem está começando",
@@ -59,7 +59,7 @@ export const PLANS: Record<PlanId, Plan> = {
   },
   pro: {
     id: "pro",
-    name: "Pro",
+    name: "Plus",
     price: 29,
     period: "/mês",
     description: "Para revendedoras em crescimento",

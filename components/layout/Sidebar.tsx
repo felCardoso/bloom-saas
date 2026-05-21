@@ -10,9 +10,11 @@ import {
   Package,
   MessageCircle,
   BarChart3,
+  Calendar,
   Settings,
   Zap,
   LogOut,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePlan } from "@/lib/plan-context";
@@ -25,9 +27,11 @@ const navItems = [
   { href: "/clientes", icon: Users, label: "Clientes" },
   { href: "/pedidos", icon: ShoppingBag, label: "Pedidos" },
   { href: "/produtos", icon: Package, label: "Produtos" },
+  { href: "/agenda", icon: Calendar, label: "Agenda" },
   { href: "/mensagens", icon: MessageCircle, label: "Mensagens" },
   { href: "/relatorios", icon: BarChart3, label: "Relatórios" },
   { href: "/pricing", icon: Zap, label: "Planos" },
+  { href: "/feedback", icon: MessageSquare, label: "Feedback" },
 ];
 
 const PLAN_COLORS: Record<string, string> = {

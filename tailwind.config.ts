@@ -10,18 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        rose: {
-          50: "#FDF2F6",
-          100: "#FAE6EE",
-          200: "#F5CCE0",
-          300: "#EDA8C8",
-          400: "#E07AAA",
-          500: "#D4829C",
-          600: "#C4687F",
-          700: "#A85C78",
-          800: "#8C4D65",
-          900: "#6B3A4D",
-        },
+        // rose is defined in globals.css @theme block so it can be swapped at runtime via [data-primary]
         neutral: {
           50: "#FAFAFA",
           100: "#F5F5F5",

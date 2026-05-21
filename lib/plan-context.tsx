@@ -32,6 +32,9 @@ interface PlanContextType {
   // Remaining slots, or null when unlimited
   remaining: (resource: keyof Usage) => number | null;
   hasFeature: (feature: keyof PlanFeatures) => boolean;
+  trialDaysLeft: number | null;
+  trialClaimed: boolean;
+  isOnTrial: boolean;
 }
 
 const PlanContext = createContext<PlanContextType | null>(null);
@@ -47,12 +50,18 @@ export function PlanProvider({
   children,
   initialPlan = "free",
   initialUsage,
+  initialTrialDaysLeft = null,
+  initialTrialClaimed = false,
 }: {
   children: ReactNode;
   initialPlan?: PlanId;
   initialUsage?: Partial<Usage>;
+  initialTrialDaysLeft?: number | null;
+  initialTrialClaimed?: boolean;
 }) {
   const [planId, _setPlanId] = useState<PlanId>(initialPlan);
+  const trialDaysLeft = initialTrialDaysLeft;
+  const trialClaimed = initialTrialClaimed;
 
   const setPlanId = useCallback((id: PlanId) => {
     _setPlanId(id);
@@ -118,6 +127,8 @@ export function PlanProvider({
     [plan],
   );
 
+  const isOnTrial = planId === "pro" && trialDaysLeft !== null;
+
   return (
     <PlanContext.Provider
       value={{
@@ -131,6 +142,9 @@ export function PlanProvider({
         usagePercent,
         remaining,
         hasFeature,
+        trialDaysLeft,
+        trialClaimed,
+        isOnTrial,
       }}
     >
       {children}

@@ -12,27 +12,84 @@ export async function getUserPlan(): Promise<PlanId> {
 
   const { data } = await supabase
     .from("perfis_usuarios")
-    .select("plano, asaas_period_end")
+    .select("plano, asaas_period_end, trial_ends_at")
     .eq("id", user.id)
     .single();
 
   const plan = data?.plano as PlanId | null;
-  if (plan !== "pro" && plan !== "premium") return "free";
 
-  const periodEnd = data?.asaas_period_end as string | null;
-  if (periodEnd) {
-    const expired = new Date(periodEnd) <= new Date();
-    if (expired) {
-      // Lazy expiry: write the downgrade so subsequent calls are fast
-      await supabase
-        .from("perfis_usuarios")
-        .update({ plano: "free", asaas_period_end: null, updated_at: new Date().toISOString() })
-        .eq("id", user.id);
-      return "free";
+  if (plan === "pro" || plan === "premium") {
+    const periodEnd = data?.asaas_period_end as string | null;
+    if (periodEnd) {
+      const expired = new Date(periodEnd) <= new Date();
+      if (expired) {
+        await supabase
+          .from("perfis_usuarios")
+          .update({ plano: "free", asaas_period_end: null, updated_at: new Date().toISOString() })
+          .eq("id", user.id);
+        return "free";
+      }
     }
+    return plan;
   }
 
-  return plan;
+  // Check active trial for free-plan users
+  const trialEndsAt = data?.trial_ends_at as string | null;
+  if (trialEndsAt) {
+    if (new Date(trialEndsAt) > new Date()) return "pro";
+    // Lazy clear of expired trial
+    await supabase
+      .from("perfis_usuarios")
+      .update({ trial_ends_at: null, updated_at: new Date().toISOString() })
+      .eq("id", user.id);
+  }
+
+  return "free";
+}
+
+export async function getTrialInfo(): Promise<{ daysLeft: number | null; claimed: boolean }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { daysLeft: null, claimed: false };
+
+  const { data } = await supabase
+    .from("perfis_usuarios")
+    .select("trial_ends_at, trial_claimed, plano")
+    .eq("id", user.id)
+    .single();
+
+  const claimed = !!(data?.trial_claimed);
+  const trialEndsAt = data?.trial_ends_at as string | null;
+  if (!trialEndsAt) return { daysLeft: null, claimed };
+
+  const daysLeft = Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  return { daysLeft: daysLeft > 0 ? daysLeft : null, claimed };
+}
+
+export async function startTrial(): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Não autorizado" };
+
+  const { data } = await supabase
+    .from("perfis_usuarios")
+    .select("plano, trial_claimed")
+    .eq("id", user.id)
+    .single();
+
+  if (data?.trial_claimed) return { error: "Você já utilizou o período de trial." };
+  if (data?.plano === "pro" || data?.plano === "premium") return { error: "Você já possui um plano ativo." };
+
+  const trialEnd = new Date();
+  trialEnd.setDate(trialEnd.getDate() + 7);
+
+  const { error } = await supabase
+    .from("perfis_usuarios")
+    .update({ trial_ends_at: trialEnd.toISOString(), trial_claimed: true, updated_at: new Date().toISOString() })
+    .eq("id", user.id);
+
+  if (error) return { error: error.message };
+  return {};
 }
 
 export async function getPlanPeriodEnd(): Promise<string | null> {

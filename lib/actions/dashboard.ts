@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import type { DashboardStats, Order } from "@/lib/types";
+import { isOrderPaid } from "@/lib/order-utils";
 
 export async function getDashboardStats(): Promise<DashboardStats> {
   const supabase = await createClient();
@@ -17,17 +18,17 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       supabase
         .from("vendas")
         .select(
-          "id, valor_total, status, data_venda, itens_venda(quantidade, preco_unitario_no_momento, produtos(nome))"
+          "id, valor_total, status, data_venda, payment_method, paid_at, itens_venda(quantidade, preco_unitario_no_momento, produtos(nome))"
         )
         .neq("status", "cancelado"),
       supabase
         .from("vendas")
-        .select("valor_total")
+        .select("valor_total, status, payment_method, paid_at")
         .gte("data_venda", startOfMonth)
         .neq("status", "cancelado"),
       supabase
         .from("vendas")
-        .select("valor_total")
+        .select("valor_total, status, payment_method, paid_at")
         .gte("data_venda", startOfPrevMonth)
         .lte("data_venda", endOfPrevMonth)
         .neq("status", "cancelado"),
@@ -38,20 +39,19 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   const vendasMes = vendasMesRes.data ?? [];
   const vendasMesAnterior = vendasMesAnteriorRes.data ?? [];
 
-  const revenue_month = vendasMes.reduce(
-    (s, v) => s + Number(v.valor_total),
-    0
-  );
-  const revenue_prev_month = vendasMesAnterior.reduce(
-    (s, v) => s + Number(v.valor_total),
-    0
-  );
+  const revenue_month = vendasMes
+    .filter((v) => isOrderPaid(v as { status: string; payment_method?: string; paid_at?: string | null }))
+    .reduce((s, v) => s + Number(v.valor_total), 0);
+  const revenue_prev_month = vendasMesAnterior
+    .filter((v) => isOrderPaid(v as { status: string; payment_method?: string; paid_at?: string | null }))
+    .reduce((s, v) => s + Number(v.valor_total), 0);
 
   const pending_orders = vendas.filter((v) => v.status === "pendente").length;
 
-  // Top products
+  // Top products (paid orders only)
+  const paidVendas = (vendas as any[]).filter(isOrderPaid);
   const productRevenue: Record<string, { name: string; quantity: number; revenue: number }> = {};
-  for (const venda of vendas as any[]) {
+  for (const venda of paidVendas) {
     for (const item of venda.itens_venda ?? []) {
       const nome = item.produtos?.nome ?? "Produto";
       if (!productRevenue[nome]) {
@@ -66,7 +66,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5);
 
-  // Monthly revenue — last 6 months
+  // Monthly revenue — last 6 months (paid orders only)
   const months: { month: string; revenue: number }[] = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -74,7 +74,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     const end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59).toISOString();
     const label = d.toLocaleDateString("pt-BR", { month: "short" });
     const rev = (vendas as any[])
-      .filter((v) => v.data_venda >= start && v.data_venda <= end)
+      .filter((v) => v.data_venda >= start && v.data_venda <= end && isOrderPaid(v))
       .reduce((s, v) => s + Number(v.valor_total), 0);
     months.push({ month: label.replace(".", ""), revenue: rev });
   }

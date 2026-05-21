@@ -25,6 +25,11 @@ import {
   X,
   FileText,
   ExternalLink,
+  MessageCircle,
+  Mail,
+  HelpCircle,
+  LifeBuoy,
+  Lock,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -32,14 +37,15 @@ import { Input } from "@/components/ui/Input";
 import { usePlan } from "@/lib/plan-context";
 import { useTheme, type PrimaryColor } from "@/lib/theme-context";
 
-import { updateProfile, updateNotificationPrefs, type NotificationPrefs } from "@/lib/actions/profile";
+import { updateProfile, updateNotificationPrefs, startTrial, type NotificationPrefs } from "@/lib/actions/profile";
 import { savePushSubscription, deletePushSubscription } from "@/lib/actions/push";
 import { addCategoria, deleteCategoria, renameCategoria, type Categoria } from "@/lib/actions/categorias";
+import { deleteAccount } from "@/lib/actions/account";
 import { createClient } from "@/lib/supabase/client";
 import { AvatarUpload } from "@/components/ui/AvatarUpload";
 import { useProfile } from "@/lib/profile-context";
 
-type Tab = "perfil" | "assinatura" | "notificacoes" | "aparencia" | "seguranca" | "conta" | "categorias";
+type Tab = "perfil" | "assinatura" | "notificacoes" | "aparencia" | "seguranca" | "suporte" | "categorias";
 
 const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "perfil", label: "Perfil", icon: User },
@@ -48,7 +54,7 @@ const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "aparencia", label: "Aparência", icon: Palette },
   { id: "seguranca", label: "Segurança", icon: Shield },
   { id: "categorias", label: "Categorias", icon: Tag },
-  { id: "conta", label: "Conta", icon: Trash2 },
+  { id: "suporte", label: "Suporte", icon: LifeBuoy },
 ];
 
 const PLAN_BADGE: Record<string, string> = {
@@ -197,6 +203,10 @@ function PerfilTab({ initialProfile }: {
       <div className="flex justify-end pt-2 border-t border-neutral-100 dark:border-neutral-800">
         <SaveButton saved={saved} loading={isPending} onClick={handleSave} />
       </div>
+
+      <div className="pt-6 border-t border-neutral-200 dark:border-neutral-800">
+        <ContaTab userEmail={initialProfile.email} />
+      </div>
     </div>
   );
 }
@@ -253,7 +263,7 @@ function CancelSubscriptionButton({ onCancelled }: { onCancelled: (expiresAt: st
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Cancelar assinatura</p>
-            <p className="text-xs text-neutral-400 mt-0.5">Seu plano volta para Grátis imediatamente.</p>
+            <p className="text-xs text-neutral-400 mt-0.5">Seu plano volta para Free imediatamente.</p>
           </div>
           <button
             onClick={() => setConfirm(true)}
@@ -314,21 +324,37 @@ const INVOICE_STATUS: Record<string, { label: string; className: string }> = {
 };
 
 function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }) {
-  const { planId, plan } = usePlan();
+  const { planId, plan, isOnTrial, trialDaysLeft, trialClaimed } = usePlan();
   const [periodEnd, setPeriodEnd] = useState<string | null>(initialPeriodEnd);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
+  const [trialLoading, setTrialLoading] = useState(false);
+  const [trialError, setTrialError] = useState("");
+  const [trialStarted, setTrialStarted] = useState(false);
   const isCancelling = periodEnd !== null;
 
   useEffect(() => {
-    if (planId === "free") return;
+    if (planId === "free" || isOnTrial) return;
     setInvoicesLoading(true);
     fetch("/api/asaas/invoices")
       .then((r) => r.json())
       .then((data) => setInvoices(data.invoices ?? []))
       .catch(() => {})
       .finally(() => setInvoicesLoading(false));
-  }, [planId]);
+  }, [planId, isOnTrial]);
+
+  async function handleStartTrial() {
+    setTrialError("");
+    setTrialLoading(true);
+    const result = await startTrial();
+    setTrialLoading(false);
+    if (result?.error) {
+      setTrialError(result.error);
+    } else {
+      setTrialStarted(true);
+      window.location.reload();
+    }
+  }
 
   const featureList: string[] = {
     free:    ["Até 30 clientes", "Até 20 pedidos/mês", "Até 20 produtos", "Suporte por e-mail"],
@@ -347,16 +373,21 @@ function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
             <span className={cn("text-xs font-bold px-2.5 py-1 rounded-full", PLAN_BADGE[planId])}>
-              Plano {plan.name}
+              {isOnTrial ? "Trial Plus" : `Plano ${plan.name}`}
             </span>
-            {isCancelling && (
+            {isOnTrial && (
+              <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
+                {trialDaysLeft}d restantes
+              </span>
+            )}
+            {isCancelling && !isOnTrial && (
               <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
                 Cancelamento agendado
               </span>
             )}
             <div className="flex items-baseline gap-1 mt-3">
               <span className={cn("text-3xl font-bold", PLAN_ACCENT[planId])}>
-                {plan.price === 0 ? "Grátis" : `R$ ${plan.price}`}
+                {plan.price === 0 ? "Free" : `R$ ${plan.price}`}
               </span>
               {plan.price > 0 && <span className="text-sm text-neutral-500 dark:text-neutral-400">/mês</span>}
             </div>
@@ -364,7 +395,7 @@ function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }
               <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">Acesso ativo até {formattedExpiry}</p>
             )}
           </div>
-          {planId !== "premium" && !isCancelling && (
+          {planId !== "premium" && !isCancelling && !isOnTrial && (
             <Link
               href="/pricing"
               className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-500 text-white rounded-xl text-xs font-semibold hover:bg-rose-600 transition-colors shadow-sm shrink-0"
@@ -392,7 +423,7 @@ function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }
         <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-200 dark:border-amber-800">
           <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Cancelamento agendado</p>
           <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-            Seu plano permanece ativo até <strong>{formattedExpiry}</strong>. Após essa data, a conta retorna automaticamente para o plano Grátis.
+            Seu plano permanece ativo até <strong>{formattedExpiry}</strong>. Após essa data, a conta retorna automaticamente para o plano Free.
           </p>
         </div>
       ) : (
@@ -404,15 +435,53 @@ function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }
         )
       )}
 
-      {/* Upgrade CTA for free plan */}
-      {planId === "free" && (
+      {/* Trial banner when on trial */}
+      {isOnTrial && (
+        <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-200 dark:border-amber-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
+              Trial Plus ativo — {trialDaysLeft} {trialDaysLeft === 1 ? "dia restante" : "dias restantes"}
+            </p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+              Assine antes de expirar para não perder o acesso às funcionalidades Plus.
+            </p>
+          </div>
+          <Link href="/pricing" className="self-start sm:self-auto px-4 py-2 bg-rose-500 text-white text-sm font-semibold rounded-xl hover:bg-rose-600 transition-colors shrink-0">
+            Assinar Plus
+          </Link>
+        </div>
+      )}
+
+      {/* Start trial CTA for free plan (not claimed) */}
+      {planId === "free" && !trialClaimed && !trialStarted && (
+        <div className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">Experimente o Plus grátis por 7 dias</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Sem cartão de crédito. Ative e explore todos os recursos.</p>
+            </div>
+            <button
+              onClick={handleStartTrial}
+              disabled={trialLoading}
+              className="self-start sm:self-auto inline-flex items-center gap-2 px-4 py-2 bg-rose-500 text-white text-sm font-semibold rounded-xl hover:bg-rose-600 transition-colors disabled:opacity-60 shrink-0"
+            >
+              {trialLoading ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : null}
+              Iniciar 7 dias grátis
+            </button>
+          </div>
+          {trialError && <p className="text-xs text-red-500 mt-2">{trialError}</p>}
+        </div>
+      )}
+
+      {/* Upgrade CTA after trial expired */}
+      {planId === "free" && trialClaimed && (
         <div className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">Experimente o plano Pro grátis</p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">14 dias, sem cartão de crédito.</p>
+            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">Upgrade para o Plus</p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Continue com todos os recursos que você experimentou.</p>
           </div>
           <Link href="/pricing" className="self-start sm:self-auto px-4 py-2 bg-rose-500 text-white text-sm font-semibold rounded-xl hover:bg-rose-600 transition-colors">
-            Testar Pro
+            Ver planos
           </Link>
         </div>
       )}
@@ -822,17 +891,31 @@ function ContaTab({ userEmail }: { userEmail: string }) {
   const [confirmEmail, setConfirmEmail] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [exportLoading, setExportLoading] = useState<string | null>(null);
+  const [exportFormat, setExportFormat] = useState<"csv" | "xlsx">("xlsx");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  async function handleDeleteAccount() {
+    setDeleteError("");
+    setDeleteLoading(true);
+    const result = await deleteAccount(confirmEmail);
+    if (result?.error) {
+      setDeleteError(result.error);
+      setDeleteLoading(false);
+    }
+    // success: server action redirects, no need to handle here
+  }
 
   async function handleExport(type: "clientes" | "produtos" | "pedidos") {
     setExportLoading(type);
     try {
-      const res = await fetch(`/api/export/csv?type=${type}`);
+      const res = await fetch(`/api/export?type=${type}&format=${exportFormat}`);
       if (!res.ok) return;
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${type}.csv`;
+      a.download = `${type}.${exportFormat}`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -847,10 +930,27 @@ function ContaTab({ userEmail }: { userEmail: string }) {
       <div>
         <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-1">Exportar meus dados</h3>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
-          Baixe arquivos CSV com seus clientes, pedidos e produtos.
+          Baixe arquivos com seus clientes, pedidos e produtos.
         </p>
         {hasFeature("csvExport") ? (
-          <div className="flex flex-wrap gap-2">
+          <>
+            <div className="inline-flex bg-neutral-100 dark:bg-neutral-800 rounded-xl p-1 mb-3">
+              {(["xlsx", "csv"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setExportFormat(f)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wide transition-all",
+                    exportFormat === f
+                      ? "bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-100 shadow-sm"
+                      : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200",
+                  )}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2">
             {(["clientes", "produtos", "pedidos"] as const).map((type) => (
               <button
                 key={type}
@@ -866,7 +966,8 @@ function ContaTab({ userEmail }: { userEmail: string }) {
                 {type}
               </button>
             ))}
-          </div>
+            </div>
+          </>
         ) : (
           <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800">
             <div>
@@ -919,17 +1020,28 @@ function ContaTab({ userEmail }: { userEmail: string }) {
                 className="w-full px-3.5 py-2.5 rounded-xl border border-red-300 dark:border-red-700 bg-white dark:bg-neutral-900 text-sm text-neutral-800 dark:text-neutral-200 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all"
               />
             </div>
+            {deleteError && (
+              <p className="text-sm text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/40 px-3 py-2 rounded-lg">
+                {deleteError}
+              </p>
+            )}
             <div className="flex items-center gap-3">
               <button
-                disabled={confirmEmail !== userEmail}
+                onClick={handleDeleteAccount}
+                disabled={confirmEmail !== userEmail || deleteLoading}
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
-                <Trash2 className="w-4 h-4" />
-                Excluir conta permanentemente
+                {deleteLoading ? (
+                  <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+                {deleteLoading ? "Excluindo..." : "Excluir conta permanentemente"}
               </button>
               <button
-                onClick={() => { setDeleteOpen(false); setConfirmEmail(""); }}
-                className="px-4 py-2.5 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 font-medium transition-colors"
+                onClick={() => { setDeleteOpen(false); setConfirmEmail(""); setDeleteError(""); }}
+                disabled={deleteLoading}
+                className="px-4 py-2.5 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 font-medium transition-colors disabled:opacity-50"
               >
                 Cancelar
               </button>
@@ -1094,6 +1206,130 @@ function CategoriasTab({ initialCategorias }: { initialCategorias: Categoria[] }
   );
 }
 
+/* ── Suporte ── */
+function SuporteTab() {
+  const { planId } = usePlan();
+  const isPremium = planId === "premium";
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-1">
+          Precisa de ajuda?
+        </h3>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+          Escolha o canal que preferir — respondemos rápido.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <a
+            href="mailto:suporte@bloom.app"
+            className="flex items-start gap-3 p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900 rounded-2xl hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors"
+          >
+            <div className="w-9 h-9 bg-white dark:bg-neutral-900 rounded-xl flex items-center justify-center shrink-0 shadow-card">
+              <Mail className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">E-mail</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
+                suporte@bloom.app
+              </p>
+              <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
+                Respondemos em até 24h
+              </p>
+            </div>
+          </a>
+          {isPremium ? (
+            <a
+              href="https://wa.me/5511999999999"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900 rounded-2xl hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+            >
+              <div className="w-9 h-9 bg-white dark:bg-neutral-900 rounded-xl flex items-center justify-center shrink-0 shadow-card">
+                <MessageCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">WhatsApp</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  Atendimento prioritário
+                </p>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
+                  Resposta em até 24h
+                </p>
+              </div>
+            </a>
+          ) : (
+            <Link
+              href="/pricing"
+              className="flex items-start gap-3 p-4 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-800 rounded-2xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            >
+              <div className="w-9 h-9 bg-white dark:bg-neutral-900 rounded-xl flex items-center justify-center shrink-0 shadow-card relative">
+                <MessageCircle className="w-4 h-4 text-neutral-400" />
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-neutral-800 dark:bg-neutral-200 rounded-full flex items-center justify-center">
+                  <Lock className="w-2.5 h-2.5 text-white dark:text-neutral-900" />
+                </span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">WhatsApp</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  Disponível no Premium
+                </p>
+                <p className="text-xs font-medium text-rose-600 dark:text-rose-400 mt-1">
+                  Fazer upgrade →
+                </p>
+              </div>
+            </Link>
+          )}
+        </div>
+      </div>
+
+      <div className="border-t border-neutral-100 dark:border-neutral-800 pt-6">
+        <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-1">
+          Perguntas frequentes
+        </h3>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+          Respostas rápidas sobre planos, dados, funcionalidades e pagamento.
+        </p>
+        <Link
+          href="/suporte"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+        >
+          <HelpCircle className="w-4 h-4" />
+          Ver central de ajuda
+        </Link>
+      </div>
+
+      <div className="border-t border-neutral-100 dark:border-neutral-800 pt-6">
+        <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-3">
+          Recursos úteis
+        </h3>
+        <div className="space-y-2">
+          <Link
+            href="/termos"
+            className="flex items-center justify-between px-4 py-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <span>Termos de uso</span>
+            <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
+          </Link>
+          <Link
+            href="/privacidade"
+            className="flex items-center justify-between px-4 py-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <span>Política de privacidade</span>
+            <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
+          </Link>
+          <Link
+            href="/sobre"
+            className="flex items-center justify-between px-4 py-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <span>Sobre o Bloom</span>
+            <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Main ── */
 export interface ConfiguracoesClientProps {
   initialProfile: { name: string; email: string; phone: string; brand: string; avatarUrl: string | null; cpfCnpj: string };
@@ -1112,7 +1348,7 @@ export default function ConfiguracoesClient({ initialProfile, initialNotifs, ini
     aparencia: <AparenciaTab />,
     seguranca: <SegurancaTab />,
     categorias: <CategoriasTab initialCategorias={initialCategorias} />,
-    conta: <ContaTab userEmail={initialProfile.email} />,
+    suporte: <SuporteTab />,
   };
 
   return (
