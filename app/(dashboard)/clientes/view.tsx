@@ -31,7 +31,7 @@ import { Card } from "@/components/ui/Card";
 import { UpgradeModal } from "@/components/ui/UpgradeModal";
 import { LockedFeature } from "@/components/ui/LockedFeature";
 import { Toast } from "@/components/ui/Toast";
-import { formatCurrency, formatDate, formatPhone } from "@/lib/utils";
+import { formatCurrency, formatDate, formatPhone, formatPhoneInput } from "@/lib/utils";
 import type { Client, ClientStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { usePlan } from "@/lib/plan-context";
@@ -506,10 +506,11 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
               label="Telefone *"
               value={form.phone}
               onChange={(e) =>
-                setForm((f) => ({ ...f, phone: e.target.value }))
+                setForm((f) => ({ ...f, phone: formatPhoneInput(e.target.value) }))
               }
               placeholder="(11) 99999-9999"
               type="tel"
+              inputMode="numeric"
             />
             <Input
               label="Aniversário"
@@ -596,9 +597,10 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
             <Input
               label="Telefone *"
               value={editForm.phone}
-              onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))}
+              onChange={(e) => setEditForm((f) => ({ ...f, phone: formatPhoneInput(e.target.value) }))}
               placeholder="(11) 99999-9999"
               type="tel"
+              inputMode="numeric"
             />
             <Input
               label="Aniversário"

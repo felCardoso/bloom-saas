@@ -122,7 +122,7 @@ function LockedReportsGate() {
         <Lock className="w-6 h-6 text-neutral-400 dark:text-neutral-500" />
       </div>
       <h3 className="text-lg font-bold text-neutral-800 dark:text-neutral-100 mb-2">
-        Relatórios disponíveis no Pro
+        Relatórios disponíveis no Plus
       </h3>
       <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-sm mb-6">
         Acesse gráficos de receita, análise por categoria e ranking de melhores

@@ -12,6 +12,7 @@ import {
   Lock,
   Phone,
   X,
+  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePlan } from "@/lib/plan-context";
@@ -230,6 +231,34 @@ export default function MensagensClient({
     selectedClient && selectedTemplate
       ? fillMessage(selectedTemplate.mensagem, selectedClient)
       : "";
+
+  if (!canUseWa) {
+    return (
+      <div className="flex flex-col min-h-screen bg-neutral-50 dark:bg-neutral-950 pb-20 lg:pb-0">
+        <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-4 py-4 lg:px-6">
+          <h1 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">Mensagens</h1>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">Templates e envio rápido via WhatsApp</p>
+        </div>
+        <div className="flex flex-col items-center justify-center flex-1 py-20 px-6 text-center">
+          <div className="w-14 h-14 bg-neutral-100 dark:bg-neutral-800 rounded-2xl flex items-center justify-center mb-4">
+            <Lock className="w-6 h-6 text-neutral-400 dark:text-neutral-500" />
+          </div>
+          <h3 className="text-lg font-bold text-neutral-800 dark:text-neutral-100 mb-2">
+            Mensagens disponíveis no Plus
+          </h3>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-sm mb-6">
+            Crie templates personalizados e envie mensagens rápidas via WhatsApp para seus clientes com um toque.
+          </p>
+          <Link
+            href="/pricing"
+            className="inline-flex items-center gap-2 bg-rose-500 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-rose-600 transition-colors"
+          >
+            Ver planos <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-neutral-50 dark:bg-neutral-950 pb-20 lg:pb-0">

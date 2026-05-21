@@ -32,7 +32,7 @@ import {
   Lock,
 } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn, formatPhoneInput } from "@/lib/utils";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { usePlan } from "@/lib/plan-context";
@@ -182,7 +182,8 @@ function PerfilTab({ initialProfile }: {
           label="Telefone"
           type="tel"
           value={form.phone}
-          onChange={(e) => { setForm({ ...form, phone: e.target.value }); setSaved(false); }}
+          onChange={(e) => { setForm({ ...form, phone: formatPhoneInput(e.target.value) }); setSaved(false); }}
+          inputMode="numeric"
           placeholder="(11) 99999-0000"
         />
         <Input
