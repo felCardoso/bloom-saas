@@ -10,10 +10,14 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { Toast } from "@/components/ui/Toast";
+import { formatCurrency, formatDate, cn } from "@/lib/utils";
 import type { Order, OrderStatus, OrderItem, Client, Product, PaymentMethod } from "@/lib/types";
 import { usePlan } from "@/lib/plan-context";
 import { UpgradeModal } from "@/components/ui/UpgradeModal";
+import { usePagination } from "@/lib/use-pagination";
+import { Pagination } from "@/components/ui/Pagination";
+import { isOrderPaid, isOrderPendingRevenue } from "@/lib/order-utils";
 
 const statusMap: Record<
   OrderStatus,
@@ -59,7 +63,8 @@ export function PedidosView({
     notes: "",
     items: [] as OrderItem[],
   });
-  const [addingItem, setAddingItem] = useState({ product_id: "", quantity: 1 });
+  const [addingProductId, setAddingProductId] = useState("");
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     setOrders(initialOrders);
@@ -71,18 +76,74 @@ export function PedidosView({
     return matchSearch && matchStatus;
   });
 
-  function addItem() {
-    const product = products.find((p) => p.id === addingItem.product_id);
+  const { paginated, page, setPage, totalPages, totalItems, pageSize } = usePagination(
+    filtered,
+    20,
+    `${search}|${statusFilter}`,
+  );
+
+  function addOrIncrement(productId: string) {
+    if (!productId) return;
+    const product = products.find((p) => p.id === productId);
     if (!product) return;
-    const item: OrderItem = {
-      product_id: product.id,
-      product_name: product.name,
-      quantity: addingItem.quantity,
-      unit_price: product.sale_price,
-      subtotal: product.sale_price * addingItem.quantity,
-    };
-    setNewOrder((o) => ({ ...o, items: [...o.items, item] }));
-    setAddingItem({ product_id: "", quantity: 1 });
+    if (product.stock === 0) {
+      setToast("Produto sem estoque disponível.");
+      setAddingProductId("");
+      return;
+    }
+    const existing = newOrder.items.find((i) => i.product_id === productId);
+    const currentQty = existing?.quantity ?? 0;
+    const available = product.stock - currentQty;
+    if (available <= 0) {
+      setToast(`Estoque insuficiente. Disponível: ${product.stock} unidade(s).`);
+      setAddingProductId("");
+      return;
+    }
+    if (existing) {
+      setNewOrder((o) => ({
+        ...o,
+        items: o.items.map((i) =>
+          i.product_id === productId
+            ? { ...i, quantity: i.quantity + 1, subtotal: i.unit_price * (i.quantity + 1) }
+            : i
+        ),
+      }));
+    } else {
+      const item: OrderItem = {
+        product_id: product.id,
+        product_name: product.name,
+        quantity: 1,
+        unit_price: product.sale_price,
+        subtotal: product.sale_price,
+      };
+      setNewOrder((o) => ({ ...o, items: [...o.items, item] }));
+    }
+    setAddingProductId("");
+  }
+
+  function changeItemQty(productId: string, delta: number) {
+    const existing = newOrder.items.find((i) => i.product_id === productId);
+    if (!existing) return;
+    const newQty = existing.quantity + delta;
+    if (newQty <= 0) {
+      setNewOrder((o) => ({ ...o, items: o.items.filter((i) => i.product_id !== productId) }));
+      return;
+    }
+    if (delta > 0) {
+      const product = products.find((p) => p.id === productId);
+      if (product && newQty > product.stock) {
+        setToast(`Estoque insuficiente. Disponível: ${product.stock} unidade(s).`);
+        return;
+      }
+    }
+    setNewOrder((o) => ({
+      ...o,
+      items: o.items.map((i) =>
+        i.product_id === productId
+          ? { ...i, quantity: newQty, subtotal: i.unit_price * newQty }
+          : i
+      ),
+    }));
   }
 
   function handleAddClick() {
@@ -95,11 +156,32 @@ export function PedidosView({
 
   function handleCreate() {
     if (!newOrder.client_id || newOrder.items.length === 0) return;
+    const snapshot = { ...newOrder, items: [...newOrder.items] };
+    const client = clients.find((c) => c.id === snapshot.client_id);
+    const total = snapshot.items.reduce((s, i) => s + i.subtotal, 0);
+    const optimistic: Order = {
+      id: `temp_${Date.now()}`,
+      client_id: snapshot.client_id,
+      client_name: client?.name ?? "—",
+      items: snapshot.items,
+      total,
+      status: snapshot.status,
+      payment_method: snapshot.payment_method,
+      notes: snapshot.notes || undefined,
+      created_at: new Date().toISOString(),
+    };
+    setOrders((prev) => [optimistic, ...prev]);
+    setNewOrder({ client_id: "", status: "pendente", payment_method: "dinheiro", notes: "", items: [] });
+    setAddingProductId("");
+    setAddOpen(false);
     startTransition(async () => {
-      await addVenda(newOrder);
-      setNewOrder({ client_id: "", status: "pendente", payment_method: "dinheiro", notes: "", items: [] });
-      setAddOpen(false);
-      router.refresh();
+      const result = await addVenda(snapshot);
+      if (result?.error) {
+        setOrders((prev) => prev.filter((o) => o.id !== optimistic.id));
+        setToast(result.error);
+      } else {
+        router.refresh();
+      }
     });
   }
 
@@ -136,10 +218,13 @@ export function PedidosView({
     setConfirmDelete(false);
   }
 
-  const totalRevenue = filtered.reduce(
-    (s, o) => s + (o.status !== "cancelado" ? o.total : 0),
-    0,
-  );
+  const confirmedRevenue = filtered
+    .filter(isOrderPaid)
+    .reduce((s, o) => s + o.total, 0);
+
+  const pendingRevenue = filtered
+    .filter(isOrderPendingRevenue)
+    .reduce((s, o) => s + o.total, 0);
 
   const isFiadoPending = (o: Order) =>
     o.payment_method === "fiado" && o.status === "entregue" && !o.paid_at;
@@ -181,11 +266,11 @@ export function PedidosView({
         {[
           { label: "Pedidos", value: filtered.length },
           { label: "Pendentes", value: filtered.filter((o) => o.status === "pendente").length },
-          { label: "Entregues", value: filtered.filter((o) => o.status === "entregue").length },
-          { label: "Receita", value: formatCurrency(totalRevenue) },
+          { label: "Receita", value: formatCurrency(confirmedRevenue), accent: "text-emerald-600 dark:text-emerald-400" },
+          { label: "Receita pendente", value: formatCurrency(pendingRevenue), accent: "text-amber-600 dark:text-amber-400" },
         ].map((s) => (
           <Card key={s.label} padding="sm">
-            <p className="text-lg lg:text-xl font-bold text-neutral-800 dark:text-neutral-100">{s.value}</p>
+            <p className={cn("text-lg lg:text-xl font-bold", s.accent ?? "text-neutral-800 dark:text-neutral-100")}>{s.value}</p>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">{s.label}</p>
           </Card>
         ))}
@@ -201,14 +286,14 @@ export function PedidosView({
             </div>
           </Card>
         ) : (
-          filtered.map((order) => {
+          paginated.map((order) => {
             const status = statusMap[order.status];
             const fiadoPending = isFiadoPending(order);
             return (
               <Card
                 key={order.id}
                 padding="none"
-                className="hover:shadow-elevated transition-shadow"
+                className="hover:shadow-elevated transition-shadow overflow-hidden"
               >
                 <div
                   className="flex items-start sm:items-center gap-3 px-4 py-4 cursor-pointer"
@@ -228,12 +313,12 @@ export function PedidosView({
                     <p className="text-xs text-neutral-400 dark:text-neutral-500 truncate">
                       {order.items.map((i) => i.product_name).join(", ")}
                     </p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                    <div className="flex items-center gap-x-2 flex-wrap mt-0.5">
+                      <p className="text-xs text-neutral-400 dark:text-neutral-500 whitespace-nowrap">
                         {formatDate(order.created_at)}
                       </p>
                       <span className="text-xs text-neutral-300 dark:text-neutral-600">·</span>
-                      <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                      <p className="text-xs text-neutral-400 dark:text-neutral-500 whitespace-nowrap">
                         {paymentLabels[order.payment_method]}
                       </p>
                     </div>
@@ -295,6 +380,16 @@ export function PedidosView({
         )}
       </div>
 
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageChange={setPage}
+      />
+
+      {toast && <Toast message={toast} variant="warning" onClose={() => setToast(null)} />}
+
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} resource="ordersPerMonth" />
 
       {/* Add modal */}
@@ -307,7 +402,7 @@ export function PedidosView({
             options={clients.map((c) => ({ value: c.id, label: c.name }))}
             placeholder="Selecione a cliente"
           />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Select
               label="Status inicial"
               value={newOrder.status}
@@ -347,43 +442,48 @@ export function PedidosView({
             <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
               Adicionar Produto
             </p>
-            <div className="flex gap-2">
-              <select
-                value={addingItem.product_id}
-                onChange={(e) => setAddingItem((i) => ({ ...i, product_id: e.target.value }))}
-                className="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
-              >
-                <option value="">Selecione o produto</option>
-                {products.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} — {formatCurrency(p.sale_price)}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="number"
-                min={1}
-                value={addingItem.quantity}
-                onChange={(e) => setAddingItem((i) => ({ ...i, quantity: Number(e.target.value) }))}
-                className="w-14 px-2 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-800 dark:text-neutral-100 text-center focus:outline-none focus:ring-2 focus:ring-rose-400"
-              />
-              <Button variant="secondary" size="sm" onClick={addItem}>
-                +
-              </Button>
-            </div>
+            <select
+              value={addingProductId}
+              onChange={(e) => addOrIncrement(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
+            >
+              <option value="">Selecione o produto para adicionar...</option>
+              {products.map((p) => (
+                <option key={p.id} value={p.id} disabled={p.stock === 0}>
+                  {p.name} — {formatCurrency(p.sale_price)}
+                  {p.stock === 0 ? " (sem estoque)" : ` (${p.stock} un.)`}
+                </option>
+              ))}
+            </select>
 
             {newOrder.items.length > 0 && (
               <div className="space-y-2 pt-1">
-                {newOrder.items.map((item, i) => (
+                {newOrder.items.map((item) => (
                   <div
-                    key={i}
-                    className="flex items-center justify-between text-sm bg-white dark:bg-neutral-900 rounded-xl px-3 py-2.5 border border-neutral-100 dark:border-neutral-700"
+                    key={item.product_id}
+                    className="flex items-center gap-2 bg-white dark:bg-neutral-900 rounded-xl px-3 py-2.5 border border-neutral-100 dark:border-neutral-700"
                   >
-                    <span className="text-neutral-700 dark:text-neutral-300 truncate flex-1 mr-2">
+                    <span className="text-sm text-neutral-700 dark:text-neutral-300 truncate flex-1 min-w-0">
                       {item.product_name}
                     </span>
-                    <span className="text-neutral-400 dark:text-neutral-500 mr-3">×{item.quantity}</span>
-                    <span className="font-semibold text-neutral-800 dark:text-neutral-100 whitespace-nowrap">
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() => changeItemQty(item.product_id, -1)}
+                        className="w-7 h-7 rounded-lg border border-neutral-200 dark:border-neutral-600 flex items-center justify-center text-sm font-bold text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                      >
+                        −
+                      </button>
+                      <span className="w-7 text-center text-sm font-semibold text-neutral-800 dark:text-neutral-100">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => changeItemQty(item.product_id, 1)}
+                        className="w-7 h-7 rounded-lg border border-neutral-200 dark:border-neutral-600 flex items-center justify-center text-sm font-bold text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 whitespace-nowrap ml-1">
                       {formatCurrency(item.subtotal)}
                     </span>
                   </div>
