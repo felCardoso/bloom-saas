@@ -398,7 +398,7 @@ export default function PricingPage() {
                           : "text-neutral-800 dark:text-neutral-100",
                       )}
                     >
-                      {p.price === 0 ? "Free" : `R$ ${p.price}`}
+                      {p.price === 0 ? "Grátis" : `R$ ${p.price}`}
                     </span>
                     {p.period && (
                       <span
