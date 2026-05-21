@@ -237,6 +237,43 @@ export async function sendLowStockEmail(
   });
 }
 
+export async function sendFeedbackNotificationEmail(
+  fromUserEmail: string,
+  data: { type: string; subject: string; body: string },
+) {
+  const adminEmail = process.env.FEEDBACK_EMAIL;
+  if (!adminEmail) return;
+
+  const typeLabel: Record<string, string> = {
+    bug: "Bug",
+    melhoria: "Melhoria",
+    elogio: "Elogio",
+    outro: "Outro",
+  };
+
+  await sendEmail({
+    from: FROM,
+    to: adminEmail,
+    subject: `[Feedback Bloom] ${typeLabel[data.type] ?? data.type}: ${data.subject}`,
+    html: baseTemplate(`
+      <h1 style="margin:0 0 8px;font-size:20px;font-weight:700;color:#111827;">Novo feedback recebido</h1>
+      <p style="margin:0 0 20px;font-size:14px;color:#6b7280;">
+        De: <strong>${fromUserEmail}</strong>
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:12px;border:1px solid #e5e7eb;padding:20px;margin-bottom:20px;">
+        <tr><td>
+          <p style="margin:0 0 4px;font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">Tipo</p>
+          <p style="margin:0 0 16px;font-size:14px;color:#374151;">${typeLabel[data.type] ?? data.type}</p>
+          <p style="margin:0 0 4px;font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">Assunto</p>
+          <p style="margin:0 0 16px;font-size:14px;font-weight:600;color:#111827;">${data.subject}</p>
+          <p style="margin:0 0 4px;font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">Mensagem</p>
+          <p style="margin:0;font-size:14px;color:#374151;white-space:pre-wrap;">${data.body}</p>
+        </td></tr>
+      </table>
+    `),
+  });
+}
+
 export async function sendPendingOrdersEmail(
   to: string,
   count: number,

@@ -28,6 +28,6 @@ export const PLAN_TO_VALUE: Record<string, number> = {
 };
 
 export const PLAN_DESCRIPTIONS: Record<string, string> = {
-  pro: "Bloom Pro — assinatura mensal",
+  pro: "Bloom Plus — assinatura mensal",
   premium: "Bloom Premium — assinatura mensal",
 };
