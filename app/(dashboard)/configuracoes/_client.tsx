@@ -38,7 +38,7 @@ import { Modal } from "@/components/ui/Modal";
 import { usePlan } from "@/lib/plan-context";
 import { useTheme, type PrimaryColor } from "@/lib/theme-context";
 
-import { updateProfile, updateNotificationPrefs, startTrial, type NotificationPrefs } from "@/lib/actions/profile";
+import { updateProfile, updateNotificationPrefs, startTrial, saveCpfForTrial, type NotificationPrefs } from "@/lib/actions/profile";
 import { savePushSubscription, deletePushSubscription } from "@/lib/actions/push";
 import { addCategoria, deleteCategoria, renameCategoria, type Categoria } from "@/lib/actions/categorias";
 import { deleteAccount } from "@/lib/actions/account";
@@ -533,7 +533,7 @@ const INVOICE_STATUS: Record<string, { label: string; className: string }> = {
   REFUNDED:  { label: "Estornado",   className: "bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700" },
 };
 
-function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }) {
+function AssinaturaTab({ initialPeriodEnd, initialCpfCnpj }: { initialPeriodEnd: string | null; initialCpfCnpj: string }) {
   const { planId, plan, isOnTrial, trialDaysLeft, trialClaimed, pendingPlan, scheduledDowngradeAt } = usePlan();
   const [revertLoading, setRevertLoading] = useState(false);
   const [revertError, setRevertError] = useState("");
@@ -543,6 +543,8 @@ function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }
   const [trialLoading, setTrialLoading] = useState(false);
   const [trialError, setTrialError] = useState("");
   const [trialStarted, setTrialStarted] = useState(false);
+  const [needsCpf, setNeedsCpf] = useState(!initialCpfCnpj);
+  const [cpfInput, setCpfInput] = useState("");
   const isCancelling = periodEnd !== null;
 
   useEffect(() => {
@@ -558,9 +560,25 @@ function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }
   async function handleStartTrial() {
     setTrialError("");
     setTrialLoading(true);
+
+    if (needsCpf) {
+      if (!cpfInput.replace(/\D/g, "").length) {
+        setTrialLoading(false);
+        setTrialError("Informe seu CPF.");
+        return;
+      }
+      const saveRes = await saveCpfForTrial(cpfInput);
+      if (saveRes?.error) {
+        setTrialLoading(false);
+        setTrialError(saveRes.error);
+        return;
+      }
+    }
+
     const result = await startTrial();
     setTrialLoading(false);
     if (result?.error) {
+      if (result.needsCpf) setNeedsCpf(true);
       setTrialError(result.error);
     } else {
       setTrialStarted(true);
@@ -571,7 +589,7 @@ function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }
   const featureList: string[] = {
     free:    ["Até 30 clientes", "Até 20 pedidos/mês", "Até 20 produtos", "Suporte por e-mail"],
     pro:     ["Até 200 clientes", "Até 150 pedidos/mês", "Relatórios e gráficos", "Lembretes de aniversário", "Alertas de estoque", "Link WhatsApp", "Suporte por e-mail"],
-    premium: ["Clientes ilimitados", "Pedidos ilimitados", "Relatórios avançados", "Exportação CSV", "Até 3 usuários", "Suporte prioritário"],
+    premium: ["Clientes ilimitados", "Pedidos ilimitados", "Relatórios avançados", "Exportação CSV", "Suporte prioritário"],
   }[planId];
 
   const formattedExpiry = periodEnd
@@ -711,15 +729,41 @@ function AssinaturaTab({ initialPeriodEnd }: { initialPeriodEnd: string | null }
               <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">Experimente o Plus grátis por 7 dias</p>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Sem cartão de crédito. Ative e explore todos os recursos.</p>
             </div>
-            <button
-              onClick={handleStartTrial}
-              disabled={trialLoading}
-              className="self-start sm:self-auto inline-flex items-center gap-2 px-4 py-2 bg-rose-500 text-white text-sm font-semibold rounded-xl hover:bg-rose-600 transition-colors disabled:opacity-60 shrink-0"
-            >
-              {trialLoading ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : null}
-              Iniciar 7 dias grátis
-            </button>
+            {!needsCpf && (
+              <button
+                onClick={handleStartTrial}
+                disabled={trialLoading}
+                className="self-start sm:self-auto inline-flex items-center gap-2 px-4 py-2 bg-rose-500 text-white text-sm font-semibold rounded-xl hover:bg-rose-600 transition-colors disabled:opacity-60 shrink-0"
+              >
+                {trialLoading ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : null}
+                Iniciar 7 dias grátis
+              </button>
+            )}
           </div>
+          {needsCpf && (
+            <div className="mt-3 pt-3 border-t border-rose-200 dark:border-rose-800/60">
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-2">
+                Para confirmar elegibilidade, informe seu CPF:
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={cpfInput}
+                  onChange={(e) => setCpfInput(e.target.value)}
+                  placeholder="000.000.000-00"
+                  maxLength={14}
+                  className="flex-1 text-sm px-3 py-2 rounded-xl border border-rose-200 dark:border-rose-800 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
+                />
+                <button
+                  onClick={handleStartTrial}
+                  disabled={trialLoading}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-rose-500 text-white text-sm font-semibold rounded-xl hover:bg-rose-600 transition-colors disabled:opacity-60 shrink-0"
+                >
+                  {trialLoading ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : "Ativar"}
+                </button>
+              </div>
+            </div>
+          )}
           {trialError && <p className="text-xs text-red-500 mt-2">{trialError}</p>}
         </div>
       )}
@@ -1594,7 +1638,7 @@ export default function ConfiguracoesClient({ initialProfile, initialNotifs, ini
 
   const content: Record<Tab, React.ReactNode> = {
     perfil: <PerfilTab initialProfile={initialProfile} />,
-    assinatura: <AssinaturaTab initialPeriodEnd={initialPeriodEnd} />,
+    assinatura: <AssinaturaTab initialPeriodEnd={initialPeriodEnd} initialCpfCnpj={initialProfile.cpfCnpj} />,
     notificacoes: <NotificacoesTab initialNotifs={initialNotifs} />,
     aparencia: <AparenciaTab />,
     seguranca: <SegurancaTab />,
