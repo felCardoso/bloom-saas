@@ -15,6 +15,7 @@ export async function checkPlanLimit(
   supabase: SupabaseClient,
   userId: string,
   resource: LimitResource,
+  opts?: { dateOverride?: string },
 ): Promise<{ error?: string }> {
   const { data: profile } = await supabase
     .from("perfis_usuarios")
@@ -43,14 +44,15 @@ export async function checkPlanLimit(
       .eq("ativo", true);
     count = c ?? 0;
   } else if (resource === "ordersPerMonth") {
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
+    const ref = opts?.dateOverride ? new Date(opts.dateOverride) : new Date();
+    const startOfMonth = new Date(ref.getFullYear(), ref.getMonth(), 1);
+    const startOfNextMonth = new Date(ref.getFullYear(), ref.getMonth() + 1, 1);
     const { count: c } = await supabase
       .from("vendas")
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
-      .gte("data_venda", startOfMonth.toISOString().split("T")[0]);
+      .gte("data_venda", startOfMonth.toISOString().split("T")[0])
+      .lt("data_venda", startOfNextMonth.toISOString().split("T")[0]);
     count = c ?? 0;
   } else if (resource === "messageTemplates") {
     const { count: c } = await supabase

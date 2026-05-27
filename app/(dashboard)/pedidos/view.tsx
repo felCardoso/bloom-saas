@@ -72,13 +72,18 @@ export function PedidosView({
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [selected, setSelected] = useState<Order | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const todayStr = new Date().toISOString().split("T")[0];
   const [newOrder, setNewOrder] = useState({
     client_id: "",
     status: "pendente" as OrderStatus,
     payment_method: "dinheiro" as PaymentMethod,
     notes: "",
     items: [] as OrderItem[],
+    data_venda: todayStr,
+    skip_stock: false,
+    paid_at: "",
   });
+  const isRetroactive = newOrder.data_venda < todayStr;
   const [addingProductId, setAddingProductId] = useState("");
   const [toast, setToast] = useState<string | null>(null);
 
@@ -199,7 +204,8 @@ export function PedidosView({
       status: snapshot.status,
       payment_method: snapshot.payment_method,
       notes: snapshot.notes || undefined,
-      created_at: new Date().toISOString(),
+      paid_at: snapshot.paid_at || undefined,
+      created_at: snapshot.data_venda || new Date().toISOString(),
     };
     setOrders((prev) => [optimistic, ...prev]);
     setNewOrder({
@@ -208,6 +214,9 @@ export function PedidosView({
       payment_method: "dinheiro",
       notes: "",
       items: [],
+      data_venda: todayStr,
+      skip_stock: false,
+      paid_at: "",
     });
     setAddingProductId("");
     setAddOpen(false);
@@ -521,7 +530,73 @@ export function PedidosView({
             />
           </div>
 
-          {newOrder.payment_method === "fiado" && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              Data da venda
+            </label>
+            <input
+              type="date"
+              value={newOrder.data_venda}
+              max={todayStr}
+              onChange={(e) => {
+                const v = e.target.value;
+                setNewOrder((o) => ({
+                  ...o,
+                  data_venda: v,
+                  skip_stock: v < todayStr ? true : false,
+                  paid_at: v < todayStr ? o.paid_at : "",
+                }));
+              }}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
+            />
+            {isRetroactive && (
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                Venda retroativa — email de confirmação não será enviado.
+              </p>
+            )}
+          </div>
+
+          {isRetroactive && (
+            <label className="flex items-start gap-2.5 px-4 py-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl cursor-pointer">
+              <input
+                type="checkbox"
+                checked={newOrder.skip_stock}
+                onChange={(e) =>
+                  setNewOrder((o) => ({ ...o, skip_stock: e.target.checked }))
+                }
+                className="mt-0.5 w-4 h-4 rounded accent-rose-500"
+              />
+              <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                Produto já saiu do estoque
+                <span className="block text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  Marque se o estoque atual já reflete esta venda.
+                </span>
+              </span>
+            </label>
+          )}
+
+          {isRetroactive && newOrder.payment_method === "fiado" && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                Data do pagamento (opcional)
+              </label>
+              <input
+                type="date"
+                value={newOrder.paid_at}
+                min={newOrder.data_venda}
+                max={todayStr}
+                onChange={(e) =>
+                  setNewOrder((o) => ({ ...o, paid_at: e.target.value }))
+                }
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
+              />
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                Deixe em branco se ainda não foi pago.
+              </p>
+            </div>
+          )}
+
+          {newOrder.payment_method === "fiado" && !isRetroactive && (
             <div className="px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 rounded-xl text-sm text-amber-700 dark:text-amber-400">
               Pedido registrado como fiado. Um botão de confirmação de pagamento
               aparecerá após a entrega.

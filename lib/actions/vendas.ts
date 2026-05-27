@@ -119,6 +119,9 @@ export async function addVenda(form: {
   notes: string;
   items: OrderItem[];
   payment_method: PaymentMethod;
+  data_venda?: string;
+  skip_stock?: boolean;
+  paid_at?: string;
 }): Promise<{ error?: string }> {
   const supabase = await createClient();
   const {
@@ -126,7 +129,14 @@ export async function addVenda(form: {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Não autenticado" };
 
-  const limitCheck = await checkPlanLimit(supabase, user.id, "ordersPerMonth");
+  const today = new Date().toISOString().split("T")[0];
+  const dataVenda = form.data_venda?.trim() || today;
+  if (dataVenda > today) return { error: "Data da venda não pode ser futura" };
+  const isRetroactive = dataVenda < today;
+
+  const limitCheck = await checkPlanLimit(supabase, user.id, "ordersPerMonth", {
+    dateOverride: dataVenda,
+  });
   if (limitCheck.error) return limitCheck;
 
   const total = form.items.reduce((s, i) => s + i.subtotal, 0);
@@ -139,6 +149,8 @@ export async function addVenda(form: {
       valor_total: total,
       status: form.status,
       payment_method: form.payment_method,
+      data_venda: dataVenda,
+      paid_at: form.paid_at || null,
     })
     .select("id")
     .single();
@@ -158,7 +170,7 @@ export async function addVenda(form: {
     .insert(itens);
   if (itensError) return { error: itensError.message };
 
-  if (form.status !== "cancelado") {
+  if (form.status !== "cancelado" && !form.skip_stock) {
     await adjustStock(
       supabase,
       form.items.map((i) => ({
@@ -171,7 +183,7 @@ export async function addVenda(form: {
   }
 
   const { data: authUser } = await supabase.auth.getUser();
-  if (authUser.user?.email) {
+  if (authUser.user?.email && !isRetroactive) {
     const { data: cliente } = await supabase
       .from("clientes")
       .select("nome")
