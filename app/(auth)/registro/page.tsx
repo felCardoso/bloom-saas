@@ -7,6 +7,7 @@ import { Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { signUp } from "@/lib/actions/auth";
 import { GoogleButton } from "@/components/auth/GoogleButton";
+import { cn } from "@/lib/utils";
 
 const perks = [
   "7 dias de teste Pro",
@@ -68,11 +69,12 @@ export default function RegistroPage() {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           autoComplete="new-password"
-          className={`w-full px-3.5 py-2.5 pr-11 rounded-xl border text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 hover:border-neutral-300 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all ${
+          className={cn(
+            "w-full px-3.5 py-2.5 pr-11 rounded-xl border text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 hover:border-neutral-300 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all",
             error
               ? "border-red-300 bg-red-50"
-              : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-          }`}
+              : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800",
+          )}
         />
         <button
           type="button"

@@ -88,7 +88,7 @@ export default function LoginPage() {
           <div className="relative">
             <input
               type={showPw ? "text" : "password"}
-              placeholder="••••••••"
+              placeholder="Sua senha"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               autoComplete="current-password"

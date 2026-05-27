@@ -17,6 +17,7 @@ import {
   Bell,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { cn } from "@/lib/utils";
 
 const features = [
   {
@@ -254,11 +255,11 @@ export default function LandingPage() {
                   {[38, 52, 41, 68, 52, 64].map((h, i) => (
                     <div
                       key={i}
-                      className="flex-1 rounded-t-md transition-all"
-                      style={{
-                        height: `${h}%`,
-                        background: i === 5 ? "#D4829C" : "#F2C4D4",
-                      }}
+                      className={cn(
+                        "flex-1 rounded-t-md transition-all",
+                        i === 5 ? "bg-rose-500" : "bg-rose-200",
+                      )}
+                      style={{ height: `${h}%` }}
                     />
                   ))}
                 </div>
@@ -269,9 +270,9 @@ export default function LandingPage() {
                 </p>
                 <div className="space-y-2 sm:space-y-2">
                   {[
-                    { label: "Ativas", pct: 68, color: "#D4829C" },
-                    { label: "Inativas", pct: 20, color: "#E5E7EB" },
-                    { label: "Prospects", pct: 12, color: "#F2C4D4" },
+                    { label: "Ativas", pct: 68, barClass: "bg-rose-500" },
+                    { label: "Inativas", pct: 20, barClass: "bg-neutral-200 dark:bg-neutral-600" },
+                    { label: "Prospects", pct: 12, barClass: "bg-rose-200" },
                   ].map((s) => (
                     <div key={s.label}>
                       <div className="flex justify-between text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 mb-1">
@@ -280,8 +281,8 @@ export default function LandingPage() {
                       </div>
                       <div className="h-1.5 bg-neutral-100 dark:bg-neutral-700 rounded-full">
                         <div
-                          className="h-full rounded-full"
-                          style={{ width: `${s.pct}%`, background: s.color }}
+                          className={cn("h-full rounded-full", s.barClass)}
+                          style={{ width: `${s.pct}%` }}
                         />
                       </div>
                     </div>
@@ -340,43 +341,52 @@ export default function LandingPage() {
             {plans.map((plan) => (
               <div
                 key={plan.name}
-                className={`rounded-2xl border p-5 sm:p-6 ${
+                className={cn(
+                  "rounded-2xl border p-5 sm:p-6",
                   plan.primary
                     ? "border-rose-300 bg-rose-500 text-white shadow-elevated"
-                    : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-card"
-                }`}
+                    : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-card",
+                )}
               >
                 <p
-                  className={`text-sm font-semibold mb-1 ${
+                  className={cn(
+                    "text-sm font-semibold mb-1",
                     plan.primary
                       ? "text-rose-100"
-                      : "text-neutral-500 dark:text-neutral-400"
-                  }`}
+                      : "text-neutral-500 dark:text-neutral-400",
+                  )}
                 >
                   {plan.name}
                 </p>
                 <div className="flex items-baseline gap-1 mb-1">
                   <span
-                    className={`text-3xl font-bold ${
+                    className={cn(
+                      "text-3xl font-bold",
                       plan.primary
                         ? "text-white"
-                        : "text-neutral-800 dark:text-neutral-100"
-                    }`}
+                        : "text-neutral-800 dark:text-neutral-100",
+                    )}
                   >
                     {plan.price}
                   </span>
                   <span
-                    className={`text-sm ${plan.primary ? "text-rose-200" : "text-neutral-400 dark:text-neutral-500"}`}
+                    className={cn(
+                      "text-sm",
+                      plan.primary
+                        ? "text-rose-200"
+                        : "text-neutral-400 dark:text-neutral-500",
+                    )}
                   >
                     {plan.period}
                   </span>
                 </div>
                 <p
-                  className={`text-xs mb-5 sm:mb-6 ${
+                  className={cn(
+                    "text-xs mb-5 sm:mb-6",
                     plan.primary
                       ? "text-rose-100"
-                      : "text-neutral-400 dark:text-neutral-500"
-                  }`}
+                      : "text-neutral-400 dark:text-neutral-500",
+                  )}
                 >
                   {plan.desc}
                 </p>
@@ -384,16 +394,17 @@ export default function LandingPage() {
                   {plan.features.map((feat) => (
                     <li key={feat} className="flex items-center gap-2 text-sm">
                       <Check
-                        className={`w-4 h-4 shrink-0 ${
-                          plan.primary ? "text-rose-200" : "text-rose-500"
-                        }`}
+                        className={cn(
+                          "w-4 h-4 shrink-0",
+                          plan.primary ? "text-rose-200" : "text-rose-500",
+                        )}
                       />
                       <span
-                        className={
+                        className={cn(
                           plan.primary
                             ? "text-white"
-                            : "text-neutral-600 dark:text-neutral-300"
-                        }
+                            : "text-neutral-600 dark:text-neutral-300",
+                        )}
                       >
                         {feat}
                       </span>
@@ -402,11 +413,12 @@ export default function LandingPage() {
                 </ul>
                 <Link
                   href={plan.href}
-                  className={`block text-center py-3 rounded-xl text-sm font-semibold transition-all ${
+                  className={cn(
+                    "block text-center py-3 rounded-xl text-sm font-semibold transition-all",
                     plan.primary
                       ? "bg-white text-rose-600 hover:bg-rose-50"
-                      : "bg-rose-500 text-white hover:bg-rose-600"
-                  }`}
+                      : "bg-rose-500 text-white hover:bg-rose-600",
+                  )}
                 >
                   {plan.cta}
                 </Link>

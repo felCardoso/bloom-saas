@@ -471,7 +471,7 @@ export default function MensagensClient({
               {suggestions.length === 0 ? (
                 <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 px-4 py-6 text-center">
                   <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                    Nenhuma sugestão por hoje. 🎉
+                    Nenhuma sugestão por hoje.
                   </p>
                 </div>
               ) : (

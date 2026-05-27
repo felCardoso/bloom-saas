@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/Skeleton";
+import { cn } from "@/lib/utils";
 
 export default function Loading() {
   return (
@@ -24,7 +25,7 @@ export default function Loading() {
         {/* Form fields: 2 on mobile, 4 in 2-col grid on sm+ */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className={`space-y-2${i >= 2 ? " hidden sm:block" : ""}`}>
+            <div key={i} className={cn("space-y-2", i >= 2 && "hidden sm:block")}>
               <Skeleton className="h-3 w-20" />
               <Skeleton className="h-10 w-full rounded-xl" />
             </div>

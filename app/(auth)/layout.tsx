@@ -13,9 +13,9 @@ const testimonial = {
   role: "Revendedora Mary Kay · SP",
 };
 
-const stats = [
+const stats: { value: string; label: string; icon?: typeof Star }[] = [
   { value: "1.200+", label: "Revendedoras" },
-  { value: "4,9 ★", label: "Avaliação" },
+  { value: "4,9", label: "Avaliação", icon: Star },
   { value: "R$ 2,4M", label: "Em vendas" },
 ];
 
@@ -59,15 +59,23 @@ export default function AuthLayout({
 
         {/* Stats */}
         <div className="relative grid grid-cols-3 gap-3 mb-8">
-          {stats.map((s) => (
-            <div
-              key={s.label}
-              className="bg-white/10 rounded-2xl p-3.5 backdrop-blur-sm"
-            >
-              <p className="text-base font-bold text-white">{s.value}</p>
-              <p className="text-[11px] text-rose-200 mt-0.5">{s.label}</p>
-            </div>
-          ))}
+          {stats.map((s) => {
+            const Icon = s.icon;
+            return (
+              <div
+                key={s.label}
+                className="bg-white/10 rounded-2xl p-3.5 backdrop-blur-sm"
+              >
+                <p className="text-base font-bold text-white inline-flex items-center gap-1">
+                  {s.value}
+                  {Icon && (
+                    <Icon className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+                  )}
+                </p>
+                <p className="text-[11px] text-rose-200 mt-0.5">{s.label}</p>
+              </div>
+            );
+          })}
         </div>
 
         {/* Testimonial */}

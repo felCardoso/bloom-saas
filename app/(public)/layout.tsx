@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { cn } from "@/lib/utils";
 
 const footerLinks = [
   { href: "/sobre", label: "Sobre" },
@@ -32,11 +33,12 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               <Link
                 key={l.href}
                 href={l.href}
-                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-sm transition-colors",
                   pathname === l.href
                     ? "text-rose-600 font-medium bg-rose-50 dark:bg-rose-900/30 dark:text-rose-400"
-                    : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800"
-                }`}
+                    : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800",
+                )}
               >
                 {l.label}
               </Link>

@@ -10,7 +10,9 @@ import {
   Clock,
   Search,
   Lock,
+  ArrowRight,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const faqItems = [
   {
@@ -18,7 +20,7 @@ const faqItems = [
     questions: [
       {
         q: "Como faço para mudar de plano?",
-        a: "Acesse a página de Planos dentro do app (menu lateral → Planos). Você pode fazer upgrade imediatamente ou agendar o downgrade para o fim do período vigente. Alterações de plano são refletidas em tempo real.",
+        a: "Acesse a página de Planos dentro do app pelo menu lateral. Você pode fazer upgrade imediatamente ou agendar o downgrade para o fim do período vigente. Alterações de plano são refletidas em tempo real.",
       },
       {
         q: "Posso cancelar a qualquer momento?",
@@ -205,12 +207,18 @@ export default function SuporteClient({ isPremium }: { isPremium: boolean }) {
             <Tag
               key={ch.title}
               {...(linkProps as { href: string })}
-              className={`flex items-start gap-3 p-4 rounded-2xl border hover:shadow-sm transition-all ${ch.color}`}
+              className={cn(
+                "flex items-start gap-3 p-4 rounded-2xl border hover:shadow-sm transition-all",
+                ch.color,
+              )}
             >
               <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${ch.iconBg}`}
+                className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                  ch.iconBg,
+                )}
               >
-                <ch.icon className={`w-5 h-5 ${ch.iconColor}`} />
+                <ch.icon className={cn("w-5 h-5", ch.iconColor)} />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-0.5">
@@ -231,9 +239,10 @@ export default function SuporteClient({ isPremium }: { isPremium: boolean }) {
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   {ch.desc}
                 </p>
-                <p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mt-2 underline flex items-center gap-1">
+                <p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mt-2 underline inline-flex items-center gap-1">
                   {locked && <Lock className="w-3 h-3" />}
-                  {locked ? "Disponível no Premium →" : `${ch.action} →`}
+                  {locked ? "Disponível no Premium" : ch.action}
+                  <ArrowRight className="w-3 h-3" />
                 </p>
               </div>
             </Tag>
@@ -275,7 +284,7 @@ export default function SuporteClient({ isPremium }: { isPremium: boolean }) {
                 <td className="px-5 py-3 text-sm text-neutral-600 dark:text-neutral-400">
                   {row.channel}
                 </td>
-                <td className={`px-5 py-3 text-sm font-medium ${row.color}`}>
+                <td className={cn("px-5 py-3 text-sm font-medium", row.color)}>
                   {row.sla}
                 </td>
               </tr>

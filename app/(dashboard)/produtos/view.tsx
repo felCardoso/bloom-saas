@@ -440,11 +440,12 @@ export function ProdutosView({
                       <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />
                     )}
                     <span
-                      className={`text-xs font-medium ${
+                      className={cn(
+                        "text-xs font-medium",
                         lowStock && hasFeature("stockAlerts")
                           ? "text-amber-600"
-                          : "text-neutral-500"
-                      }`}
+                          : "text-neutral-500",
+                      )}
                     >
                       {product.stock} un.
                     </span>

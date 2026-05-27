@@ -31,11 +31,11 @@ const values = [
   },
 ];
 
-const stats = [
+const stats: { value: string; label: string; icon?: typeof Star }[] = [
   { value: "1.200+", label: "Revendedoras ativas" },
   { value: "48 mil", label: "Clientes gerenciados" },
   { value: "R$ 2,4M", label: "Em vendas registradas" },
-  { value: "4,9 ★", label: "Avaliação média" },
+  { value: "4,9", label: "Avaliação média", icon: Star },
 ];
 
 const team = [
@@ -119,19 +119,25 @@ export default function SobrePage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12">
-        {stats.map((s) => (
-          <div
-            key={s.label}
-            className="text-center p-4 bg-neutral-50 dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700"
-          >
-            <p className="text-2xl font-bold text-neutral-800 dark:text-neutral-100">
-              {s.value}
-            </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-              {s.label}
-            </p>
-          </div>
-        ))}
+        {stats.map((s) => {
+          const Icon = s.icon;
+          return (
+            <div
+              key={s.label}
+              className="text-center p-4 bg-neutral-50 dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700"
+            >
+              <p className="text-2xl font-bold text-neutral-800 dark:text-neutral-100 inline-flex items-center gap-1.5">
+                {s.value}
+                {Icon && (
+                  <Icon className="w-5 h-5 fill-amber-400 text-amber-400" />
+                )}
+              </p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                {s.label}
+              </p>
+            </div>
+          );
+        })}
       </div>
 
       {/* Values */}
