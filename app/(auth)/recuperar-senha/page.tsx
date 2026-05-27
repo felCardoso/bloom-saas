@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState, useTransition } from "react";
 import { ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 import { resetPassword } from "@/lib/actions/auth";
 
 export default function RecuperarSenhaPage() {
@@ -78,20 +79,14 @@ export default function RecuperarSenhaPage() {
               autoComplete="email"
             />
 
-            <button
+            <Button
               type="submit"
-              disabled={isPending}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-rose-500 text-white rounded-xl font-semibold text-sm hover:bg-rose-600 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm"
+              loading={isPending}
+              className="w-full justify-center py-3"
             >
-              {isPending ? (
-                <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  Enviar link de recuperação
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
+              Enviar link de recuperação
+              <ArrowRight className="w-4 h-4" />
+            </Button>
           </form>
 
           <p className="text-sm text-center text-neutral-500 dark:text-neutral-400 mt-8">

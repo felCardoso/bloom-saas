@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 export default function GlobalError({
   error,
@@ -24,13 +25,10 @@ export default function GlobalError({
         <p className="text-sm text-neutral-500 mb-8 max-w-xs">
           Ocorreu um erro inesperado no aplicativo. Recarregue a página para tentar novamente.
         </p>
-        <button
-          onClick={reset}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-500 text-white rounded-xl font-semibold text-sm hover:bg-rose-600 transition-all"
-        >
+        <Button onClick={reset}>
           <RefreshCw className="w-4 h-4" />
           Recarregar
-        </button>
+        </Button>
       </body>
     </html>
   );

@@ -8,12 +8,13 @@ import {
   deleteVenda,
   confirmPayment,
 } from "@/lib/actions/vendas";
-import { Plus, Search, ShoppingBag, Trash2, CheckCircle2 } from "lucide-react";
+import { Plus, ShoppingBag, Trash2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { Select } from "@/components/ui/Select";
 import { Toast } from "@/components/ui/Toast";
 import { formatCurrency, formatDate, cn } from "@/lib/utils";
@@ -282,27 +283,26 @@ export function PedidosView({
     <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por cliente..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-700 dark:text-neutral-200 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
-          />
-        </div>
+        <SearchInput
+          wrapperClassName="flex-1"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar por cliente..."
+        />
         <div className="flex gap-2">
-          <select
+          <Select
+            wrapperClassName="flex-1 sm:flex-none"
+            className="shadow-card"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="flex-1 sm:flex-none px-3.5 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-600 dark:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
-          >
-            <option value="all">Todos</option>
-            <option value="pendente">Pendente</option>
-            <option value="confirmado">Confirmado</option>
-            <option value="entregue">Entregue</option>
-            <option value="cancelado">Cancelado</option>
-          </select>
+            options={[
+              { value: "all", label: "Todos" },
+              { value: "pendente", label: "Pendente" },
+              { value: "confirmado", label: "Confirmado" },
+              { value: "entregue", label: "Entregue" },
+              { value: "cancelado", label: "Cancelado" },
+            ]}
+          />
           <Button onClick={handleAddClick}>
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Novo Pedido</span>
@@ -608,19 +608,21 @@ export function PedidosView({
             <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
               Adicionar Produto
             </p>
-            <select
+            <Select
               value={addingProductId}
               onChange={(e) => addOrIncrement(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
-            >
-              <option value="">Selecione o produto para adicionar...</option>
-              {products.map((p) => (
-                <option key={p.id} value={p.id} disabled={p.stock === 0}>
-                  {p.name} — {formatCurrency(p.sale_price)}
-                  {p.stock === 0 ? " (sem estoque)" : ` (${p.stock} un.)`}
-                </option>
-              ))}
-            </select>
+              className="bg-white dark:bg-neutral-900"
+              options={[
+                { value: "", label: "Selecione o produto para adicionar..." },
+                ...products.map((p) => ({
+                  value: p.id,
+                  label: `${p.name} — ${formatCurrency(p.sale_price)}${
+                    p.stock === 0 ? " (sem estoque)" : ` (${p.stock} un.)`
+                  }`,
+                  disabled: p.stock === 0,
+                })),
+              ]}
+            />
 
             {newOrder.items.length > 0 && (
               <div className="space-y-2 pt-1">
