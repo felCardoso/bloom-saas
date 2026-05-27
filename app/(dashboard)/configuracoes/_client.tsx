@@ -1477,12 +1477,11 @@ function CategoriasTab({ initialCategorias }: { initialCategorias: Categoria[] }
 
       <div className="flex gap-2">
         <div className="flex-1 min-w-0">
-          <input
+          <Input
             value={newNome}
             onChange={(e) => { setNewNome(e.target.value); setAddError(""); }}
             onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
             placeholder="Nova categoria..."
-            className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-rose-400 transition-all"
           />
         </div>
         <button
