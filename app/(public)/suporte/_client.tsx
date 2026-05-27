@@ -12,6 +12,7 @@ import {
   Lock,
   ArrowRight,
 } from "lucide-react";
+import { Card } from "@/components/ui/Card";
 import { cn } from "@/lib/utils";
 
 const faqItems = [
@@ -333,11 +334,11 @@ export default function SuporteClient({ isPremium }: { isPremium: boolean }) {
                 <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 px-1">
                   {cat.category}
                 </h3>
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 px-5 shadow-sm">
+                <Card padding="none" className="px-5">
                   {cat.questions.map((item) => (
                     <FAQItem key={item.q} q={item.q} a={item.a} />
                   ))}
-                </div>
+                </Card>
               </div>
             ))}
           </div>
