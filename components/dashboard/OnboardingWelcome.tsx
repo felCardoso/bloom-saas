@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Users, Package, ShoppingBag, ArrowRight, X, Sparkles } from "lucide-react";
 import { completeOnboarding } from "@/lib/actions/profile";
+import { cn } from "@/lib/utils";
 
 const STEPS = [
   {
@@ -59,7 +60,7 @@ export function OnboardingWelcome({ userName }: { userName: string }) {
             </div>
             <div>
               <h2 className="text-base font-bold text-white leading-tight">
-                Bem-vinda, {firstName}! 🌸
+                Bem-vinda, {firstName}
               </h2>
               <p className="text-xs text-rose-100 mt-0.5">
                 Siga os 3 passos para começar a usar o Bloom.
@@ -85,7 +86,7 @@ export function OnboardingWelcome({ userName }: { userName: string }) {
             href={href}
             className="flex items-start gap-3 p-5 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-colors group"
           >
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
+            <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0", color)}>
               <Icon className="w-4 h-4" />
             </div>
             <div className="flex-1 min-w-0">
@@ -112,9 +113,16 @@ export function OnboardingWelcome({ userName }: { userName: string }) {
         <button
           onClick={handleDismiss}
           disabled={isPending}
-          className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-rose-500 font-medium transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400 hover:text-rose-500 font-medium transition-colors disabled:opacity-50"
         >
-          {isPending ? "Salvando…" : "Tudo pronto, pular →"}
+          {isPending ? (
+            "Salvando…"
+          ) : (
+            <>
+              Tudo pronto, pular
+              <ArrowRight className="w-3.5 h-3.5" />
+            </>
+          )}
         </button>
       </div>
     </div>

@@ -30,6 +30,7 @@ import {
   HelpCircle,
   LifeBuoy,
   Lock,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 import { cn, formatPhoneInput } from "@/lib/utils";
@@ -657,21 +658,21 @@ function AssinaturaTab({ initialPeriodEnd, initialCpfCnpj }: { initialPeriodEnd:
               <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
                 Downgrade agendado para {pendingPlan === "pro" ? "Plus" : pendingPlan === "premium" ? "Premium" : pendingPlan}
               </p>
-              <ul className="text-xs text-amber-700 dark:text-amber-400 space-y-1.5">
-                <li>• Você mantém o plano <strong>{plan.name}</strong> até <strong>{formattedExpiry}</strong> — sem mudanças até lá.</li>
-                <li>• Nessa data, sua assinatura passa para <strong>{pendingPlan === "pro" ? "Plus" : "Premium"}</strong> automaticamente.</li>
-                <li>• A próxima cobrança virá com o valor do novo plano.</li>
-                <li>• Faturas já pagas não são reembolsadas.</li>
+              <ul className="text-xs text-amber-700 dark:text-amber-400 space-y-1.5 list-disc list-outside pl-4 marker:text-amber-400">
+                <li>Você mantém o plano <strong>{plan.name}</strong> até <strong>{formattedExpiry}</strong> — sem mudanças até lá.</li>
+                <li>Nessa data, sua assinatura passa para <strong>{pendingPlan === "pro" ? "Plus" : "Premium"}</strong> automaticamente.</li>
+                <li>A próxima cobrança virá com o valor do novo plano.</li>
+                <li>Faturas já pagas não são reembolsadas.</li>
               </ul>
             </>
           ) : (
             <>
               <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Cancelamento agendado</p>
-              <ul className="text-xs text-amber-700 dark:text-amber-400 space-y-1.5">
-                <li>• Você mantém o plano <strong>{plan.name}</strong> até <strong>{formattedExpiry}</strong>.</li>
-                <li>• Nessa data, a conta volta para o plano <strong>Free</strong> automaticamente.</li>
-                <li>• Não há novas cobranças. Seus dados continuam preservados.</li>
-                <li>• Faturas já pagas não são reembolsadas.</li>
+              <ul className="text-xs text-amber-700 dark:text-amber-400 space-y-1.5 list-disc list-outside pl-4 marker:text-amber-400">
+                <li>Você mantém o plano <strong>{plan.name}</strong> até <strong>{formattedExpiry}</strong>.</li>
+                <li>Nessa data, a conta volta para o plano <strong>Free</strong> automaticamente.</li>
+                <li>Não há novas cobranças. Seus dados continuam preservados.</li>
+                <li>Faturas já pagas não são reembolsadas.</li>
               </ul>
             </>
           )}
@@ -1569,8 +1570,9 @@ function SuporteTab() {
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
                   Disponível no Premium
                 </p>
-                <p className="text-xs font-medium text-rose-600 dark:text-rose-400 mt-1">
-                  Fazer upgrade →
+                <p className="text-xs font-medium text-rose-600 dark:text-rose-400 mt-1 inline-flex items-center gap-1">
+                  Fazer upgrade
+                  <ArrowRight className="w-3 h-3" />
                 </p>
               </div>
             </Link>

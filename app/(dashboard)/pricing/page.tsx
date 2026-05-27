@@ -5,7 +5,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   Check, X, Users, ShoppingBag, Package, Calendar,
   BarChart3, MessageCircle, Bell, Download, HeadphonesIcon,
-  Clock, AlertTriangle, Info,
+  Clock, AlertTriangle, Info, ArrowRight,
 } from "lucide-react";
 import { usePlan } from "@/lib/plan-context";
 import { PLANS, PLAN_ORDER, PlanId } from "@/lib/plans";
@@ -208,8 +208,9 @@ export default function PricingPage() {
     <div className="space-y-4">
       {/* Flash messages */}
       {flash === "success" && (
-        <div className="px-4 py-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl text-sm text-emerald-700 dark:text-emerald-400">
-          🎉 Assinatura ativada com sucesso! Bem-vinda ao novo plano.
+        <div className="px-4 py-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl text-sm text-emerald-700 dark:text-emerald-400 flex items-start gap-2">
+          <Check className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>Assinatura ativada com sucesso. Bem-vinda ao novo plano.</span>
         </div>
       )}
       {flash === "canceled" && (
@@ -235,10 +236,13 @@ export default function PricingPage() {
         <div className="px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-start gap-2">
             <Clock className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
-            <p className="text-sm text-amber-800 dark:text-amber-300">
-              Downgrade agendado: <strong>{PLANS[planId].name}</strong> →{" "}
-              <strong>{PLANS[pendingPlan].name}</strong> em{" "}
-              <strong>{formatLongDate(scheduledDowngradeAt)}</strong>.
+            <p className="text-sm text-amber-800 dark:text-amber-300 inline-flex flex-wrap items-center gap-x-1">
+              <span>Downgrade agendado:</span>
+              <strong>{PLANS[planId].name}</strong>
+              <ArrowRight className="w-3.5 h-3.5 inline" />
+              <strong>{PLANS[pendingPlan].name}</strong>
+              <span>em</span>
+              <strong>{formatLongDate(scheduledDowngradeAt)}.</strong>
             </p>
           </div>
           <button

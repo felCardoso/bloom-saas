@@ -725,7 +725,12 @@ export function PedidosView({
                 Forma de pagamento
               </span>
               <span
-                className={`text-sm font-semibold ${selected.payment_method === "fiado" ? "text-amber-600 dark:text-amber-400" : "text-neutral-800 dark:text-neutral-100"}`}
+                className={cn(
+                  "text-sm font-semibold",
+                  selected.payment_method === "fiado"
+                    ? "text-amber-600 dark:text-amber-400"
+                    : "text-neutral-800 dark:text-neutral-100",
+                )}
               >
                 {paymentLabels[selected.payment_method]}
                 {selected.payment_method === "fiado" && selected.paid_at && (

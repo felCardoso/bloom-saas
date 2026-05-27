@@ -15,7 +15,7 @@ import {
   Legend,
 } from "recharts";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, cn } from "@/lib/utils";
 import {
   TrendingUp,
   TrendingDown,
@@ -32,7 +32,6 @@ import { usePlan } from "@/lib/plan-context";
 import { useTheme, useThemeColor, useThemePalette } from "@/lib/theme-context";
 import { LockedFeature } from "@/components/ui/LockedFeature";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { getRelatorios } from "@/lib/actions/relatorios";
 import type { RelatoriosData, Period } from "@/lib/actions/relatorios";
 
@@ -263,9 +262,12 @@ export default function RelatoriosClient({
         {kpis.map((kpi) => (
           <Card key={kpi.label}>
             <div
-              className={`w-9 h-9 ${kpi.bg} rounded-xl flex items-center justify-center mb-3`}
+              className={cn(
+                "w-9 h-9 rounded-xl flex items-center justify-center mb-3",
+                kpi.bg,
+              )}
             >
-              <kpi.icon className={`w-4 h-4 ${kpi.color}`} />
+              <kpi.icon className={cn("w-4 h-4", kpi.color)} />
             </div>
             <p
               className={cn(

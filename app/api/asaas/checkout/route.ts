@@ -37,7 +37,7 @@ export async function POST(request: Request) {
   const cpfCnpj = (profile?.cpf_cnpj as string | null)?.replace(/\D/g, "") ?? "";
   if (!cpfCnpj) {
     return NextResponse.json(
-      { error: "Preencha seu CPF ou CNPJ em Configurações → Perfil antes de assinar." },
+      { error: "Preencha seu CPF ou CNPJ em Configurações, aba Perfil, antes de assinar." },
       { status: 400 }
     );
   }
