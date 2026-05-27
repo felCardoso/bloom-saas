@@ -12,7 +12,6 @@ import { parseFile, normalizeHeaders } from "@/lib/csv-parse";
 import type { ImportClienteRow } from "@/lib/actions/csv";
 import {
   Plus,
-  Search,
   Phone,
   Mail,
   MapPin,
@@ -30,6 +29,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { Select } from "@/components/ui/Select";
 import { Card } from "@/components/ui/Card";
 import { UpgradeModal } from "@/components/ui/UpgradeModal";
@@ -278,15 +278,12 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
     <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nome, telefone..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-700 dark:text-neutral-200 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent shadow-card"
-          />
-        </div>
+        <SearchInput
+          wrapperClassName="flex-1"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar por nome, telefone..."
+        />
         <div className="flex gap-2">
           <select
             value={statusFilter}
