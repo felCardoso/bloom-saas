@@ -25,7 +25,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        sans: ["var(--font-geist)", "system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],
       },
       borderRadius: {
         "2xl": "1rem",

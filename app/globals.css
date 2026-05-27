@@ -14,7 +14,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-geist);
 }
 
 /* Primary color — uses CSS variables so [data-primary] on <html> can swap palettes at runtime.

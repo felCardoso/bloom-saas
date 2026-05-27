@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { PwaUpdateBanner } from "@/components/PwaUpdateBanner";
 
-const inter = Inter({
-  variable: "--font-inter",
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
   display: "swap",
 });
@@ -58,7 +58,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} h-full`}>
+    <html lang="pt-BR" className={`${geist.variable} h-full`}>
       <meta name="apple-mobile-web-app-title" content="Bloom" />
       <body className="min-h-full">
         <Providers>{children}</Providers>
