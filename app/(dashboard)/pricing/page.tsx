@@ -242,7 +242,7 @@ export default function PricingPage() {
               <ArrowRight className="w-3.5 h-3.5 inline" />
               <strong>{PLANS[pendingPlan].name}</strong>
               <span>em</span>
-              <strong>{formatLongDate(scheduledDowngradeAt)}</strong>.
+              <strong>{formatLongDate(scheduledDowngradeAt)}.</strong>
             </p>
           </div>
           <button

@@ -271,7 +271,7 @@ export default function LandingPage() {
                 <div className="space-y-2 sm:space-y-2">
                   {[
                     { label: "Ativas", pct: 68, barClass: "bg-rose-500" },
-                    { label: "Inativas", pct: 20, barClass: "bg-neutral-200 dark:bg-neutral-600" },
+                    { label: "Inativas", pct: 20, barClass: "bg-neutral-200" },
                     { label: "Prospects", pct: 12, barClass: "bg-rose-200" },
                   ].map((s) => (
                     <div key={s.label}>
