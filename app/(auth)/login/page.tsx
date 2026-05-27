@@ -3,13 +3,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useTransition } from "react";
-import { Eye, EyeOff, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 import { signIn } from "@/lib/actions/auth";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 
 export default function LoginPage() {
-  const [showPw, setShowPw] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState({
     email: "",
@@ -75,7 +75,10 @@ export default function LoginPage() {
 
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-neutral-700">
+            <label
+              htmlFor="senha"
+              className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+            >
               Senha
             </label>
             <Link
@@ -85,28 +88,14 @@ export default function LoginPage() {
               Esqueceu a senha?
             </Link>
           </div>
-          <div className="relative">
-            <input
-              type={showPw ? "text" : "password"}
-              placeholder="Sua senha"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              autoComplete="current-password"
-              className="w-full px-3.5 py-2.5 pr-11 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 hover:border-neutral-300 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPw((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
-              aria-label={showPw ? "Ocultar senha" : "Mostrar senha"}
-            >
-              {showPw ? (
-                <EyeOff className="w-4 h-4" />
-              ) : (
-                <Eye className="w-4 h-4" />
-              )}
-            </button>
-          </div>
+          <Input
+            id="senha"
+            type="password"
+            placeholder="Sua senha"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            autoComplete="current-password"
+          />
         </div>
 
         <label className="flex items-center gap-2.5 cursor-pointer select-none">
@@ -121,20 +110,14 @@ export default function LoginPage() {
           </span>
         </label>
 
-        <button
+        <Button
           type="submit"
-          disabled={isPending}
-          className="w-full flex items-center justify-center gap-2 py-3 bg-rose-500 text-white rounded-xl font-semibold text-sm hover:bg-rose-600 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm"
+          loading={isPending}
+          className="w-full justify-center py-3"
         >
-          {isPending ? (
-            <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-          ) : (
-            <>
-              Entrar
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
-        </button>
+          Entrar
+          <ArrowRight className="w-4 h-4" />
+        </Button>
       </form>
 
       <div className="flex items-center gap-3 my-5">
