@@ -68,12 +68,14 @@ export async function adicionarEstoque(
 
   if (updateErr) return { error: "Erro ao atualizar estoque." };
 
-  await supabase.from("movimentacoes_estoque").insert({
+  const { error: movErr } = await supabase.from("movimentacoes_estoque").insert({
+    user_id: user.id,
     produto_id: produtoId,
     tipo: "entrada",
     quantidade,
     motivo: motivo?.trim() || null,
   });
+  if (movErr) return { error: "Estoque atualizado, mas falha ao registrar histórico." };
 
   revalidatePath("/produtos");
   return { newStock };

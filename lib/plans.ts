@@ -16,7 +16,6 @@ export interface PlanFeatures {
   whatsappLink: boolean;
   stockAlerts: boolean;
   csvExport: boolean;
-  multipleUsers: number; // 0 = só o titular
   support: "community" | "email" | "priority";
 }
 
@@ -53,7 +52,6 @@ export const PLANS: Record<PlanId, Plan> = {
       whatsappLink: false,
       stockAlerts: false,
       csvExport: false,
-      multipleUsers: 0,
       support: "community",
     },
   },
@@ -79,7 +77,6 @@ export const PLANS: Record<PlanId, Plan> = {
       whatsappLink: true,
       stockAlerts: true,
       csvExport: false,
-      multipleUsers: 0,
       support: "email",
     },
   },
@@ -104,7 +101,6 @@ export const PLANS: Record<PlanId, Plan> = {
       whatsappLink: true,
       stockAlerts: true,
       csvExport: true,
-      multipleUsers: 3,
       support: "priority",
     },
   },
@@ -128,6 +124,5 @@ export const FEATURE_LABELS: Record<keyof PlanFeatures, string> = {
   whatsappLink: "Link rápido para WhatsApp",
   stockAlerts: "Alertas de estoque baixo",
   csvExport: "Exportar dados (CSV)",
-  multipleUsers: "Múltiplos usuários",
   support: "Suporte prioritário",
 };

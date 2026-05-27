@@ -96,7 +96,7 @@ const plans = [
       "Pedidos ilimitados",
       "Relatórios avançados",
       "Exportação de dados (CSV)",
-      "Suporte prioritário por WhatsApp",
+      "Suporte prioritário",
     ],
     cta: "Assinar Premium",
     href: "/registro",

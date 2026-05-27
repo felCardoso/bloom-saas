@@ -3,97 +3,30 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
-  Check,
-  X,
-  Users,
-  ShoppingBag,
-  Package,
-  Calendar,
-  BarChart3,
-  MessageCircle,
-  Bell,
-  Download,
-  UsersRound,
-  HeadphonesIcon,
-  Clock,
-  AlertTriangle,
-  Info,
+  Check, X, Users, ShoppingBag, Package, Calendar,
+  BarChart3, MessageCircle, Bell, Download, HeadphonesIcon,
+  Clock, AlertTriangle, Info,
 } from "lucide-react";
 import { usePlan } from "@/lib/plan-context";
 import { PLANS, PLAN_ORDER, PlanId } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
 const FEATURES_TABLE = [
-  {
-    group: "Limites",
-    rows: [
-      {
-        label: "Clientes",
-        icon: Users,
-        values: { free: "até 30", pro: "até 200", premium: "Ilimitado" },
-      },
-      {
-        label: "Pedidos/mês",
-        icon: ShoppingBag,
-        values: { free: "até 20", pro: "até 150", premium: "Ilimitado" },
-      },
-      {
-        label: "Produtos",
-        icon: Package,
-        values: { free: "até 20", pro: "até 100", premium: "Ilimitado" },
-      },
-      {
-        label: "Eventos",
-        icon: Calendar,
-        values: { free: "até 15", pro: "Ilimitado", premium: "Ilimitado" },
-      },
-    ],
-  },
-  {
-    group: "Recursos",
-    rows: [
-      {
-        label: "Gráficos e relatórios",
-        icon: BarChart3,
-        values: { free: false, pro: true, premium: true },
-      },
-      {
-        label: "Relatórios avançados",
-        icon: BarChart3,
-        values: { free: false, pro: false, premium: true },
-      },
-      {
-        label: "Lembretes aniversário",
-        icon: Bell,
-        values: { free: false, pro: true, premium: true },
-      },
-      {
-        label: "Link WhatsApp",
-        icon: MessageCircle,
-        values: { free: false, pro: true, premium: true },
-      },
-      {
-        label: "Alertas estoque",
-        icon: Package,
-        values: { free: false, pro: true, premium: true },
-      },
-      {
-        label: "Exportar CSV",
-        icon: Download,
-        values: { free: false, pro: false, premium: true },
-      },
-      {
-        label: "Múltiplos usuários",
-        icon: UsersRound,
-        values: { free: false, pro: false, premium: "até 3" },
-      },
-      {
-        label: "Suporte",
-        icon: HeadphonesIcon,
-        values: { free: "E-mail", pro: "E-mail", premium: "Prioritário (24h)" },
-      },
-    ],
-  },
+  { group: "Limites", rows: [
+    { label: "Clientes", icon: Users, values: { free: "até 30", pro: "até 200", premium: "Ilimitado" } },
+    { label: "Pedidos/mês", icon: ShoppingBag, values: { free: "até 20", pro: "até 150", premium: "Ilimitado" } },
+    { label: "Produtos", icon: Package, values: { free: "até 20", pro: "até 100", premium: "Ilimitado" } },
+    { label: "Eventos", icon: Calendar, values: { free: "até 15", pro: "Ilimitado", premium: "Ilimitado" } },
+  ]},
+  { group: "Recursos", rows: [
+    { label: "Gráficos e relatórios", icon: BarChart3, values: { free: false, pro: true, premium: true } },
+    { label: "Relatórios avançados", icon: BarChart3, values: { free: false, pro: false, premium: true } },
+    { label: "Lembretes aniversário", icon: Bell, values: { free: false, pro: true, premium: true } },
+    { label: "Link WhatsApp", icon: MessageCircle, values: { free: false, pro: true, premium: true } },
+    { label: "Alertas estoque", icon: Package, values: { free: false, pro: true, premium: true } },
+    { label: "Exportar CSV", icon: Download, values: { free: false, pro: false, premium: true } },
+    { label: "Suporte", icon: HeadphonesIcon, values: { free: "E-mail", pro: "E-mail", premium: "Prioritário (24h)" } },
+  ]},
 ];
 
 function FeatureValue({ value }: { value: boolean | string }) {
@@ -136,7 +69,6 @@ function planKey(p: (typeof PLANS)[PlanId]) {
     p.features.stockAlerts && "Alertas de estoque baixo",
     p.features.whatsappLink && "Link rápido para WhatsApp",
     p.features.csvExport && "Exportar dados (CSV)",
-    p.features.multipleUsers > 0 && `Até ${p.features.multipleUsers} usuários`,
     supportLabel,
   ].filter(Boolean) as string[];
   return [...limits, ...extras];

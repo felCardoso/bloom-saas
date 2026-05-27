@@ -1,9 +1,14 @@
 "use server";
 
+import { createHash } from "crypto";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import type { PlanId } from "@/lib/plans";
 import type { Usage } from "@/lib/plan-context";
+
+function hashValue(s: string): string {
+  return createHash("sha256").update(s.toLowerCase().trim()).digest("hex");
+}
 
 export async function getUserPlan(): Promise<PlanId> {
   const supabase = await createClient();
@@ -81,7 +86,7 @@ export async function getTrialInfo(): Promise<{
   return { daysLeft: daysLeft > 0 ? daysLeft : null, claimed };
 }
 
-export async function startTrial(): Promise<{ error?: string }> {
+export async function startTrial(): Promise<{ error?: string; needsCpf?: boolean }> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -90,7 +95,7 @@ export async function startTrial(): Promise<{ error?: string }> {
 
   const { data } = await supabase
     .from("perfis_usuarios")
-    .select("plano, trial_claimed")
+    .select("plano, trial_claimed, cpf_cnpj")
     .eq("id", user.id)
     .single();
 
@@ -98,6 +103,21 @@ export async function startTrial(): Promise<{ error?: string }> {
     return { error: "Você já utilizou o período de trial." };
   if (data?.plano === "pro" || data?.plano === "premium")
     return { error: "Você já possui um plano ativo." };
+
+  const cpfRaw = (data?.cpf_cnpj as string | null)?.replace(/\D/g, "") ?? null;
+  if (!cpfRaw || cpfRaw.length < 11) return { error: "Informe seu CPF para ativar o trial.", needsCpf: true };
+
+  // Check blocklist (service role bypasses RLS)
+  const admin = createServiceClient();
+  const emailHash = hashValue(user.email ?? "");
+  const cpfHash = hashValue(cpfRaw);
+  const { data: blocked } = await admin
+    .from("trial_blocklist")
+    .select("id")
+    .or(`email_hash.eq.${emailHash},cpf_hash.eq.${cpfHash}`)
+    .maybeSingle();
+
+  if (blocked) return { error: "Este CPF ou e-mail já utilizou o trial gratuito anteriormente." };
 
   const trialEnd = new Date();
   trialEnd.setDate(trialEnd.getDate() + 7);
@@ -109,6 +129,23 @@ export async function startTrial(): Promise<{ error?: string }> {
       trial_claimed: true,
       updated_at: new Date().toISOString(),
     })
+    .eq("id", user.id);
+
+  if (error) return { error: error.message };
+  return {};
+}
+
+export async function saveCpfForTrial(cpf: string): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Não autorizado" };
+
+  const normalized = cpf.replace(/\D/g, "");
+  if (normalized.length !== 11) return { error: "CPF inválido. Informe os 11 dígitos." };
+
+  const { error } = await supabase
+    .from("perfis_usuarios")
+    .update({ cpf_cnpj: cpf.trim(), updated_at: new Date().toISOString() })
     .eq("id", user.id);
 
   if (error) return { error: error.message };
