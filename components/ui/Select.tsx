@@ -5,6 +5,7 @@ import { ChevronDown } from "lucide-react";
 interface SelectOption {
   value: string;
   label: string;
+  disabled?: boolean;
 }
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
@@ -12,14 +13,18 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   options: SelectOption[];
   placeholder?: string;
   error?: string;
+  wrapperClassName?: string;
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ label, options, placeholder, error, className, id, ...props }, ref) => {
+  (
+    { label, options, placeholder, error, className, wrapperClassName, id, ...props },
+    ref,
+  ) => {
     const selectId = id || label?.toLowerCase().replace(/\s/g, "-");
 
     return (
-      <div className="flex flex-col gap-1.5">
+      <div className={cn("flex flex-col gap-1.5", wrapperClassName)}>
         {label && (
           <label
             htmlFor={selectId}
@@ -48,7 +53,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               </option>
             )}
             {options.map((opt) => (
-              <option key={opt.value} value={opt.value}>
+              <option key={opt.value} value={opt.value} disabled={opt.disabled}>
                 {opt.label}
               </option>
             ))}

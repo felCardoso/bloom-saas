@@ -349,18 +349,16 @@ export function ProdutosView({
           placeholder="Buscar produto ou marca..."
         />
         <div className="flex gap-2">
-          <select
+          <Select
+            wrapperClassName="flex-1 sm:flex-none"
+            className="shadow-card"
             value={catFilter}
             onChange={(e) => setCatFilter(e.target.value)}
-            className="flex-1 sm:flex-none px-3.5 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-600 dark:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-card"
-          >
-            <option value="all">Todas</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: "all", label: "Todas" },
+              ...categories.map((c) => ({ value: c, label: c })),
+            ]}
+          />
           <button
             onClick={handleImportOpen}
             className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors shadow-card"
