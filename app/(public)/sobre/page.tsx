@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Heart, Target, Sparkles, ArrowRight, Star } from "lucide-react";
+import { Card } from "@/components/ui/Card";
 
 export const metadata: Metadata = {
   title: "Sobre",
@@ -147,10 +148,7 @@ export default function SobrePage() {
         </h2>
         <div className="space-y-4">
           {values.map((v) => (
-            <div
-              key={v.title}
-              className="flex items-start gap-4 p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 shadow-sm"
-            >
+            <Card key={v.title} className="flex items-start gap-4">
               <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center shrink-0">
                 <v.icon className="w-5 h-5 text-rose-500" />
               </div>
@@ -162,7 +160,7 @@ export default function SobrePage() {
                   {v.desc}
                 </p>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       </div>
@@ -177,10 +175,7 @@ export default function SobrePage() {
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {team.map((member) => (
-            <div
-              key={member.name}
-              className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 shadow-sm text-center"
-            >
+            <Card key={member.name} className="text-center">
               <div className="w-14 h-14 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-base font-bold text-rose-600">
                   {member.initials}
@@ -195,7 +190,7 @@ export default function SobrePage() {
               <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
                 {member.bio}
               </p>
-            </div>
+            </Card>
           ))}
         </div>
       </div>
@@ -207,10 +202,7 @@ export default function SobrePage() {
         </h2>
         <div className="space-y-4">
           {testimonials.map((t) => (
-            <div
-              key={t.name}
-              className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 shadow-sm"
-            >
+            <Card key={t.name}>
               <div className="flex gap-0.5 mb-3">
                 {Array.from({ length: t.stars }).map((_, i) => (
                   <Star
@@ -228,7 +220,7 @@ export default function SobrePage() {
                 </p>
                 <p className="text-xs text-neutral-400">{t.role}</p>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       </div>
