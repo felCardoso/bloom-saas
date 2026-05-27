@@ -44,7 +44,11 @@ export async function addTemplate(form: {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Não autenticado" };
 
-  const limitCheck = await checkPlanLimit(supabase, user.id, "messageTemplates");
+  const limitCheck = await checkPlanLimit(
+    supabase,
+    user.id,
+    "messageTemplates",
+  );
   if (limitCheck.error) return limitCheck;
 
   const { error } = await supabase.from("templates_whatsapp").insert({
@@ -60,7 +64,7 @@ export async function addTemplate(form: {
 
 export async function updateTemplate(
   id: string,
-  form: { nome: string; tipo: WaTemplateType; mensagem: string }
+  form: { nome: string; tipo: WaTemplateType; mensagem: string },
 ): Promise<{ error?: string }> {
   const supabase = await createClient();
   const { error } = await supabase

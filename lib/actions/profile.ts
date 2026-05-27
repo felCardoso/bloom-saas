@@ -12,7 +12,9 @@ function hashValue(s: string): string {
 
 export async function getUserPlan(): Promise<PlanId> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   const { data } = await supabase
@@ -58,9 +60,14 @@ export async function getUserPlan(): Promise<PlanId> {
   return "free";
 }
 
-export async function getTrialInfo(): Promise<{ daysLeft: number | null; claimed: boolean }> {
+export async function getTrialInfo(): Promise<{
+  daysLeft: number | null;
+  claimed: boolean;
+}> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { daysLeft: null, claimed: false };
 
   const { data } = await supabase
@@ -69,17 +76,21 @@ export async function getTrialInfo(): Promise<{ daysLeft: number | null; claimed
     .eq("id", user.id)
     .single();
 
-  const claimed = !!(data?.trial_claimed);
+  const claimed = !!data?.trial_claimed;
   const trialEndsAt = data?.trial_ends_at as string | null;
   if (!trialEndsAt) return { daysLeft: null, claimed };
 
-  const daysLeft = Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  const daysLeft = Math.ceil(
+    (new Date(trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+  );
   return { daysLeft: daysLeft > 0 ? daysLeft : null, claimed };
 }
 
 export async function startTrial(): Promise<{ error?: string; needsCpf?: boolean }> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: "Não autorizado" };
 
   const { data } = await supabase
@@ -88,8 +99,10 @@ export async function startTrial(): Promise<{ error?: string; needsCpf?: boolean
     .eq("id", user.id)
     .single();
 
-  if (data?.trial_claimed) return { error: "Você já utilizou o período de trial." };
-  if (data?.plano === "pro" || data?.plano === "premium") return { error: "Você já possui um plano ativo." };
+  if (data?.trial_claimed)
+    return { error: "Você já utilizou o período de trial." };
+  if (data?.plano === "pro" || data?.plano === "premium")
+    return { error: "Você já possui um plano ativo." };
 
   const cpfRaw = (data?.cpf_cnpj as string | null)?.replace(/\D/g, "") ?? null;
   if (!cpfRaw || cpfRaw.length < 11) return { error: "Informe seu CPF para ativar o trial.", needsCpf: true };
@@ -111,7 +124,11 @@ export async function startTrial(): Promise<{ error?: string; needsCpf?: boolean
 
   const { error } = await supabase
     .from("perfis_usuarios")
-    .update({ trial_ends_at: trialEnd.toISOString(), trial_claimed: true, updated_at: new Date().toISOString() })
+    .update({
+      trial_ends_at: trialEnd.toISOString(),
+      trial_claimed: true,
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", user.id);
 
   if (error) return { error: error.message };
@@ -137,7 +154,9 @@ export async function saveCpfForTrial(cpf: string): Promise<{ error?: string }> 
 
 export async function getPlanPeriodEnd(): Promise<string | null> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return null;
 
   const { data } = await supabase
@@ -157,7 +176,9 @@ export async function getPendingDowngrade(): Promise<{
   scheduledFor: string | null;
 }> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { pendingPlan: null, scheduledFor: null };
 
   const { data } = await supabase
@@ -169,22 +190,40 @@ export async function getPendingDowngrade(): Promise<{
   const pending = data?.pending_plan as PlanId | null;
   const periodEnd = data?.asaas_period_end as string | null;
   if (!pending || !periodEnd) return { pendingPlan: null, scheduledFor: null };
-  if (new Date(periodEnd) <= new Date()) return { pendingPlan: null, scheduledFor: null };
+  if (new Date(periodEnd) <= new Date())
+    return { pendingPlan: null, scheduledFor: null };
   return { pendingPlan: pending, scheduledFor: periodEnd };
 }
 
 export async function getUsageCounts(): Promise<Partial<Usage>> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return {};
 
   const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const startOfMonth = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    1,
+  ).toISOString();
 
   const [clientsRes, productsRes, vendasRes] = await Promise.all([
-    supabase.from("clientes").select("id", { count: "exact", head: true }).eq("user_id", user.id),
-    supabase.from("produtos").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("ativo", true),
-    supabase.from("vendas").select("id", { count: "exact", head: true }).eq("user_id", user.id).gte("data_venda", startOfMonth),
+    supabase
+      .from("clientes")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id),
+    supabase
+      .from("produtos")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("ativo", true),
+    supabase
+      .from("vendas")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("data_venda", startOfMonth),
   ]);
 
   return {
@@ -197,7 +236,9 @@ export async function getUsageCounts(): Promise<Partial<Usage>> {
 
 export async function getProfile() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   const { data } = await supabase
@@ -218,7 +259,9 @@ export async function getProfile() {
 
 export async function updateAvatar(url: string) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   const { error } = await supabase
@@ -238,7 +281,9 @@ export async function updateProfile(profile: {
   cpfCnpj?: string;
 }) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   const updates: Record<string, unknown> = {
@@ -258,7 +303,9 @@ export async function updateProfile(profile: {
   if (error) return { error: error.message };
 
   if (profile.email !== user.email) {
-    const { error: authError } = await supabase.auth.updateUser({ email: profile.email });
+    const { error: authError } = await supabase.auth.updateUser({
+      email: profile.email,
+    });
     if (authError) return { error: authError.message };
   }
 
@@ -283,7 +330,9 @@ const DEFAULT_NOTIF_PREFS: NotificationPrefs = {
 
 export async function getNotificationPrefs(): Promise<NotificationPrefs> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return DEFAULT_NOTIF_PREFS;
 
   const { data } = await supabase
@@ -297,12 +346,17 @@ export async function getNotificationPrefs(): Promise<NotificationPrefs> {
 
 export async function updateNotificationPrefs(prefs: NotificationPrefs) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   const { error } = await supabase
     .from("perfis_usuarios")
-    .update({ preferencias_notificacoes: prefs, updated_at: new Date().toISOString() })
+    .update({
+      preferencias_notificacoes: prefs,
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", user.id);
 
   if (error) return { error: error.message };
@@ -311,7 +365,9 @@ export async function updateNotificationPrefs(prefs: NotificationPrefs) {
 
 export async function getOnboardingStatus(): Promise<boolean> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return true;
 
   const { data } = await supabase
@@ -325,7 +381,9 @@ export async function getOnboardingStatus(): Promise<boolean> {
 
 export async function completeOnboarding() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return;
 
   await supabase
@@ -336,7 +394,9 @@ export async function completeOnboarding() {
 
 export async function updatePlan(planId: PlanId) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   const { error } = await supabase

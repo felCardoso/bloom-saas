@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   Check, X, Users, ShoppingBag, Package, Calendar,
   BarChart3, MessageCircle, Bell, Download, HeadphonesIcon,
@@ -29,20 +30,40 @@ const FEATURES_TABLE = [
 ];
 
 function FeatureValue({ value }: { value: boolean | string }) {
-  if (value === true)  return <Check className="w-4 h-4 text-emerald-500 mx-auto" />;
-  if (value === false) return <X className="w-4 h-4 text-neutral-300 dark:text-neutral-600 mx-auto" />;
-  return <span className="text-[11px] text-neutral-700 dark:text-neutral-300 font-medium leading-tight">{value}</span>;
+  if (value === true)
+    return <Check className="w-4 h-4 text-emerald-500 mx-auto" />;
+  if (value === false)
+    return (
+      <X className="w-4 h-4 text-neutral-300 dark:text-neutral-600 mx-auto" />
+    );
+  return (
+    <span className="text-[11px] text-neutral-700 dark:text-neutral-300 font-medium leading-tight">
+      {value}
+    </span>
+  );
 }
 
 function planKey(p: (typeof PLANS)[PlanId]) {
   const limits = [
-    p.limits.clients === -1 ? "Clientes ilimitados" : `Até ${p.limits.clients} clientes`,
-    p.limits.ordersPerMonth === -1 ? "Pedidos ilimitados" : `Até ${p.limits.ordersPerMonth} pedidos/mês`,
-    p.limits.products === -1 ? "Produtos ilimitados" : `Até ${p.limits.products} produtos`,
+    p.limits.clients === -1
+      ? "Clientes ilimitados"
+      : `Até ${p.limits.clients} clientes`,
+    p.limits.ordersPerMonth === -1
+      ? "Pedidos ilimitados"
+      : `Até ${p.limits.ordersPerMonth} pedidos/mês`,
+    p.limits.products === -1
+      ? "Produtos ilimitados"
+      : `Até ${p.limits.products} produtos`,
   ];
-  const supportLabel = { community: "Suporte por e-mail", email: "Suporte por e-mail", priority: "Suporte prioritário" }[p.features.support];
+  const supportLabel = {
+    community: "Suporte por e-mail",
+    email: "Suporte por e-mail",
+    priority: "Suporte prioritário",
+  }[p.features.support];
   const extras = [
-    p.features.reportsBasic && !p.features.reportsAdvanced && "Relatórios e gráficos",
+    p.features.reportsBasic &&
+      !p.features.reportsAdvanced &&
+      "Relatórios e gráficos",
     p.features.reportsAdvanced && "Relatórios avançados",
     p.features.birthdayReminders && "Lembretes de aniversário",
     p.features.stockAlerts && "Alertas de estoque baixo",
@@ -54,7 +75,9 @@ function planKey(p: (typeof PLANS)[PlanId]) {
 }
 
 function formatLongDate(iso: string): string {
-  return new Date(iso.length === 10 ? iso + "T00:00:00" : iso).toLocaleDateString("pt-BR", {
+  return new Date(
+    iso.length === 10 ? iso + "T00:00:00" : iso,
+  ).toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "long",
     year: "numeric",
@@ -62,20 +85,29 @@ function formatLongDate(iso: string): string {
 }
 
 export default function PricingPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const { planId, pendingPlan, scheduledDowngradeAt } = usePlan();
   const [confirming, setConfirming] = useState<PlanId | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState<PlanId | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-  const [flash, setFlash] = useState<"success" | "canceled" | "scheduled" | null>(null);
-  const [scheduledInfo, setScheduledInfo] = useState<{ plan: PlanId; date: string } | null>(null);
+  const [flash, setFlash] = useState(() => {
+    if (searchParams.has("success")) return "success";
+    if (searchParams.has("canceled")) return "canceled";
+    return null;
+  });
+  const [scheduledInfo, setScheduledInfo] = useState<{
+    plan: PlanId;
+    date: string;
+  } | null>(null);
   const [revertLoading, setRevertLoading] = useState(false);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("success")) setFlash("success");
-    else if (params.get("canceled")) setFlash("canceled");
-    window.history.replaceState({}, "", "/pricing");
-  }, []);
+    if (searchParams.has("success") || searchParams.has("canceled")) {
+      router.replace(pathname, { scroll: false });
+    }
+  }, [searchParams, router, pathname]);
 
   function selectPlan(id: PlanId) {
     if (id === planId) return;
@@ -93,7 +125,10 @@ export default function PricingPage() {
       // Downgrade to free with an active paid plan → cancel subscription (keeps access until period end)
       if (target === "free" && planId !== "free") {
         const res = await fetch("/api/asaas/cancel", { method: "POST" });
-        const json = await res.json().catch(() => ({})) as { expiresAt?: string; error?: string };
+        const json = (await res.json().catch(() => ({}))) as {
+          expiresAt?: string;
+          error?: string;
+        };
         if (json.expiresAt) {
           setScheduledInfo({ plan: "free", date: json.expiresAt });
           setFlash("scheduled");
@@ -114,7 +149,7 @@ export default function PricingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ planId: target }),
       });
-      const json = await res.json().catch(() => ({})) as {
+      const json = (await res.json().catch(() => ({}))) as {
         url?: string;
         error?: string;
         scheduled?: boolean;
@@ -131,9 +166,16 @@ export default function PricingPage() {
         window.location.href = json.url;
         return;
       }
-      setCheckoutError(json.error ?? `Erro ${res.status} ao iniciar checkout. Tente novamente.`);
+      setCheckoutError(
+        json.error ??
+          `Erro ${res.status} ao iniciar checkout. Tente novamente.`,
+      );
     } catch {
-      setCheckoutError(isDowngrade ? "Erro ao agendar downgrade. Tente novamente." : "Erro ao iniciar checkout. Tente novamente.");
+      setCheckoutError(
+        isDowngrade
+          ? "Erro ao agendar downgrade. Tente novamente."
+          : "Erro ao iniciar checkout. Tente novamente.",
+      );
     } finally {
       setCheckoutLoading(null);
     }
@@ -143,8 +185,10 @@ export default function PricingPage() {
     setRevertLoading(true);
     setCheckoutError(null);
     try {
-      const res = await fetch("/api/asaas/revert-downgrade", { method: "POST" });
-      const json = await res.json().catch(() => ({})) as { error?: string };
+      const res = await fetch("/api/asaas/revert-downgrade", {
+        method: "POST",
+      });
+      const json = (await res.json().catch(() => ({}))) as { error?: string };
       if (json.error) {
         setCheckoutError(json.error);
       } else {
@@ -177,7 +221,11 @@ export default function PricingPage() {
         <div className="px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl text-sm text-amber-800 dark:text-amber-300 flex items-start gap-2">
           <Clock className="w-4 h-4 shrink-0 mt-0.5" />
           <span>
-            Downgrade agendado para <strong>{formatLongDate(scheduledInfo.date)}</strong>. Você continua com acesso ao plano <strong>{PLANS[planId].name}</strong> até essa data. Depois passa para <strong>{PLANS[scheduledInfo.plan].name}</strong> automaticamente.
+            Downgrade agendado para{" "}
+            <strong>{formatLongDate(scheduledInfo.date)}</strong>. Você continua
+            com acesso ao plano <strong>{PLANS[planId].name}</strong> até essa
+            data. Depois passa para{" "}
+            <strong>{PLANS[scheduledInfo.plan].name}</strong> automaticamente.
           </span>
         </div>
       )}
@@ -188,7 +236,9 @@ export default function PricingPage() {
           <div className="flex items-start gap-2">
             <Clock className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
             <p className="text-sm text-amber-800 dark:text-amber-300">
-              Downgrade agendado: <strong>{PLANS[planId].name}</strong> → <strong>{PLANS[pendingPlan].name}</strong> em <strong>{formatLongDate(scheduledDowngradeAt)}</strong>.
+              Downgrade agendado: <strong>{PLANS[planId].name}</strong> →{" "}
+              <strong>{PLANS[pendingPlan].name}</strong> em{" "}
+              <strong>{formatLongDate(scheduledDowngradeAt)}</strong>.
             </p>
           </div>
           <button
@@ -232,18 +282,26 @@ export default function PricingPage() {
               {(p.badge || isCurrent) && (
                 <div className="flex items-center gap-2 px-4 pt-3 pb-0">
                   {p.badge && (
-                    <span className={cn(
-                      "text-[10px] font-bold px-2 py-0.5 rounded-full",
-                      isFeatured ? "bg-white/20 text-white" : "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900",
-                    )}>
+                    <span
+                      className={cn(
+                        "text-[10px] font-bold px-2 py-0.5 rounded-full",
+                        isFeatured
+                          ? "bg-white/20 text-white"
+                          : "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900",
+                      )}
+                    >
                       {p.badge}
                     </span>
                   )}
                   {isCurrent && (
-                    <span className={cn(
-                      "text-[10px] font-bold px-2 py-0.5 rounded-full",
-                      isFeatured ? "bg-white text-rose-600" : "bg-rose-500 text-white",
-                    )}>
+                    <span
+                      className={cn(
+                        "text-[10px] font-bold px-2 py-0.5 rounded-full",
+                        isFeatured
+                          ? "bg-white text-rose-600"
+                          : "bg-rose-500 text-white",
+                      )}
+                    >
                       Plano atual
                     </span>
                   )}
@@ -253,32 +311,46 @@ export default function PricingPage() {
               <div className="p-4 flex flex-col gap-3 flex-1">
                 {/* Name + price */}
                 <div>
-                  <p className={cn(
-                    "text-xs font-semibold mb-1",
-                    isFeatured ? "text-rose-100" : "text-neutral-500 dark:text-neutral-400",
-                  )}>
+                  <p
+                    className={cn(
+                      "text-xs font-semibold mb-1",
+                      isFeatured
+                        ? "text-rose-100"
+                        : "text-neutral-500 dark:text-neutral-400",
+                    )}
+                  >
                     {p.name}
                   </p>
                   <div className="flex items-baseline gap-1">
-                    <span className={cn(
-                      "text-2xl font-bold",
-                      isFeatured ? "text-white" : "text-neutral-800 dark:text-neutral-100",
-                    )}>
-                      {p.price === 0 ? "Free" : `R$ ${p.price}`}
+                    <span
+                      className={cn(
+                        "text-2xl font-bold",
+                        isFeatured
+                          ? "text-white"
+                          : "text-neutral-800 dark:text-neutral-100",
+                      )}
+                    >
+                      {p.price === 0 ? "Grátis" : `R$ ${p.price}`}
                     </span>
                     {p.period && (
-                      <span className={cn(
-                        "text-sm",
-                        isFeatured ? "text-rose-200" : "text-neutral-400",
-                      )}>
+                      <span
+                        className={cn(
+                          "text-sm",
+                          isFeatured ? "text-rose-200" : "text-neutral-400",
+                        )}
+                      >
                         {p.period}
                       </span>
                     )}
                   </div>
-                  <p className={cn(
-                    "text-xs mt-0.5",
-                    isFeatured ? "text-rose-100" : "text-neutral-400 dark:text-neutral-500",
-                  )}>
+                  <p
+                    className={cn(
+                      "text-xs mt-0.5",
+                      isFeatured
+                        ? "text-rose-100"
+                        : "text-neutral-400 dark:text-neutral-500",
+                    )}
+                  >
                     {p.description}
                   </p>
                 </div>
@@ -286,14 +358,21 @@ export default function PricingPage() {
                 {/* Key features */}
                 <ul className="space-y-1.5 flex-1">
                   {planKey(p).map((f) => (
-                    <li key={f} className={cn(
-                      "flex items-center gap-2 text-sm",
-                      isFeatured ? "text-white" : "text-neutral-600 dark:text-neutral-300",
-                    )}>
-                      <Check className={cn(
-                        "w-3.5 h-3.5 shrink-0",
-                        isFeatured ? "text-rose-200" : "text-rose-500",
-                      )} />
+                    <li
+                      key={f}
+                      className={cn(
+                        "flex items-center gap-2 text-sm",
+                        isFeatured
+                          ? "text-white"
+                          : "text-neutral-600 dark:text-neutral-300",
+                      )}
+                    >
+                      <Check
+                        className={cn(
+                          "w-3.5 h-3.5 shrink-0",
+                          isFeatured ? "text-rose-200" : "text-rose-500",
+                        )}
+                      />
                       {f}
                     </li>
                   ))}
@@ -318,13 +397,15 @@ export default function PricingPage() {
                 >
                   {checkoutLoading === id ? (
                     <span className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
-                  ) : isCurrent
-                    ? "Plano atual"
-                    : isDowngrade
-                      ? "Fazer downgrade"
-                      : id === "free"
-                        ? "Usar grátis"
-                        : `Assinar ${p.name}`}
+                  ) : isCurrent ? (
+                    "Plano atual"
+                  ) : isDowngrade ? (
+                    "Fazer downgrade"
+                  ) : id === "free" ? (
+                    "Usar grátis"
+                  ) : (
+                    `Assinar ${p.name}`
+                  )}
                 </button>
               </div>
             </div>
@@ -335,12 +416,19 @@ export default function PricingPage() {
       {/* Comparação — div grid sem min-width, não causa overflow */}
       <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-card">
         <div className="grid grid-cols-[2fr_1fr_1fr_1fr] border-b border-neutral-100 dark:border-neutral-800 px-4 py-2.5">
-          <span className="text-xs font-semibold text-neutral-400 dark:text-neutral-500">Recurso</span>
+          <span className="text-xs font-semibold text-neutral-400 dark:text-neutral-500">
+            Recurso
+          </span>
           {PLAN_ORDER.map((id) => (
-            <span key={id} className={cn(
-              "text-xs font-bold text-center",
-              id === planId ? "text-rose-500" : "text-neutral-500 dark:text-neutral-400",
-            )}>
+            <span
+              key={id}
+              className={cn(
+                "text-xs font-bold text-center",
+                id === planId
+                  ? "text-rose-500"
+                  : "text-neutral-500 dark:text-neutral-400",
+              )}
+            >
               {PLANS[id].name}
               {id === planId && (
                 <span className="ml-1 text-[9px] bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 px-1 py-0.5 rounded-full">
@@ -356,17 +444,27 @@ export default function PricingPage() {
               {section.group}
             </div>
             {section.rows.map((row) => (
-              <div key={row.label} className="grid grid-cols-[2fr_1fr_1fr_1fr] border-t border-neutral-50 dark:border-neutral-800/60 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/20 transition-colors">
+              <div
+                key={row.label}
+                className="grid grid-cols-[2fr_1fr_1fr_1fr] border-t border-neutral-50 dark:border-neutral-800/60 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/20 transition-colors"
+              >
                 <div className="px-4 py-2.5 flex items-center gap-1.5 min-w-0">
                   <row.icon className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500 shrink-0" />
-                  <span className="text-xs text-neutral-700 dark:text-neutral-300 truncate">{row.label}</span>
+                  <span className="text-xs text-neutral-700 dark:text-neutral-300 truncate">
+                    {row.label}
+                  </span>
                 </div>
                 {PLAN_ORDER.map((id) => (
-                  <div key={id} className={cn(
-                    "py-2.5 flex items-center justify-center",
-                    id === planId ? "bg-rose-50/50 dark:bg-rose-900/10" : "",
-                  )}>
-                    <FeatureValue value={row.values[id as keyof typeof row.values]} />
+                  <div
+                    key={id}
+                    className={cn(
+                      "py-2.5 flex items-center justify-center",
+                      id === planId ? "bg-rose-50/50 dark:bg-rose-900/10" : "",
+                    )}
+                  >
+                    <FeatureValue
+                      value={row.values[id as keyof typeof row.values]}
+                    />
                   </div>
                 ))}
               </div>
@@ -401,13 +499,18 @@ function ConfirmSwitchModal({
 }) {
   const target = PLANS[targetPlan];
   const current = PLANS[currentPlan];
-  const isDowngrade = PLAN_ORDER.indexOf(targetPlan) < PLAN_ORDER.indexOf(currentPlan);
-  const isUpgrade = PLAN_ORDER.indexOf(targetPlan) > PLAN_ORDER.indexOf(currentPlan);
+  const isDowngrade =
+    PLAN_ORDER.indexOf(targetPlan) < PLAN_ORDER.indexOf(currentPlan);
+  const isUpgrade =
+    PLAN_ORDER.indexOf(targetPlan) > PLAN_ORDER.indexOf(currentPlan);
   const isDowngradeToFree = isDowngrade && targetPlan === "free";
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+        onClick={onClose}
+      />
       <div className="relative bg-white dark:bg-neutral-900 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-elevated">
         <div className="flex justify-center mb-3 sm:hidden">
           <div className="w-10 h-1 bg-neutral-200 dark:bg-neutral-700 rounded-full" />
@@ -421,9 +524,14 @@ function ConfirmSwitchModal({
               : `Mudar para ${target.name}?`}
         </h3>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
-          Plano atual: <strong>{current.name}</strong> {current.price > 0 && `(R$ ${current.price}/mês)`}
+          Plano atual: <strong>{current.name}</strong>{" "}
+          {current.price > 0 && `(R$ ${current.price}/mês)`}
           {target.price > 0 && (
-            <> · Novo plano: <strong>{target.name}</strong> (R$ {target.price}/mês)</>
+            <>
+              {" "}
+              · Novo plano: <strong>{target.name}</strong> (R$ {target.price}
+              /mês)
+            </>
           )}
         </p>
 
@@ -431,27 +539,57 @@ function ConfirmSwitchModal({
         <div className="space-y-2 mb-5">
           {isUpgrade && (
             <>
-              <Row icon="check" label="Acesso imediato às funcionalidades do plano nova." />
-              <Row icon="check" label={`A próxima fatura virá com o valor de R$ ${target.price}/mês.`} />
+              <Row
+                icon="check"
+                label="Acesso imediato às funcionalidades do plano nova."
+              />
+              <Row
+                icon="check"
+                label={`A próxima fatura virá com o valor de R$ ${target.price}/mês.`}
+              />
               <Row icon="info" label="Faturas anteriores não são alteradas." />
             </>
           )}
 
           {isDowngradeToFree && (
             <>
-              <Row icon="clock" label={`Você mantém o plano ${current.name} até o fim do período já pago.`} />
-              <Row icon="clock" label="Depois disso, sua conta volta para o plano Free automaticamente." />
-              <Row icon="info" label="Não há cobranças futuras. Seus dados são preservados." />
-              <Row icon="alert" label="Faturas já pagas não são reembolsadas." />
+              <Row
+                icon="clock"
+                label={`Você mantém o plano ${current.name} até o fim do período já pago.`}
+              />
+              <Row
+                icon="clock"
+                label="Depois disso, sua conta volta para o plano Free automaticamente."
+              />
+              <Row
+                icon="info"
+                label="Não há cobranças futuras. Seus dados são preservados."
+              />
+              <Row
+                icon="alert"
+                label="Faturas já pagas não são reembolsadas."
+              />
             </>
           )}
 
           {isDowngrade && !isDowngradeToFree && (
             <>
-              <Row icon="clock" label={`Você mantém o ${current.name} até o fim do período já pago.`} />
-              <Row icon="clock" label={`Depois, sua assinatura passa para o ${target.name} (R$ ${target.price}/mês) automaticamente.`} />
-              <Row icon="info" label="Você pode reverter o downgrade a qualquer momento antes da troca." />
-              <Row icon="alert" label="Faturas já pagas não são reembolsadas." />
+              <Row
+                icon="clock"
+                label={`Você mantém o ${current.name} até o fim do período já pago.`}
+              />
+              <Row
+                icon="clock"
+                label={`Depois, sua assinatura passa para o ${target.name} (R$ ${target.price}/mês) automaticamente.`}
+              />
+              <Row
+                icon="info"
+                label="Você pode reverter o downgrade a qualquer momento antes da troca."
+              />
+              <Row
+                icon="alert"
+                label="Faturas já pagas não são reembolsadas."
+              />
             </>
           )}
         </div>
@@ -472,7 +610,11 @@ function ConfirmSwitchModal({
                 : "bg-rose-500 text-white hover:bg-rose-600",
             )}
           >
-            {isDowngrade ? "Confirmar downgrade" : isUpgrade ? "Continuar para pagamento" : "Confirmar"}
+            {isDowngrade
+              ? "Confirmar downgrade"
+              : isUpgrade
+                ? "Continuar para pagamento"
+                : "Confirmar"}
           </button>
         </div>
       </div>
@@ -480,8 +622,16 @@ function ConfirmSwitchModal({
   );
 }
 
-function Row({ icon, label }: { icon: "check" | "clock" | "info" | "alert"; label: string }) {
-  const Icon = { check: Check, clock: Clock, info: Info, alert: AlertTriangle }[icon];
+function Row({
+  icon,
+  label,
+}: {
+  icon: "check" | "clock" | "info" | "alert";
+  label: string;
+}) {
+  const Icon = { check: Check, clock: Clock, info: Info, alert: AlertTriangle }[
+    icon
+  ];
   const color = {
     check: "text-emerald-500",
     clock: "text-amber-500",

@@ -34,7 +34,9 @@ export async function getProdutos(): Promise<Product[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("produtos")
-    .select("id, nome, marca, categoria, preco_custo, preco_venda, estoque_atual, created_at")
+    .select(
+      "id, nome, marca, categoria, preco_custo, preco_venda, estoque_atual, created_at",
+    )
     .eq("ativo", true)
     .order("created_at", { ascending: false });
 
@@ -111,7 +113,7 @@ export async function updateProduto(
     cost_price: string;
     sale_price: string;
     stock: string;
-  }
+  },
 ): Promise<{ error?: string }> {
   const supabase = await createClient();
   const {

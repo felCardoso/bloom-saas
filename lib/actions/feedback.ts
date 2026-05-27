@@ -21,12 +21,15 @@ export async function submitFeedback(data: {
   body: string;
 }): Promise<{ error?: string }> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   if (!data.subject.trim()) return { error: "O assunto é obrigatório." };
   if (!data.body.trim()) return { error: "A mensagem é obrigatória." };
-  if (data.body.length > 2000) return { error: "A mensagem deve ter no máximo 2000 caracteres." };
+  if (data.body.length > 2000)
+    return { error: "A mensagem deve ter no máximo 2000 caracteres." };
 
   const { error } = await supabase.from("feedback").insert({
     user_id: user.id,
@@ -46,7 +49,9 @@ export async function submitFeedback(data: {
 
 export async function getFeedbacks(): Promise<FeedbackItem[]> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return [];
 
   const { data } = await supabase

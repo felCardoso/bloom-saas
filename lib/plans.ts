@@ -1,7 +1,7 @@
 export type PlanId = "free" | "pro" | "premium";
 
 export interface PlanLimits {
-  clients: number;        // -1 = ilimitado
+  clients: number; // -1 = ilimitado
   ordersPerMonth: number;
   products: number;
   events: number;

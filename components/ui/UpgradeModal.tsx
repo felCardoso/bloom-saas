@@ -6,7 +6,6 @@ import { usePlan } from "@/lib/plan-context";
 import { PLANS, PLAN_ORDER, PlanId, PlanFeatures } from "@/lib/plans";
 import { RESOURCE_LABELS, FEATURE_LABELS } from "@/lib/plans";
 import type { Usage } from "@/lib/plan-context";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 interface UpgradeModalProps {
@@ -18,33 +17,45 @@ interface UpgradeModalProps {
   feature?: keyof PlanFeatures;
 }
 
-const TARGET_PLAN: Record<string, PlanId> = {
-  // free → suggest pro, pro → suggest premium
-};
+// const TARGET_PLAN: Record<string, PlanId> = {
+//   // free → suggest pro, pro → suggest premium
+// };
 
-export function UpgradeModal({ open, onClose, resource, feature }: UpgradeModalProps) {
+export function UpgradeModal({
+  open,
+  onClose,
+  resource,
+  feature,
+}: UpgradeModalProps) {
   const { planId } = usePlan();
 
   useEffect(() => {
     if (open) document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [open]);
 
   if (!open) return null;
 
   const currentIdx = PLAN_ORDER.indexOf(planId);
-  const suggestedPlanId = PLAN_ORDER[Math.min(currentIdx + 1, PLAN_ORDER.length - 1)] as PlanId;
+  const suggestedPlanId = PLAN_ORDER[
+    Math.min(currentIdx + 1, PLAN_ORDER.length - 1)
+  ] as PlanId;
   const suggestedPlan = PLANS[suggestedPlanId];
 
   const blockedLabel = resource
     ? RESOURCE_LABELS[resource]
     : feature
-    ? FEATURE_LABELS[feature]
-    : "esta funcionalidade";
+      ? FEATURE_LABELS[feature]
+      : "esta funcionalidade";
 
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
       <div className="relative bg-white dark:bg-neutral-900 w-full md:max-w-md rounded-t-3xl md:rounded-2xl shadow-elevated max-h-[92dvh] overflow-y-auto">
         {/* Drag handle */}
@@ -72,7 +83,9 @@ export function UpgradeModal({ open, onClose, resource, feature }: UpgradeModalP
               </h2>
               <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 Você atingiu o limite de{" "}
-                <span className="font-medium text-neutral-700 dark:text-neutral-300">{blockedLabel}</span>{" "}
+                <span className="font-medium text-neutral-700 dark:text-neutral-300">
+                  {blockedLabel}
+                </span>{" "}
                 no plano {PLANS[planId].name}.
               </p>
             </div>
@@ -85,16 +98,24 @@ export function UpgradeModal({ open, onClose, resource, feature }: UpgradeModalP
                 <p className="text-xs font-semibold text-rose-200 uppercase tracking-wide mb-1">
                   Recomendado
                 </p>
-                <h3 className="text-xl font-bold">Plano {suggestedPlan.name}</h3>
+                <h3 className="text-xl font-bold">
+                  Plano {suggestedPlan.name}
+                </h3>
               </div>
               <div className="text-right">
                 <span className="text-2xl font-bold">
-                  {suggestedPlan.price === 0 ? "Free" : `R$ ${suggestedPlan.price}`}
+                  {suggestedPlan.price === 0
+                    ? "Free"
+                    : `R$ ${suggestedPlan.price}`}
                 </span>
-                <span className="text-sm text-rose-200">{suggestedPlan.period}</span>
+                <span className="text-sm text-rose-200">
+                  {suggestedPlan.period}
+                </span>
               </div>
             </div>
-            <p className="text-sm text-rose-100 mb-4">{suggestedPlan.description}</p>
+            <p className="text-sm text-rose-100 mb-4">
+              {suggestedPlan.description}
+            </p>
             <ul className="space-y-2">
               {[
                 suggestedPlan.limits.clients === -1
@@ -111,8 +132,11 @@ export function UpgradeModal({ open, onClose, resource, feature }: UpgradeModalP
                 .filter(Boolean)
                 .slice(0, 4)
                 .map((f) => (
-                  <li key={String(f)} className="flex items-center gap-2 text-sm">
-                    <Check className="w-4 h-4 text-rose-200 flex-shrink-0" />
+                  <li
+                    key={String(f)}
+                    className="flex items-center gap-2 text-sm"
+                  >
+                    <Check className="w-4 h-4 text-rose-200 shrink-0" />
                     <span>{String(f)}</span>
                   </li>
                 ))}

@@ -52,7 +52,7 @@ async function adjustStock(
   supabase: Awaited<ReturnType<typeof createClient>>,
   items: StockItem[],
   delta: 1 | -1,
-  opts?: { userId?: string; motivo?: string; vendaId?: string }
+  opts?: { userId?: string; motivo?: string; vendaId?: string },
 ): Promise<void> {
   for (const item of items) {
     const { data } = await supabase
@@ -62,7 +62,10 @@ async function adjustStock(
       .maybeSingle();
 
     if (data) {
-      const newStock = Math.max(0, (data.estoque_atual ?? 0) + delta * item.quantity);
+      const newStock = Math.max(
+        0,
+        (data.estoque_atual ?? 0) + delta * item.quantity,
+      );
       await supabase
         .from("produtos")
         .update({ estoque_atual: newStock })
@@ -84,7 +87,7 @@ async function adjustStock(
 
 async function getItensVenda(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  vendaId: string
+  vendaId: string,
 ): Promise<StockItem[]> {
   const { data } = await supabase
     .from("itens_venda")
@@ -102,7 +105,7 @@ export async function getVendas(): Promise<Order[]> {
   const { data, error } = await supabase
     .from("vendas")
     .select(
-      "id, cliente_id, data_venda, valor_total, status, payment_method, paid_at, created_at, clientes(nome), itens_venda(quantidade, preco_unitario_no_momento, produtos(id, nome))"
+      "id, cliente_id, data_venda, valor_total, status, payment_method, paid_at, created_at, clientes(nome), itens_venda(quantidade, preco_unitario_no_momento, produtos(id, nome))",
     )
     .order("created_at", { ascending: false });
 
@@ -140,7 +143,8 @@ export async function addVenda(form: {
     .select("id")
     .single();
 
-  if (vendaError || !venda) return { error: vendaError?.message ?? "Erro ao criar pedido" };
+  if (vendaError || !venda)
+    return { error: vendaError?.message ?? "Erro ao criar pedido" };
 
   const itens = form.items.map((item) => ({
     venda_id: venda.id,
@@ -149,15 +153,20 @@ export async function addVenda(form: {
     preco_unitario_no_momento: item.unit_price,
   }));
 
-  const { error: itensError } = await supabase.from("itens_venda").insert(itens);
+  const { error: itensError } = await supabase
+    .from("itens_venda")
+    .insert(itens);
   if (itensError) return { error: itensError.message };
 
   if (form.status !== "cancelado") {
     await adjustStock(
       supabase,
-      form.items.map((i) => ({ product_id: i.product_id, quantity: i.quantity })),
+      form.items.map((i) => ({
+        product_id: i.product_id,
+        quantity: i.quantity,
+      })),
       -1,
-      { userId: user.id, motivo: "Pedido criado", vendaId: venda.id }
+      { userId: user.id, motivo: "Pedido criado", vendaId: venda.id },
     );
   }
 
@@ -189,7 +198,7 @@ export async function addVenda(form: {
 
 export async function updateVendaStatus(
   id: string,
-  status: OrderStatus
+  status: OrderStatus,
 ): Promise<{ error?: string }> {
   const supabase = await createClient();
   const {
@@ -204,7 +213,10 @@ export async function updateVendaStatus(
 
   const oldStatus = current?.status as OrderStatus | undefined;
 
-  const { error } = await supabase.from("vendas").update({ status }).eq("id", id);
+  const { error } = await supabase
+    .from("vendas")
+    .update({ status })
+    .eq("id", id);
   if (error) return { error: error.message };
 
   if (oldStatus && oldStatus !== status) {

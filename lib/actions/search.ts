@@ -53,7 +53,10 @@ export async function searchGlobal(query: string): Promise<SearchResultItem[]> {
   }
 
   for (const p of produtosRes.data ?? []) {
-    const parts = [p.marca ?? p.categoria ?? "", p.preco_venda != null ? `R$ ${Number(p.preco_venda).toFixed(2)}` : ""].filter(Boolean);
+    const parts = [
+      p.marca ?? p.categoria ?? "",
+      p.preco_venda != null ? `R$ ${Number(p.preco_venda).toFixed(2)}` : "",
+    ].filter(Boolean);
     results.push({
       id: p.id,
       type: "produto",

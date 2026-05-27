@@ -1,8 +1,12 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useTransition } from "react"; // useEffect
 import { useRouter } from "next/navigation";
-import { addCliente, updateCliente, deleteCliente } from "@/lib/actions/clientes";
+import {
+  addCliente,
+  updateCliente,
+  deleteCliente,
+} from "@/lib/actions/clientes";
 import { importClientesCSV } from "@/lib/actions/csv";
 import { parseFile, normalizeHeaders } from "@/lib/csv-parse";
 import type { ImportClienteRow } from "@/lib/actions/csv";
@@ -62,6 +66,7 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
   const { canAdd, hasFeature } = usePlan();
   const [isPending, startTransition] = useTransition();
   const [clients, setClients] = useState<Client[]>(initialClients);
+  const [prevInitial, setPrevInitial] = useState(initialClients);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [addOpen, setAddOpen] = useState(false);
@@ -74,14 +79,22 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
   const [form, setForm] = useState(emptyForm);
   const [importOpen, setImportOpen] = useState(false);
   const [importRows, setImportRows] = useState<ImportClienteRow[]>([]);
-  const [importResult, setImportResult] = useState<{ imported: number; skipped: number } | null>(null);
+  const [importResult, setImportResult] = useState<{
+    imported: number;
+    skipped: number;
+  } | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [importLoading, setImportLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   setClients(initialClients);
+  // }, [initialClients]);
+
+  if (initialClients !== prevInitial) {
+    setPrevInitial(initialClients);
     setClients(initialClients);
-  }, [initialClients]);
+  }
 
   const filtered = clients.filter((c) => {
     const matchSearch =
@@ -92,11 +105,8 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
     return matchSearch && matchStatus;
   });
 
-  const { paginated, page, setPage, totalPages, totalItems, pageSize } = usePagination(
-    filtered,
-    20,
-    `${search}|${statusFilter}`,
-  );
+  const { paginated, page, setPage, totalPages, totalItems, pageSize } =
+    usePagination(filtered, 20, `${search}|${statusFilter}`);
 
   function handleAddClick() {
     if (!canAdd("clients")) {
@@ -158,7 +168,7 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
     const snapshot = { ...editForm };
     const previous = clients.find((c) => c.id === id);
     setClients((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, ...snapshot } : c))
+      prev.map((c) => (c.id === id ? { ...c, ...snapshot } : c)),
     );
     setEditOpen(false);
     startTransition(async () => {
@@ -193,7 +203,9 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
   function handleDeleteClick() {
     if (!selected) return;
     if (selected.total_orders > 0) {
-      setToast(`"${selected.name}" possui ${selected.total_orders} pedido${selected.total_orders !== 1 ? "s" : ""} vinculado${selected.total_orders !== 1 ? "s" : ""} e não pode ser excluída.`);
+      setToast(
+        `"${selected.name}" possui ${selected.total_orders} pedido${selected.total_orders !== 1 ? "s" : ""} vinculado${selected.total_orders !== 1 ? "s" : ""} e não pode ser excluída.`,
+      );
       return;
     }
     setConfirmDelete(true);
@@ -217,7 +229,13 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
         city: ["cidade", "city", "bairro", "bairro_cidade", "bairro/cidade"],
         status: ["status", "situacao", "situação"],
         notes: ["observacoes", "observações", "notes", "obs"],
-        birthday: ["data de nascimento", "aniversario", "aniversário", "birthday", "data_nascimento"],
+        birthday: [
+          "data de nascimento",
+          "aniversario",
+          "aniversário",
+          "birthday",
+          "data_nascimento",
+        ],
       };
       const rows: ImportClienteRow[] = parsed
         .map((r) => normalizeHeaders(r, aliases))
@@ -226,7 +244,9 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
       setImportResult(null);
       setImportError(null);
     } catch {
-      setImportError("Não foi possível ler o arquivo. Verifique se é um CSV ou XLSX válido.");
+      setImportError(
+        "Não foi possível ler o arquivo. Verifique se é um CSV ou XLSX válido.",
+      );
     }
   }
 
@@ -295,7 +315,11 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
       {/* Summary chips */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {[
-          { label: "Total", value: clients.length, color: "text-neutral-800 dark:text-neutral-100" },
+          {
+            label: "Total",
+            value: clients.length,
+            color: "text-neutral-800 dark:text-neutral-100",
+          },
           {
             label: "Ativas",
             value: clients.filter((c) => c.status === "ativa").length,
@@ -309,7 +333,9 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
         ].map((s) => (
           <Card key={s.label} padding="sm">
             <p className={cn("text-xl font-bold", s.color)}>{s.value}</p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">{s.label}</p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              {s.label}
+            </p>
           </Card>
         ))}
       </div>
@@ -443,7 +469,9 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
                             {client.city}
                           </div>
                         ) : (
-                          <span className="text-xs text-neutral-300 dark:text-neutral-600">—</span>
+                          <span className="text-xs text-neutral-300 dark:text-neutral-600">
+                            —
+                          </span>
                         )}
                       </td>
                       <td className="px-5 py-4">
@@ -590,7 +618,9 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
           <Input
             label="Nome completo *"
             value={editForm.name}
-            onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+            onChange={(e) =>
+              setEditForm((f) => ({ ...f, name: e.target.value }))
+            }
             placeholder="Ex: Ana Paula Ferreira"
           />
           <div className="grid grid-cols-2 gap-3">
@@ -605,14 +635,18 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
             <Input
               label="Aniversário"
               value={editForm.birthday}
-              onChange={(e) => setEditForm((f) => ({ ...f, birthday: e.target.value }))}
+              onChange={(e) =>
+                setEditForm((f) => ({ ...f, birthday: e.target.value }))
+              }
               type="date"
             />
           </div>
           <Input
             label="Email"
             value={editForm.email}
-            onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+            onChange={(e) =>
+              setEditForm((f) => ({ ...f, email: e.target.value }))
+            }
             placeholder="email@exemplo.com"
             type="email"
           />
@@ -620,7 +654,9 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
             <Input
               label="Cidade"
               value={editForm.city}
-              onChange={(e) => setEditForm((f) => ({ ...f, city: e.target.value }))}
+              onChange={(e) =>
+                setEditForm((f) => ({ ...f, city: e.target.value }))
+              }
               placeholder="Ex: São Paulo"
             />
             <Select
@@ -645,7 +681,9 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
             </label>
             <textarea
               value={editForm.notes}
-              onChange={(e) => setEditForm((f) => ({ ...f, notes: e.target.value }))}
+              onChange={(e) =>
+                setEditForm((f) => ({ ...f, notes: e.target.value }))
+              }
               placeholder="Preferências, histórico, observações..."
               rows={3}
               className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent resize-none"
@@ -659,7 +697,11 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
             >
               Cancelar
             </Button>
-            <Button className="flex-1" onClick={handleEdit} disabled={isPending}>
+            <Button
+              className="flex-1"
+              onClick={handleEdit}
+              disabled={isPending}
+            >
               Salvar
             </Button>
           </div>
@@ -680,10 +722,17 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
                 <Users className="w-6 h-6 text-emerald-500" />
               </div>
               <p className="text-lg font-bold text-neutral-800 dark:text-neutral-100">
-                {importResult.imported} cliente{importResult.imported !== 1 ? "s" : ""} importada{importResult.imported !== 1 ? "s" : ""}
+                {importResult.imported} cliente
+                {importResult.imported !== 1 ? "s" : ""} importada
+                {importResult.imported !== 1 ? "s" : ""}
               </p>
               {importResult.skipped > 0 && (
-                <p className="text-sm text-neutral-400">{importResult.skipped} linha{importResult.skipped !== 1 ? "s" : ""} ignorada{importResult.skipped !== 1 ? "s" : ""} (sem nome ou limite do plano)</p>
+                <p className="text-sm text-neutral-400">
+                  {importResult.skipped} linha
+                  {importResult.skipped !== 1 ? "s" : ""} ignorada
+                  {importResult.skipped !== 1 ? "s" : ""} (sem nome ou limite do
+                  plano)
+                </p>
               )}
               <button
                 onClick={() => setImportOpen(false)}
@@ -697,19 +746,30 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
               <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-2xl space-y-2">
                 <div className="flex items-center gap-2 mb-1">
                   <FileText className="w-4 h-4 text-neutral-400" />
-                  <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">Formato esperado (cabeçalho na 1ª linha)</p>
+                  <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">
+                    Formato esperado (cabeçalho na 1ª linha)
+                  </p>
                 </div>
                 <code className="text-xs text-neutral-500 dark:text-neutral-400 block leading-relaxed">
-                  Nome, Telefone, Email, Cidade, Status, Observacoes, Data de Nascimento
+                  Nome, Telefone, Email, Cidade, Status, Observacoes, Data de
+                  Nascimento
                 </code>
-                <p className="text-xs text-neutral-400 dark:text-neutral-500">Status aceitos: <span className="font-medium">ativa</span>, <span className="font-medium">inativa</span>, <span className="font-medium">prospect</span></p>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                  Status aceitos: <span className="font-medium">ativa</span>,{" "}
+                  <span className="font-medium">inativa</span>,{" "}
+                  <span className="font-medium">prospect</span>
+                </p>
               </div>
 
               <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-2xl cursor-pointer hover:border-rose-300 dark:hover:border-rose-700 transition-colors group">
                 <Upload className="w-8 h-8 text-neutral-300 dark:text-neutral-600 group-hover:text-rose-400 transition-colors" />
                 <div className="text-center">
-                  <p className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Clique para selecionar o arquivo</p>
-                  <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">Arquivo .csv (UTF-8) ou .xlsx</p>
+                  <p className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
+                    Clique para selecionar o arquivo
+                  </p>
+                  <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">
+                    Arquivo .csv (UTF-8) ou .xlsx
+                  </p>
                 </div>
                 <input
                   type="file"
@@ -720,31 +780,57 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
               </label>
 
               {importError && (
-                <p className="text-sm text-red-500 text-center">{importError}</p>
+                <p className="text-sm text-red-500 text-center">
+                  {importError}
+                </p>
               )}
 
               {importRows.length > 0 && (
                 <div className="space-y-3">
                   <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    {importRows.length} registro{importRows.length !== 1 ? "s" : ""} encontrado{importRows.length !== 1 ? "s" : ""} — prévia das primeiras 5 linhas:
+                    {importRows.length} registro
+                    {importRows.length !== 1 ? "s" : ""} encontrado
+                    {importRows.length !== 1 ? "s" : ""} — prévia das primeiras
+                    5 linhas:
                   </p>
                   <div className="overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-700">
                     <table className="min-w-full text-xs">
                       <thead className="bg-neutral-50 dark:bg-neutral-800">
                         <tr>
-                          {["Nome", "Telefone", "Email", "Cidade", "Status"].map((h) => (
-                            <th key={h} className="px-3 py-2 text-left font-semibold text-neutral-500 dark:text-neutral-400">{h}</th>
+                          {[
+                            "Nome",
+                            "Telefone",
+                            "Email",
+                            "Cidade",
+                            "Status",
+                          ].map((h) => (
+                            <th
+                              key={h}
+                              className="px-3 py-2 text-left font-semibold text-neutral-500 dark:text-neutral-400"
+                            >
+                              {h}
+                            </th>
                           ))}
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
                         {importRows.slice(0, 5).map((r, i) => (
                           <tr key={i} className="bg-white dark:bg-neutral-900">
-                            <td className="px-3 py-2 text-neutral-700 dark:text-neutral-300 font-medium truncate max-w-[120px]">{r.name || "—"}</td>
-                            <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400">{r.phone || "—"}</td>
-                            <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400 truncate max-w-[120px]">{r.email || "—"}</td>
-                            <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400">{r.city || "—"}</td>
-                            <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400">{r.status || "ativa"}</td>
+                            <td className="px-3 py-2 text-neutral-700 dark:text-neutral-300 font-medium truncate max-w-30">
+                              {r.name || "—"}
+                            </td>
+                            <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400">
+                              {r.phone || "—"}
+                            </td>
+                            <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400 truncate max-w-30">
+                              {r.email || "—"}
+                            </td>
+                            <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400">
+                              {r.city || "—"}
+                            </td>
+                            <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400">
+                              {r.status || "ativa"}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -752,7 +838,10 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
                   </div>
                   <div className="flex gap-3">
                     <button
-                      onClick={() => { setImportRows([]); setImportError(null); }}
+                      onClick={() => {
+                        setImportRows([]);
+                        setImportError(null);
+                      }}
                       className="flex-1 py-2.5 px-4 rounded-xl border border-neutral-200 dark:border-neutral-700 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                     >
                       Cancelar
@@ -762,7 +851,9 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
                       disabled={importLoading}
                       className="flex-1 py-2.5 px-4 rounded-xl bg-rose-500 text-white text-sm font-semibold hover:bg-rose-600 transition-colors disabled:opacity-60"
                     >
-                      {importLoading ? "Importando..." : `Importar ${importRows.length} cliente${importRows.length !== 1 ? "s" : ""}`}
+                      {importLoading
+                        ? "Importando..."
+                        : `Importar ${importRows.length} cliente${importRows.length !== 1 ? "s" : ""}`}
                     </button>
                   </div>
                 </div>
@@ -773,7 +864,13 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
       </Modal>
 
       {/* Toast */}
-      {toast && <Toast message={toast} variant="warning" onClose={() => setToast(null)} />}
+      {toast && (
+        <Toast
+          message={toast}
+          variant="warning"
+          onClose={() => setToast(null)}
+        />
+      )}
 
       {/* Detail modal */}
       {selected && (
@@ -820,16 +917,23 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
                     : "—",
                 },
               ].map((s) => (
-                <div key={s.label} className="bg-neutral-50 dark:bg-neutral-800 rounded-xl p-3">
+                <div
+                  key={s.label}
+                  className="bg-neutral-50 dark:bg-neutral-800 rounded-xl p-3"
+                >
                   <p
                     className={cn(
                       "text-base font-bold",
-                      s.highlight ? "text-rose-600" : "text-neutral-800 dark:text-neutral-100",
+                      s.highlight
+                        ? "text-rose-600"
+                        : "text-neutral-800 dark:text-neutral-100",
                     )}
                   >
                     {s.value}
                   </p>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">{s.label}</p>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    {s.label}
+                  </p>
                 </div>
               ))}
             </div>
@@ -845,7 +949,9 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
                       <Phone className="w-4 h-4 text-rose-500" />
                     </div>
                     <div>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400">Telefone</p>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        Telefone
+                      </p>
                       <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
                         {formatPhone(selected.phone)}
                       </p>
@@ -882,7 +988,9 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
                     <Mail className="w-4 h-4 text-rose-500" />
                   </div>
                   <div>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400">Email</p>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                      Email
+                    </p>
                     <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
                       {selected.email}
                     </p>
@@ -895,7 +1003,9 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
                     <MapPin className="w-4 h-4 text-rose-500" />
                   </div>
                   <div>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400">Cidade</p>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                      Cidade
+                    </p>
                     <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
                       {selected.city}
                     </p>
@@ -920,7 +1030,8 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
               {confirmDelete ? (
                 <div className="space-y-3">
                   <p className="text-sm text-center text-neutral-600 dark:text-neutral-300">
-                    Excluir <strong>{selected.name}</strong>? Esta ação não pode ser desfeita.
+                    Excluir <strong>{selected.name}</strong>? Esta ação não pode
+                    ser desfeita.
                   </p>
                   <div className="flex gap-3">
                     <Button
@@ -948,10 +1059,7 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
                     <Trash2 className="w-4 h-4" />
                     Excluir
                   </button>
-                  <Button
-                    className="flex-1"
-                    onClick={() => openEdit(selected)}
-                  >
+                  <Button className="flex-1" onClick={() => openEdit(selected)}>
                     <Pencil className="w-4 h-4" />
                     Editar
                   </Button>

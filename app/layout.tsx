@@ -11,7 +11,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://bloomcrm.com.br"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://bloomcrm.com.br",
+  ),
   title: {
     default: "Bloom — CRM para Revendedoras de Cosméticos",
     template: "%s — Bloom",
@@ -57,6 +59,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={`${inter.variable} h-full`}>
+      <meta name="apple-mobile-web-app-title" content="Bloom" />
       <body className="min-h-full">
         <Providers>{children}</Providers>
         <PwaUpdateBanner />

@@ -14,7 +14,9 @@ type MovRow = {
   created_at: string;
 };
 
-export async function getMovimentacoes(produtoId: string): Promise<StockMovement[]> {
+export async function getMovimentacoes(
+  produtoId: string,
+): Promise<StockMovement[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("movimentacoes_estoque")
@@ -42,7 +44,9 @@ export async function adicionarEstoque(
   if (quantidade <= 0) return { error: "Quantidade deve ser maior que zero." };
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: "Não autorizado." };
 
   const { data: produto, error: fetchErr } = await supabase

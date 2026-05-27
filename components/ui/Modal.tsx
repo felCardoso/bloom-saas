@@ -18,7 +18,13 @@ const desktopSizeClasses = {
   lg: "md:max-w-2xl",
 };
 
-export function Modal({ open, onClose, title, children, size = "md" }: ModalProps) {
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  size = "md",
+}: ModalProps) {
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -48,7 +54,7 @@ export function Modal({ open, onClose, title, children, size = "md" }: ModalProp
           "max-h-[92dvh] md:max-h-[90vh] overflow-y-auto",
           "md:w-full",
           desktopSizeClasses[size],
-          "animate-sheet"
+          "animate-sheet",
         )}
       >
         {/* Drag handle (mobile only) */}
@@ -58,7 +64,9 @@ export function Modal({ open, onClose, title, children, size = "md" }: ModalProp
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-neutral-100 dark:border-neutral-800 sticky top-0 bg-white dark:bg-neutral-900 z-10">
-          <h2 className="text-base font-semibold text-neutral-800 dark:text-neutral-100">{title}</h2>
+          <h2 className="text-base font-semibold text-neutral-800 dark:text-neutral-100">
+            {title}
+          </h2>
           <button
             onClick={onClose}
             className="p-2 rounded-xl text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors -mr-1"

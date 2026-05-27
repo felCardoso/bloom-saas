@@ -44,9 +44,7 @@ function getPeriodStart(period: Period): string | null {
   return null;
 }
 
-function getPrevRange(
-  period: Period,
-): { start: string; end: string } | null {
+function getPrevRange(period: Period): { start: string; end: string } | null {
   const now = new Date();
   if (period === "all") return null;
   if (period === "1m") {
@@ -120,8 +118,8 @@ export async function getRelatorios(
     .neq("status", "cancelado");
   if (start) vendasQ = vendasQ.gte("data_venda", start);
 
-  const [vendasRes, clientesRes, pendingRes, prevVendasRes] =
-    await Promise.all([
+  const [vendasRes, clientesRes, pendingRes, prevVendasRes] = await Promise.all(
+    [
       vendasQ,
       supabase.from("clientes").select("id, nome, status, created_at"),
       supabase
@@ -144,7 +142,8 @@ export async function getRelatorios(
               paid_at?: string | null;
             }[],
           }),
-    ]);
+    ],
+  );
 
   const rows = (vendasRes.data ?? []) as unknown as VendaRow[];
   const clientes = clientesRes.data ?? [];

@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, X, ArrowRight } from "lucide-react";
+import { AlertTriangle, X } from "lucide-react";
 import { useState } from "react";
 import { usePlan, Usage } from "@/lib/plan-context";
 import { PLANS, RESOURCE_LABELS } from "@/lib/plans";
@@ -14,7 +14,7 @@ const RESOURCES: (keyof Usage)[] = [
 ];
 
 export function UsageBanner() {
-  const { planId, plan, usage, usagePercent, remaining, canAdd } = usePlan();
+  const { planId, plan, usagePercent, remaining, canAdd } = usePlan();
   const [dismissed, setDismissed] = useState<string[]>([]);
 
   if (planId === "premium") return null;
@@ -46,19 +46,21 @@ export function UsageBanner() {
           : "bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800 text-amber-700 dark:text-amber-400"
       }`}
     >
-      <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+      <AlertTriangle className="w-4 h-4 shrink-0" />
       <p className="flex-1 text-xs font-medium">
         {warn.isFull
           ? `Limite de ${label} atingido no plano ${PLANS[planId].name}.`
-          : `Você está usando ${Math.round(warn.pct)}% do limite de ${label} — ${warn.rem} restante${warn.rem === 1 ? "" : "s"}.`}
-        {" "}
-        <Link href="/pricing" className="underline font-semibold hover:no-underline">
+          : `Você está usando ${Math.round(warn.pct)}% do limite de ${label} — ${warn.rem} restante${warn.rem === 1 ? "" : "s"}.`}{" "}
+        <Link
+          href="/pricing"
+          className="underline font-semibold hover:no-underline"
+        >
           Fazer upgrade
         </Link>
       </p>
       <button
         onClick={() => setDismissed((d) => [...d, warn.key])}
-        className="p-1 rounded-lg hover:bg-black/10 transition-colors flex-shrink-0"
+        className="p-1 rounded-lg hover:bg-black/10 transition-colors shrink-0"
       >
         <X className="w-3.5 h-3.5" />
       </button>

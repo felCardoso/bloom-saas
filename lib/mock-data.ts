@@ -1,4 +1,10 @@
-import type { Client, Product, Order, ScheduleEvent, DashboardStats } from "./types";
+import type {
+  Client,
+  Product,
+  Order,
+  ScheduleEvent,
+  DashboardStats,
+} from "./types";
 
 export const mockClients: Client[] = [
   {
@@ -167,8 +173,20 @@ export const mockOrders: Order[] = [
     client_id: "4",
     client_name: "Fernanda Costa",
     items: [
-      { product_id: "1", product_name: "Base Líquida Cobertura Total", quantity: 1, unit_price: 85.0, subtotal: 85.0 },
-      { product_id: "3", product_name: "Batom Matte Nude", quantity: 2, unit_price: 38.0, subtotal: 76.0 },
+      {
+        product_id: "1",
+        product_name: "Base Líquida Cobertura Total",
+        quantity: 1,
+        unit_price: 85.0,
+        subtotal: 85.0,
+      },
+      {
+        product_id: "3",
+        product_name: "Batom Matte Nude",
+        quantity: 2,
+        unit_price: 38.0,
+        subtotal: 76.0,
+      },
     ],
     total: 161.0,
     status: "entregue",
@@ -180,8 +198,20 @@ export const mockOrders: Order[] = [
     client_id: "2",
     client_name: "Camila Rodrigues",
     items: [
-      { product_id: "2", product_name: "Hidratante Facial FPS 30", quantity: 1, unit_price: 55.0, subtotal: 55.0 },
-      { product_id: "6", product_name: "Creme Anti-idade Noturno", quantity: 1, unit_price: 98.0, subtotal: 98.0 },
+      {
+        product_id: "2",
+        product_name: "Hidratante Facial FPS 30",
+        quantity: 1,
+        unit_price: 55.0,
+        subtotal: 55.0,
+      },
+      {
+        product_id: "6",
+        product_name: "Creme Anti-idade Noturno",
+        quantity: 1,
+        unit_price: 98.0,
+        subtotal: 98.0,
+      },
     ],
     total: 153.0,
     status: "confirmado",
@@ -193,7 +223,13 @@ export const mockOrders: Order[] = [
     client_id: "6",
     client_name: "Mariana Souza",
     items: [
-      { product_id: "5", product_name: "Perfume Deo Colônia Floral", quantity: 1, unit_price: 72.0, subtotal: 72.0 },
+      {
+        product_id: "5",
+        product_name: "Perfume Deo Colônia Floral",
+        quantity: 1,
+        unit_price: 72.0,
+        subtotal: 72.0,
+      },
     ],
     total: 72.0,
     status: "pendente",
@@ -205,8 +241,20 @@ export const mockOrders: Order[] = [
     client_id: "1",
     client_name: "Ana Paula Ferreira",
     items: [
-      { product_id: "7", product_name: "Paleta de Sombras Nude", quantity: 1, unit_price: 120.0, subtotal: 120.0 },
-      { product_id: "4", product_name: "Máscara de Cílios Volume", quantity: 1, unit_price: 48.0, subtotal: 48.0 },
+      {
+        product_id: "7",
+        product_name: "Paleta de Sombras Nude",
+        quantity: 1,
+        unit_price: 120.0,
+        subtotal: 120.0,
+      },
+      {
+        product_id: "4",
+        product_name: "Máscara de Cílios Volume",
+        quantity: 1,
+        unit_price: 48.0,
+        subtotal: 48.0,
+      },
     ],
     total: 168.0,
     status: "entregue",
@@ -218,7 +266,13 @@ export const mockOrders: Order[] = [
     client_id: "4",
     client_name: "Fernanda Costa",
     items: [
-      { product_id: "8", product_name: "Shampoo Cachos Definidos", quantity: 2, unit_price: 42.0, subtotal: 84.0 },
+      {
+        product_id: "8",
+        product_name: "Shampoo Cachos Definidos",
+        quantity: 2,
+        unit_price: 42.0,
+        subtotal: 84.0,
+      },
     ],
     total: 84.0,
     status: "pendente",

@@ -21,9 +21,12 @@ export default function ConfirmarSenhaPage() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) setReady(true);
-      else setError("Link inválido ou expirado. Solicite um novo link de recuperação.");
+      else
+        setError(
+          "Link inválido ou expirado. Solicite um novo link de recuperação.",
+        );
     });
-  }, []);
+  }, [supabase]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +75,9 @@ export default function ConfirmarSenhaPage() {
         <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">
           Link inválido
         </h1>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-8">{error}</p>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-8">
+          {error}
+        </p>
         <Link
           href="/recuperar-senha"
           className="inline-flex items-center justify-center gap-2 w-full py-3 bg-rose-500 text-white rounded-xl font-semibold text-sm hover:bg-rose-600 transition-all shadow-sm"
@@ -86,8 +91,16 @@ export default function ConfirmarSenhaPage() {
   return (
     <div className="w-full max-w-sm py-6">
       <Link href="/" className="flex items-center gap-2 mb-8 lg:hidden w-fit">
-        <Image src="/logo.svg" width={32} height={32} className="w-8 h-8" alt="Bloom" />
-        <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">Bloom</span>
+        <Image
+          src="/logo.svg"
+          width={32}
+          height={32}
+          className="w-8 h-8"
+          alt="Bloom"
+        />
+        <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">
+          Bloom
+        </span>
       </Link>
 
       <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-1">
@@ -112,11 +125,27 @@ export default function ConfirmarSenhaPage() {
       {ready && (
         <form onSubmit={handleSubmit} className="space-y-4">
           {[
-            { label: "Nova senha", show: showPw, toggle: () => setShowPw(v => !v), value: password, onChange: setPassword, placeholder: "Mínimo 8 caracteres" },
-            { label: "Confirmar nova senha", show: showPw2, toggle: () => setShowPw2(v => !v), value: confirm, onChange: setConfirm, placeholder: "Repita a senha" },
+            {
+              label: "Nova senha",
+              show: showPw,
+              toggle: () => setShowPw((v) => !v),
+              value: password,
+              onChange: setPassword,
+              placeholder: "Mínimo 8 caracteres",
+            },
+            {
+              label: "Confirmar nova senha",
+              show: showPw2,
+              toggle: () => setShowPw2((v) => !v),
+              value: confirm,
+              onChange: setConfirm,
+              placeholder: "Repita a senha",
+            },
           ].map(({ label, show, toggle, value, onChange, placeholder }) => (
             <div key={label} className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{label}</label>
+              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                {label}
+              </label>
               <div className="relative">
                 <input
                   type={show ? "text" : "password"}
@@ -131,7 +160,11 @@ export default function ConfirmarSenhaPage() {
                   onClick={toggle}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
                 >
-                  {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {show ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>

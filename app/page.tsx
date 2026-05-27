@@ -82,7 +82,7 @@ const plans = [
       "Link rápido para WhatsApp",
       "Suporte por e-mail",
     ],
-    cta: "Experimentar 14 dias",
+    cta: "Experimentar 7 dias",
     href: "/registro",
     primary: true,
   },
@@ -114,7 +114,13 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo.svg" width={32} height={32} className="w-7 h-7 sm:w-8 sm:h-8" alt="Bloom" />
+            <Image
+              src="/logo.svg"
+              width={32}
+              height={32}
+              className="w-7 h-7 sm:w-8 sm:h-8"
+              alt="Bloom"
+            />
             <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100">
               Bloom
             </span>
@@ -414,7 +420,13 @@ export default function LandingPage() {
       <footer className="py-8 sm:py-10 px-4 sm:px-6 border-t border-neutral-100 dark:border-neutral-800">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo.svg" width={24} height={24} className="w-6 h-6" alt="Bloom" />
+            <Image
+              src="/logo.svg"
+              width={24}
+              height={24}
+              className="w-6 h-6"
+              alt="Bloom"
+            />
             <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">
               Bloom
             </span>

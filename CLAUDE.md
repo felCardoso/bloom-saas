@@ -1,6 +1,6 @@
-@AGENTS.md
+# @AGENTS.md
 
-# Bloom — SaaS CRM para revendedoras de cosméticos
+## Bloom — SaaS CRM para revendedoras de cosméticos
 
 ## Stack
 
@@ -24,7 +24,7 @@ Nunca fazer push direto para `main` sem permissão explícita.
 
 ## Arquitetura de arquivos relevantes
 
-```
+```text
 app/
   (dashboard)/
     clientes/view.tsx        # CRUD clientes com modal detalhe/editar/excluir
@@ -96,7 +96,7 @@ Tabelas principais:
 
 ## Variáveis de ambiente necessárias
 
-```
+```text
 NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY        # usado nos cron jobs
