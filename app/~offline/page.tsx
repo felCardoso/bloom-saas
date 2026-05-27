@@ -1,6 +1,7 @@
 "use client";
 
 import { WifiOff } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 export default function OfflinePage() {
   return (
@@ -15,12 +16,9 @@ export default function OfflinePage() {
         <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
           Verifique sua conexão com a internet. As páginas que você visitou recentemente ainda estão disponíveis.
         </p>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold rounded-xl transition-colors"
-        >
+        <Button onClick={() => window.location.reload()}>
           Tentar novamente
-        </button>
+        </Button>
       </div>
     </div>
   );

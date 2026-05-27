@@ -3,11 +3,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useTransition } from "react";
-import { Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 import { signUp } from "@/lib/actions/auth";
 import { GoogleButton } from "@/components/auth/GoogleButton";
-import { cn } from "@/lib/utils";
 
 const perks = [
   "7 dias de teste Pro",
@@ -16,8 +16,6 @@ const perks = [
 ];
 
 export default function RegistroPage() {
-  const [showPw, setShowPw] = useState(false);
-  const [showPw2, setShowPw2] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [terms, setTerms] = useState(false);
   const [form, setForm] = useState({
@@ -52,41 +50,6 @@ export default function RegistroPage() {
       if (result?.error) setErrors({ submit: result.error });
     });
   };
-
-  const pwField = (
-    show: boolean,
-    toggle: () => void,
-    value: string,
-    onChange: (v: string) => void,
-    placeholder: string,
-    error?: string,
-  ) => (
-    <div className="flex flex-col gap-1.5">
-      <div className="relative">
-        <input
-          type={show ? "text" : "password"}
-          placeholder={placeholder}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          autoComplete="new-password"
-          className={cn(
-            "w-full px-3.5 py-2.5 pr-11 rounded-xl border text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 hover:border-neutral-300 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all",
-            error
-              ? "border-red-300 bg-red-50"
-              : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800",
-          )}
-        />
-        <button
-          type="button"
-          onClick={toggle}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
-        >
-          {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-        </button>
-      </div>
-      {error && <p className="text-xs text-red-500">{error}</p>}
-    </div>
-  );
 
   return (
     <div className="w-full max-w-sm py-6">
@@ -150,33 +113,25 @@ export default function RegistroPage() {
           autoComplete="email"
         />
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-            Senha
-          </label>
-          {pwField(
-            showPw,
-            () => setShowPw((v) => !v),
-            form.password,
-            (v) => setForm({ ...form, password: v }),
-            "Mínimo 8 caracteres",
-            errors.password,
-          )}
-        </div>
+        <Input
+          label="Senha"
+          type="password"
+          placeholder="Mínimo 8 caracteres"
+          value={form.password}
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          error={errors.password}
+          autoComplete="new-password"
+        />
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-            Confirmar senha
-          </label>
-          {pwField(
-            showPw2,
-            () => setShowPw2((v) => !v),
-            form.confirm,
-            (v) => setForm({ ...form, confirm: v }),
-            "Repita a senha",
-            errors.confirm,
-          )}
-        </div>
+        <Input
+          label="Confirmar senha"
+          type="password"
+          placeholder="Repita a senha"
+          value={form.confirm}
+          onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+          error={errors.confirm}
+          autoComplete="new-password"
+        />
 
         <div className="flex flex-col gap-1">
           <label className="flex items-start gap-2.5 cursor-pointer select-none">
@@ -210,20 +165,14 @@ export default function RegistroPage() {
           )}
         </div>
 
-        <button
+        <Button
           type="submit"
-          disabled={isPending}
-          className="w-full flex items-center justify-center gap-2 py-3 bg-rose-500 text-white rounded-xl font-semibold text-sm hover:bg-rose-600 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm"
+          loading={isPending}
+          className="w-full justify-center py-3"
         >
-          {isPending ? (
-            <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-          ) : (
-            <>
-              Criar conta grátis
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
-        </button>
+          Criar conta grátis
+          <ArrowRight className="w-4 h-4" />
+        </Button>
       </form>
 
       <div className="flex items-center gap-3 my-5">
