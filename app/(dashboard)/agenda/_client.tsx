@@ -73,11 +73,15 @@ export default function AgendaClient({ initialEvents, clients }: Props) {
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState(emptyForm);
 
-  const filtered = events.filter((e) => {
-    if (filter === "pending") return !e.completed;
-    if (filter === "done") return e.completed;
-    return true;
-  });
+  const filtered = useMemo(
+    () =>
+      events.filter((e) => {
+        if (filter === "pending") return !e.completed;
+        if (filter === "done") return e.completed;
+        return true;
+      }),
+    [events, filter],
+  );
 
   const grouped = filtered.reduce<Record<string, ScheduleEvent[]>>(
     (acc, ev) => {
