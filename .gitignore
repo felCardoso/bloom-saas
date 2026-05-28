@@ -42,3 +42,6 @@ yarn-error.log*
 next-env.d.ts
 
 # PWA — sw.js is manually maintained in public/sw.js (not generated)
+
+# Claude Code local config (preview server etc.)
+.claude/

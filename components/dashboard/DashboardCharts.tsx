@@ -11,7 +11,7 @@ const RevenueChart = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="col-span-2 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4 shadow-card">
+      <div className="lg:col-span-2 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4 shadow-card">
         <Skeleton className="h-5 w-48 mb-4" />
         <Skeleton className="h-52 w-full" />
       </div>

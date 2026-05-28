@@ -285,7 +285,7 @@ export default function MensagensClient({
               }
             >
               <Plus size={16} />
-              Novo template
+              <span className="hidden sm:inline">Novo template</span>
             </Button>
           )}
         </div>
