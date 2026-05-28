@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useTransition } from "react"; // useEffect
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   addVenda,
   updateVendaStatus,
   deleteVenda,
   confirmPayment,
+  updateVendaItems,
 } from "@/lib/actions/vendas";
-import { Plus, ShoppingBag, Trash2, CheckCircle2 } from "lucide-react";
+import { Plus, ShoppingBag, Trash2, CheckCircle2, Pencil, Minus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
@@ -63,6 +64,7 @@ export function PedidosView({
   products: Product[];
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { canAdd } = usePlan();
   const [isPending, startTransition] = useTransition();
   const [orders, setOrders] = useState<Order[]>(initialOrders);
@@ -88,6 +90,12 @@ export function PedidosView({
   const [addingProductId, setAddingProductId] = useState("");
   const [toast, setToast] = useState<string | null>(null);
 
+  // Edit-items state — modal separado pra editar itens de um pedido existente
+  const [editItemsOpen, setEditItemsOpen] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [editItems, setEditItems] = useState<OrderItem[]>([]);
+  const [editAddingProductId, setEditAddingProductId] = useState("");
+
   // useEffect(() => {
   //   setOrders(initialOrders);
   // }, [initialOrders]);
@@ -95,6 +103,27 @@ export function PedidosView({
   if (initialOrders !== prevInitial) {
     setPrevInitial(initialOrders);
     setOrders(initialOrders);
+  }
+
+  // Deep link de /clientes (botão "Novo pedido" no modal de cliente detalhado):
+  // /pedidos?novo=1&client_id=<id> abre o modal já pré-preenchido. Pattern
+  // "compare-to-prev" para abrir uma vez por mudança de URL sem useEffect.
+  const novoParam = searchParams.get("novo");
+  const clientIdParam = searchParams.get("client_id");
+  const deepLinkKey = `${novoParam ?? ""}|${clientIdParam ?? ""}`;
+  const [prevDeepLinkKey, setPrevDeepLinkKey] = useState<string | null>(null);
+  if (novoParam === "1" && deepLinkKey !== prevDeepLinkKey) {
+    setPrevDeepLinkKey(deepLinkKey);
+    if (canAdd("ordersPerMonth")) {
+      const validClient =
+        clientIdParam && clients.some((c) => c.id === clientIdParam)
+          ? clientIdParam
+          : "";
+      setNewOrder((o) => ({ ...o, client_id: validClient }));
+      setAddOpen(true);
+    } else {
+      setUpgradeOpen(true);
+    }
   }
 
   const filtered = orders.filter((o) => {
@@ -191,6 +220,15 @@ export function PedidosView({
     }
   }
 
+  // Fecha o modal e limpa o deep link (?novo=1&client_id=...) da URL pra que
+  // refresh ou voltar não reabra o modal sem querer.
+  function closeAddModal() {
+    setAddOpen(false);
+    if (searchParams.get("novo")) {
+      router.replace("/pedidos", { scroll: false });
+    }
+  }
+
   function handleCreate() {
     if (!newOrder.client_id || newOrder.items.length === 0) return;
     const snapshot = { ...newOrder, items: [...newOrder.items] };
@@ -220,7 +258,7 @@ export function PedidosView({
       paid_at: "",
     });
     setAddingProductId("");
-    setAddOpen(false);
+    closeAddModal();
     startTransition(async () => {
       const result = await addVenda(snapshot);
       if (result?.error) {
@@ -266,6 +304,123 @@ export function PedidosView({
   function handleCloseDetail() {
     setSelected(null);
     setConfirmDelete(false);
+  }
+
+  // ── Edit items ────────────────────────────────────────────────────────────
+  function openEditItems(order: Order) {
+    setEditingOrder(order);
+    setEditItems(order.items.map((i) => ({ ...i })));
+    setEditAddingProductId("");
+    setSelected(null);
+    setEditItemsOpen(true);
+  }
+
+  function closeEditItemsModal() {
+    setEditItemsOpen(false);
+    setEditingOrder(null);
+    setEditItems([]);
+    setEditAddingProductId("");
+  }
+
+  // Estoque disponível pro produto considerando o que já estava no pedido
+  // (essas unidades já foram debitadas do estoque na criação do pedido — então
+  // editando, a "release" de oldQty conta como estoque virtual disponível).
+  function editAvailable(productId: string): number {
+    const product = products.find((p) => p.id === productId);
+    if (!product) return 0;
+    const editing = editItems.find((i) => i.product_id === productId);
+    const editQty = editing?.quantity ?? 0;
+    const original = editingOrder?.items.find(
+      (i) => i.product_id === productId,
+    );
+    const oldQty = original?.quantity ?? 0;
+    return product.stock + oldQty - editQty;
+  }
+
+  function editAddOrIncrement(productId: string) {
+    if (!productId) return;
+    const product = products.find((p) => p.id === productId);
+    if (!product) return;
+    if (editAvailable(productId) <= 0) {
+      setToast(`Estoque insuficiente para ${product.name}.`);
+      setEditAddingProductId("");
+      return;
+    }
+    const existing = editItems.find((i) => i.product_id === productId);
+    if (existing) {
+      setEditItems((prev) =>
+        prev.map((i) =>
+          i.product_id === productId
+            ? {
+                ...i,
+                quantity: i.quantity + 1,
+                subtotal: i.unit_price * (i.quantity + 1),
+              }
+            : i,
+        ),
+      );
+    } else {
+      setEditItems((prev) => [
+        ...prev,
+        {
+          product_id: product.id,
+          product_name: product.name,
+          quantity: 1,
+          unit_price: product.sale_price,
+          subtotal: product.sale_price,
+        },
+      ]);
+    }
+    setEditAddingProductId("");
+  }
+
+  function editChangeItemQty(productId: string, delta: number) {
+    const existing = editItems.find((i) => i.product_id === productId);
+    if (!existing) return;
+    const newQty = existing.quantity + delta;
+    if (newQty <= 0) {
+      setEditItems((prev) => prev.filter((i) => i.product_id !== productId));
+      return;
+    }
+    if (delta > 0 && editAvailable(productId) <= 0) {
+      const product = products.find((p) => p.id === productId);
+      setToast(`Estoque insuficiente para ${product?.name ?? "produto"}.`);
+      return;
+    }
+    setEditItems((prev) =>
+      prev.map((i) =>
+        i.product_id === productId
+          ? { ...i, quantity: newQty, subtotal: i.unit_price * newQty }
+          : i,
+      ),
+    );
+  }
+
+  function handleSaveEditItems() {
+    if (!editingOrder || editItems.length === 0) return;
+    const orderId = editingOrder.id;
+    const snapshot = editItems.map((i) => ({ ...i }));
+    const newTotal = snapshot.reduce((s, i) => s + i.subtotal, 0);
+    const previous = editingOrder;
+    // Optimistic update
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === orderId ? { ...o, items: snapshot, total: newTotal } : o,
+      ),
+    );
+    closeEditItemsModal();
+    startTransition(async () => {
+      const result = await updateVendaItems(orderId, snapshot);
+      if (result?.error) {
+        // Reverte otimismo
+        setOrders((prev) =>
+          prev.map((o) => (o.id === orderId ? previous : o)),
+        );
+        setToast(result.error);
+      } else {
+        router.refresh();
+      }
+    });
   }
 
   const confirmedRevenue = filtered
@@ -481,7 +636,7 @@ export function PedidosView({
       {/* Add modal */}
       <Modal
         open={addOpen}
-        onClose={() => setAddOpen(false)}
+        onClose={closeAddModal}
         title="Novo Pedido"
         size="lg"
       >
@@ -687,7 +842,7 @@ export function PedidosView({
             <Button
               variant="secondary"
               className="flex-1"
-              onClick={() => setAddOpen(false)}
+              onClick={closeAddModal}
             >
               Cancelar
             </Button>
@@ -844,14 +999,140 @@ export function PedidosView({
                   </div>
                 </div>
               ) : (
-                <button
-                  onClick={() => setConfirmDelete(true)}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Excluir pedido
-                </button>
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    onClick={() => setConfirmDelete(true)}
+                    className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                    aria-label="Excluir pedido"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span className="hidden sm:inline">Excluir</span>
+                  </button>
+                  {selected.status !== "cancelado" && (
+                    <Button
+                      variant="secondary"
+                      className="flex-1"
+                      onClick={() => openEditItems(selected)}
+                    >
+                      <Pencil className="w-4 h-4" />
+                      Editar itens
+                    </Button>
+                  )}
+                </div>
               )}
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Edit items modal */}
+      {editingOrder && (
+        <Modal
+          open={editItemsOpen}
+          onClose={closeEditItemsModal}
+          title={`Editar itens — ${editingOrder.client_name}`}
+          size="lg"
+        >
+          <div className="space-y-4">
+            {/* Product picker */}
+            <div>
+              <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">
+                Adicionar produto
+              </label>
+              <Select
+                value={editAddingProductId}
+                onChange={(e) => editAddOrIncrement(e.target.value)}
+                options={[
+                  { value: "", label: "Selecione um produto…" },
+                  ...products.map((p) => ({
+                    value: p.id,
+                    label: `${p.name} — ${formatCurrency(p.sale_price)}${
+                      editAvailable(p.id) <= 0 ? " (sem estoque)" : ""
+                    }`,
+                    disabled: editAvailable(p.id) <= 0,
+                  })),
+                ]}
+              />
+            </div>
+
+            {/* Items list */}
+            {editItems.length === 0 ? (
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center py-8">
+                O pedido precisa ter pelo menos um item.
+              </p>
+            ) : (
+              <div className="bg-neutral-50 dark:bg-neutral-800 rounded-2xl p-4 space-y-3">
+                {editItems.map((item) => (
+                  <div
+                    key={item.product_id}
+                    className="flex items-center gap-2"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-neutral-800 dark:text-neutral-100 truncate">
+                        {item.product_name}
+                      </p>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        {formatCurrency(item.unit_price)} ·{" "}
+                        {formatCurrency(item.subtotal)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() =>
+                          editChangeItemQty(item.product_id, -1)
+                        }
+                        className="w-8 h-8 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                        aria-label="Diminuir quantidade"
+                      >
+                        <Minus className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-300" />
+                      </button>
+                      <span className="w-8 text-center text-sm font-semibold text-neutral-800 dark:text-neutral-100 mono-numeric">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() =>
+                          editChangeItemQty(item.product_id, 1)
+                        }
+                        disabled={editAvailable(item.product_id) <= 0}
+                        className="w-8 h-8 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        aria-label="Aumentar quantidade"
+                      >
+                        <Plus className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-300" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3 flex justify-between font-bold text-neutral-800 dark:text-neutral-100">
+                  <span>Total</span>
+                  <span className="mono-numeric">
+                    {formatCurrency(
+                      editItems.reduce((s, i) => s + i.subtotal, 0),
+                    )}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <p className="text-xs text-neutral-400 dark:text-neutral-500">
+              Salvar ajusta o estoque automaticamente: itens adicionados saem do
+              estoque, itens removidos voltam.
+            </p>
+
+            <div className="flex gap-3">
+              <Button
+                variant="secondary"
+                className="flex-1"
+                onClick={closeEditItemsModal}
+              >
+                Cancelar
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={handleSaveEditItems}
+                disabled={editItems.length === 0 || isPending}
+              >
+                Salvar
+              </Button>
             </div>
           </div>
         </Modal>

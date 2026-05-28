@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   addProduto,
@@ -90,6 +90,9 @@ export function ProdutosView({
   const [stockAddOpen, setStockAddOpen] = useState(false);
   const [stockQty, setStockQty] = useState(1);
   const [stockMotivo, setStockMotivo] = useState("");
+  const [prevDetailId, setPrevDetailId] = useState<string | undefined>(
+    detailProduct?.id,
+  );
 
   // useEffect(() => {
   //   setProducts(initialProducts);
@@ -100,11 +103,15 @@ export function ProdutosView({
     setProducts(initialProducts);
   }
 
-  useEffect(() => {
+  // Reset modal de "adicionar estoque" quando o produto em detalhe muda.
+  // Pattern "compare to prev" do mesmo arquivo (linhas acima): evita o
+  // anti-pattern de setState em useEffect (cascading renders).
+  if (detailProduct?.id !== prevDetailId) {
+    setPrevDetailId(detailProduct?.id);
     setStockAddOpen(false);
     setStockQty(1);
     setStockMotivo("");
-  }, [detailProduct?.id]);
+  }
 
   const filtered = products.filter((p) => {
     const matchSearch =

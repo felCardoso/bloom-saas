@@ -271,6 +271,10 @@ function ManagePaymentModal({ open, onClose }: { open: boolean; onClose: () => v
   useEffect(() => {
     if (!open) return;
     let aborted = false;
+    // Pattern canônico de fetch-on-mount: setState durante o fetch dispara
+    // re-render com loading=true antes da resolução. React 19 reclama, mas a
+    // alternativa (Suspense + use()) exige restruturar a árvore do modal.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError("");
     setSavedMsg("");
@@ -534,7 +538,7 @@ const INVOICE_STATUS: Record<string, { label: string; className: string }> = {
 };
 
 function AssinaturaTab({ initialPeriodEnd, initialCpfCnpj }: { initialPeriodEnd: string | null; initialCpfCnpj: string }) {
-  const { planId, plan, isOnTrial, trialDaysLeft, trialClaimed, pendingPlan, scheduledDowngradeAt } = usePlan();
+  const { planId, plan, isOnTrial, trialDaysLeft, trialClaimed, pendingPlan } = usePlan();
   const [revertLoading, setRevertLoading] = useState(false);
   const [revertError, setRevertError] = useState("");
   const [periodEnd, setPeriodEnd] = useState<string | null>(initialPeriodEnd);
@@ -549,6 +553,8 @@ function AssinaturaTab({ initialPeriodEnd, initialCpfCnpj }: { initialPeriodEnd:
 
   useEffect(() => {
     if (planId === "free" || isOnTrial) return;
+    // Mesma justificativa do AssinaturaModal acima: fetch-on-mount canônico.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInvoicesLoading(true);
     fetch("/api/asaas/invoices")
       .then((r) => r.json())
