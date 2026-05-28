@@ -119,7 +119,7 @@ function SearchBox({
       />
 
       {showDropdown && query.trim().length >= 2 && (
-        <div className="absolute right-0 top-full mt-1.5 w-72 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-elevated z-50 overflow-hidden">
+        <div className="absolute right-0 top-full mt-1.5 left-0 md:left-auto md:w-72 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-elevated z-50 overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-6">
               <span className="w-4 h-4 border-2 border-rose-300 border-t-rose-500 rounded-full animate-spin" />
