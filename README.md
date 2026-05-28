@@ -305,34 +305,36 @@ curl -H "Authorization: Bearer $CRON_SECRET" https://seu-dominio.vercel.app/api/
 
 ---
 
-## Observabilidade (Sentry)
+## Schema do banco (versionado)
 
-SDK do `@sentry/nextjs` instalado mas **gated por env var** — sem `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_DSN` configurados o SDK é no-op (não faz nenhuma requisição, não polui o console). Em produção, basta setar as vars na Vercel e o tracking começa automático.
+O schema do Supabase (tabelas, índices, FKs, RLS policies, enums, GRANTs) vive em [`supabase/schema.sql`](./supabase/schema.sql) e é regenerado via:
 
-### Arquivos
+```bash
+# Pega a Connection string pooler em: Supabase Dashboard → Project Settings →
+# Database → "Connection pooling" → modo Transaction
+$env:SUPABASE_DB_URL = "postgresql://postgres.<ref>:<pwd>@aws-0-<region>.pooler.supabase.com:6543/postgres"
+npm run db:dump
+```
 
-- `instrumentation.ts` — Next.js carrega para Node e Edge runtimes
-- `sentry.server.config.ts` — runtime Node (Server Actions, API Routes, RSC)
-- `sentry.edge.config.ts` — runtime Edge (middleware)
-- `instrumentation-client.ts` — runtime browser
-- `next.config.ts` — envolto com `withSentryConfig` (build no-op sem `SENTRY_AUTH_TOKEN`)
+Por que não pg_dump? A CLI do Supabase requer Docker, e o pg_dump nativo não vem no Windows por padrão. O script em [scripts/dump-schema.mjs](./scripts/dump-schema.mjs) usa só o cliente `pg` em JS para extrair as DDLs essenciais via queries em `pg_catalog` / `information_schema`.
 
-### Para ativar em produção
+### Cobertura
 
-1. Criar projeto no Sentry → copiar DSN
-2. Vercel → Settings → Environment Variables → adicionar:
-   - `NEXT_PUBLIC_SENTRY_DSN` (público, OK expor)
-   - `SENTRY_DSN` (mesmo valor; usado no server)
-   - `SENTRY_ORG` + `SENTRY_PROJECT` + `SENTRY_AUTH_TOKEN` (só pra upload de sourcemaps)
-3. Redeploy
+- ✅ Tabelas (CREATE TABLE com tipos, defaults, nullable, IDENTITY)
+- ✅ PK, UNIQUE, FK, CHECK constraints
+- ✅ Índices não-implícitos
+- ✅ ENUMs
+- ✅ RLS policies + `ENABLE ROW LEVEL SECURITY`
+- ✅ GRANTs para `anon`, `authenticated`, `service_role`
+- ❌ Funções e triggers (o app não usa nenhum hoje)
+- ❌ Views (diagnostic views como `v_saas_overview`, `v_trial_funnel` etc. vivem no Supabase Dashboard — não são críticas pro app funcionar)
+- ❌ Dados (intencional)
+- ❌ Schemas `auth` / `storage` / `realtime` (gerenciados pelo Supabase)
+- ❌ Extensões (precisam ser habilitadas via dashboard)
 
-### Defaults setados
+### Quando regenerar
 
-- `enabled: production` apenas — dev local nunca envia evento
-- `tracesSampleRate: 0.1` (10% das requests viram performance traces)
-- `sendDefaultPii: false` (LGPD — email/IP off por padrão)
-- Session Replay desligado (custo + privacidade); comentário em `instrumentation-client.ts` mostra como ligar
-- `tunnelRoute: "/monitoring"` (Sentry passa por proxy interno, foge de ad-blockers)
+Roda `npm run db:dump` toda vez que aplicar uma migration no Supabase Dashboard e commita o `schema.sql` resultante junto com o código que depende dele.
 
 ---
 
