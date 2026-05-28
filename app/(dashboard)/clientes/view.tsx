@@ -23,6 +23,7 @@ import {
   Trash2,
   Upload,
   FileText,
+  ShoppingBag,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -214,6 +215,12 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
   function handleCloseDetail() {
     setSelected(null);
     setConfirmDelete(false);
+  }
+
+  function handleNewOrderForClient(client: Client) {
+    setSelected(null);
+    setConfirmDelete(false);
+    router.push(`/pedidos?novo=1&client_id=${client.id}`);
   }
 
   async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -1050,17 +1057,29 @@ export function ClientesView({ initialClients }: { initialClients: Client[] }) {
                   </div>
                 </div>
               ) : (
-                <div className="flex gap-3">
+                <div className="flex gap-2 flex-wrap">
                   <button
                     onClick={handleDeleteClick}
-                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                    aria-label="Excluir cliente"
                   >
                     <Trash2 className="w-4 h-4" />
-                    Excluir
+                    <span className="hidden sm:inline">Excluir</span>
                   </button>
-                  <Button className="flex-1" onClick={() => openEdit(selected)}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => openEdit(selected)}
+                    aria-label="Editar cliente"
+                  >
                     <Pencil className="w-4 h-4" />
-                    Editar
+                    <span className="hidden sm:inline">Editar</span>
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    onClick={() => handleNewOrderForClient(selected)}
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    Novo pedido
                   </Button>
                 </div>
               )}

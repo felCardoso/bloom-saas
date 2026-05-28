@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react"; // useEffect
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   addVenda,
   updateVendaStatus,
@@ -63,6 +63,7 @@ export function PedidosView({
   products: Product[];
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { canAdd } = usePlan();
   const [isPending, startTransition] = useTransition();
   const [orders, setOrders] = useState<Order[]>(initialOrders);
@@ -95,6 +96,27 @@ export function PedidosView({
   if (initialOrders !== prevInitial) {
     setPrevInitial(initialOrders);
     setOrders(initialOrders);
+  }
+
+  // Deep link de /clientes (botão "Novo pedido" no modal de cliente detalhado):
+  // /pedidos?novo=1&client_id=<id> abre o modal já pré-preenchido. Pattern
+  // "compare-to-prev" para abrir uma vez por mudança de URL sem useEffect.
+  const novoParam = searchParams.get("novo");
+  const clientIdParam = searchParams.get("client_id");
+  const deepLinkKey = `${novoParam ?? ""}|${clientIdParam ?? ""}`;
+  const [prevDeepLinkKey, setPrevDeepLinkKey] = useState<string | null>(null);
+  if (novoParam === "1" && deepLinkKey !== prevDeepLinkKey) {
+    setPrevDeepLinkKey(deepLinkKey);
+    if (canAdd("ordersPerMonth")) {
+      const validClient =
+        clientIdParam && clients.some((c) => c.id === clientIdParam)
+          ? clientIdParam
+          : "";
+      setNewOrder((o) => ({ ...o, client_id: validClient }));
+      setAddOpen(true);
+    } else {
+      setUpgradeOpen(true);
+    }
   }
 
   const filtered = orders.filter((o) => {
@@ -191,6 +213,15 @@ export function PedidosView({
     }
   }
 
+  // Fecha o modal e limpa o deep link (?novo=1&client_id=...) da URL pra que
+  // refresh ou voltar não reabra o modal sem querer.
+  function closeAddModal() {
+    setAddOpen(false);
+    if (searchParams.get("novo")) {
+      router.replace("/pedidos", { scroll: false });
+    }
+  }
+
   function handleCreate() {
     if (!newOrder.client_id || newOrder.items.length === 0) return;
     const snapshot = { ...newOrder, items: [...newOrder.items] };
@@ -220,7 +251,7 @@ export function PedidosView({
       paid_at: "",
     });
     setAddingProductId("");
-    setAddOpen(false);
+    closeAddModal();
     startTransition(async () => {
       const result = await addVenda(snapshot);
       if (result?.error) {
@@ -481,7 +512,7 @@ export function PedidosView({
       {/* Add modal */}
       <Modal
         open={addOpen}
-        onClose={() => setAddOpen(false)}
+        onClose={closeAddModal}
         title="Novo Pedido"
         size="lg"
       >
@@ -687,7 +718,7 @@ export function PedidosView({
             <Button
               variant="secondary"
               className="flex-1"
-              onClick={() => setAddOpen(false)}
+              onClick={closeAddModal}
             >
               Cancelar
             </Button>
