@@ -52,6 +52,26 @@ export const metadata: Metadata = {
   },
 };
 
+// Sync hydration script — runs before paint. Reads localStorage and applies
+// dark class + data-primary on <html> to prevent FOUC. Matches the
+// route-gating logic in lib/theme-context.tsx (data-primary only on dashboard
+// routes; landing/auth/public stay rose).
+const themeBootstrap = `(function(){try{
+  var t=localStorage.getItem('bloom-theme');
+  if(t==='dark')document.documentElement.classList.add('dark');
+  var c=localStorage.getItem('bloom-primary');
+  if(c&&c!=='rose'){
+    var p=location.pathname;
+    var dash=['/dashboard','/clientes','/pedidos','/produtos','/agenda','/mensagens','/relatorios','/configuracoes','/pricing','/feedback'];
+    for(var i=0;i<dash.length;i++){
+      if(p===dash[i]||p.indexOf(dash[i]+'/')===0){
+        document.documentElement.setAttribute('data-primary',c);
+        break;
+      }
+    }
+  }
+}catch(e){}})()`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -59,7 +79,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={`${geist.variable} h-full`}>
-      <meta name="apple-mobile-web-app-title" content="Bloom" />
+      <head>
+        <meta name="apple-mobile-web-app-title" content="Bloom" />
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
+      </head>
       <body className="min-h-full">
         <Providers>{children}</Providers>
         <PwaUpdateBanner />
