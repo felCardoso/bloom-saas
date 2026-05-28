@@ -456,4 +456,52 @@ Sempre que a task for ambígua, **pergunte** antes de codar:
 
 ---
 
+## 14. Estado atual (atualizado 27/05/2026)
+
+### Design system — progresso de alinhamento ao spec
+
+Histórico recente de PRs mergeados em sequência pra alinhar o código ao spec deste documento:
+
+- **PR #40** Lote 1 — higiene cirúrgica: emoji/unicode removidos da UI, `cn()` em vez de template literals, hex hardcoded da landing trocado por classes Tailwind.
+- **PR #41** Lote 2 — fonte Inter → Geist via `next/font/google` (auto-hospedada).
+- **PR #42** Lote 4a — novo primitive `<SearchInput>` em `components/ui/`, aplicado em clientes/produtos/pedidos/suporte.
+- **PR #43** Lote 4b — `<Select>` primitive ganhou `wrapperClassName` e `SelectOption.disabled`; aplicado em 4 filtros + picker de produto.
+- **PR #44** Lote 4c+4d — `<Input type="password">` agora auto-renderiza toggle do olhinho; `<Button>` aplicado em todos os submits de auth + error pages.
+- **PR #45** Lote 4e — `<Card>` aplicado em sobre + suporte. **Nota**: em dark mode, cards mudam de `bg-neutral-800` pra `bg-neutral-900` (hierarquia surface elevated do spec).
+- **PR #46** Lote 4f — 1 input em configurações migrado pra `<Input>` (escopo reduzido por questão de fidelidade visual nos outros).
+- **PR #47** Fixes do code review do #44 — Button esconde children durante loading, error/offline buttons preservam tamanho, Input toggle respeita `disabled`.
+
+### Primitives disponíveis em `components/ui/`
+
+Atuais: `Avatar`, `AvatarUpload`, `Badge`, `Button`, `Card`, `CookieBanner`, `Input` (com toggle eye pra password), `LockedFeature`, `Modal`, `Pagination`, `Select` (com `disabled` opcional), `Skeleton`, `SearchInput`, `ThemeToggle`, `Toast`, `UpgradeModal`, `UsageBanner`.
+
+### Cores principais — implementação
+
+`lib/theme-context.tsx` expõe `useTheme()` com `primaryColor` e `setPrimaryColor`. Picker já existe em `configuracoes/_client.tsx` (`AparenciaTab`, linhas 957-1014). As 5 palettes (rose/violet/blue/teal/amber) estão definidas em `app/globals.css` via `:root[data-primary="..."]` overrides das vars `--color-rose-*`.
+
+Comportamento atual:
+- Aplica `data-primary` em `<html>` só em rotas dashboard (landing/auth/public ficam rose).
+- Persiste em `localStorage` (`bloom-primary`, `bloom-theme`).
+- **Limitação conhecida**: FOUC (flash of unstyled content) — script de hidratação ainda não foi injetado em `<head>`, então usuárias que escolheram violet/dark veem flash de rose/light no primeiro paint antes do React hidratar e reler o localStorage.
+
+### Roadmap pra fechar 100%
+
+Inputs especiais em configurações ainda usam markup cru (esperado refactor pra extensões do primitive):
+- L1107: senha com toggle eye — agora dá pra refatorar (Input password landed em #44).
+- L1312: confirmação de e-mail destrutiva — precisa de `Input tone="danger"` (border + ring red, sem bg).
+- L1425: edit inline de categoria — precisa de `Input size="sm"`.
+- L751: CPF com border-rose-200 — precisa de wrapper tonal ou Input variant.
+
+Mensagens (`mensagens/_client.tsx` linhas 44, 48) ainda têm emoji em templates de WhatsApp — conteúdo enviado pela usuária, não UI. Decisão de produto se remover ou não.
+
+`lib/email.ts` tem 🌸 no subject e `→`/`✓` no HTML. Medium diferente — decisão à parte.
+
+`termos/page.tsx` e `privacidade/page.tsx` usam `•` dentro de strings com `whitespace-pre-line`. Refatorar exige reestruturar o modelo de dados das seções.
+
+### Convenção de branches
+
+PRs nessa sessão seguiram `claude/<descritivo>` (ex.: `claude/search-input`, `claude/filter-selects`, `claude/auth-primitives`). Sem prefixo de issue. PRs pequenos e focados, um sub-lote por PR.
+
+---
+
 **Fim do contexto. Use-o como verdade canônica para qualquer alteração no Bloom.**
