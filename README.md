@@ -305,6 +305,37 @@ curl -H "Authorization: Bearer $CRON_SECRET" https://seu-dominio.vercel.app/api/
 
 ---
 
+## Observabilidade (Sentry)
+
+SDK do `@sentry/nextjs` instalado mas **gated por env var** — sem `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_DSN` configurados o SDK é no-op (não faz nenhuma requisição, não polui o console). Em produção, basta setar as vars na Vercel e o tracking começa automático.
+
+### Arquivos
+
+- `instrumentation.ts` — Next.js carrega para Node e Edge runtimes
+- `sentry.server.config.ts` — runtime Node (Server Actions, API Routes, RSC)
+- `sentry.edge.config.ts` — runtime Edge (middleware)
+- `instrumentation-client.ts` — runtime browser
+- `next.config.ts` — envolto com `withSentryConfig` (build no-op sem `SENTRY_AUTH_TOKEN`)
+
+### Para ativar em produção
+
+1. Criar projeto no Sentry → copiar DSN
+2. Vercel → Settings → Environment Variables → adicionar:
+   - `NEXT_PUBLIC_SENTRY_DSN` (público, OK expor)
+   - `SENTRY_DSN` (mesmo valor; usado no server)
+   - `SENTRY_ORG` + `SENTRY_PROJECT` + `SENTRY_AUTH_TOKEN` (só pra upload de sourcemaps)
+3. Redeploy
+
+### Defaults setados
+
+- `enabled: production` apenas — dev local nunca envia evento
+- `tracesSampleRate: 0.1` (10% das requests viram performance traces)
+- `sendDefaultPii: false` (LGPD — email/IP off por padrão)
+- Session Replay desligado (custo + privacidade); comentário em `instrumentation-client.ts` mostra como ligar
+- `tunnelRoute: "/monitoring"` (Sentry passa por proxy interno, foge de ad-blockers)
+
+---
+
 ## Pagamentos (Asaas)
 
 O Asaas é o gateway de pagamentos brasileiro utilizado (Pix, boleto, cartão de crédito).
