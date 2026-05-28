@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { checkPlanLimit } from "@/lib/actions/plan-limit";
 import { logMovimento } from "@/lib/stock-utils";
+import { maybeNotifyLowStock } from "@/lib/notifications/low-stock";
 import type { Product } from "@/lib/types";
 
 type ProductRow = {
@@ -89,6 +90,10 @@ export async function addProduto(form: {
     });
   }
 
+  if (produto) {
+    await maybeNotifyLowStock(supabase, user.id, produto.id, initialStock);
+  }
+
   revalidatePath("/produtos");
   return {};
 }
@@ -151,6 +156,7 @@ export async function updateProduto(
       quantidade: Math.abs(diff),
       motivo: diff > 0 ? "Ajuste manual (entrada)" : "Ajuste manual (saída)",
     });
+    await maybeNotifyLowStock(supabase, user.id, id, newStock);
   }
 
   revalidatePath("/produtos");
