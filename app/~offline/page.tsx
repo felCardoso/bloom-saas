@@ -16,7 +16,10 @@ export default function OfflinePage() {
         <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
           Verifique sua conexão com a internet. As páginas que você visitou recentemente ainda estão disponíveis.
         </p>
-        <Button onClick={() => window.location.reload()}>
+        <Button
+          onClick={() => window.location.reload()}
+          className="px-6 py-2.5 font-semibold"
+        >
           Tentar novamente
         </Button>
       </div>

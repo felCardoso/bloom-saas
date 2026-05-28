@@ -51,9 +51,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         {...props}
       >
-        {loading && (
+        {loading ? (
           <svg
-            className="animate-spin -ml-1 h-4 w-4"
+            className="animate-spin h-4 w-4"
             fill="none"
             viewBox="0 0 24 24"
           >
@@ -71,8 +71,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
             />
           </svg>
+        ) : (
+          children
         )}
-        {children}
       </button>
     );
   },
