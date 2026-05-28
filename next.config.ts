@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const supabaseHost = (() => {
   try {
@@ -40,4 +41,17 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// withSentryConfig é seguro de aplicar sempre — quando SENTRY_AUTH_TOKEN não está
+// presente (dev local, PRs sem env), upload de sourcemaps é silenciosamente skippado.
+export default withSentryConfig(nextConfig, {
+  // Org/project só são consumidos no upload de sourcemaps em build production.
+  // Setar via env (SENTRY_ORG, SENTRY_PROJECT, SENTRY_AUTH_TOKEN) na Vercel.
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  // Tunnela requests Sentry pra /monitoring evita ad-blockers (instala route handler).
+  tunnelRoute: "/monitoring",
+  disableLogger: true,
+  automaticVercelMonitors: true,
+});
