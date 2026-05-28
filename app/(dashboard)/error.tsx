@@ -29,7 +29,7 @@ export default function DashboardError({
       </p>
 
       <div className="flex flex-col sm:flex-row gap-3">
-        <Button onClick={reset}>
+        <Button onClick={reset} className="px-5 py-2.5 font-semibold">
           <RefreshCw className="w-4 h-4" />
           Tentar novamente
         </Button>

@@ -11,11 +11,12 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, hint, className, id, type, ...props }, ref) => {
+  ({ label, error, hint, className, id, type, disabled, ...props }, ref) => {
     const inputId = id || label?.toLowerCase().replace(/\s/g, "-");
     const isPassword = type === "password";
     const [show, setShow] = useState(false);
     const effectiveType = isPassword && show ? "text" : type;
+    const showToggle = isPassword && !disabled;
 
     return (
       <div className="flex flex-col gap-1.5">
@@ -32,18 +33,20 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             type={effectiveType}
+            disabled={disabled}
             className={cn(
               "w-full px-3.5 py-2.5 rounded-xl border text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 transition-all duration-150",
               "focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent",
+              "disabled:opacity-60 disabled:cursor-not-allowed",
               error
                 ? "border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20"
                 : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-600",
-              isPassword && "pr-11",
+              showToggle && "pr-11",
               className,
             )}
             {...props}
           />
-          {isPassword && (
+          {showToggle && (
             <button
               type="button"
               onClick={() => setShow((v) => !v)}
