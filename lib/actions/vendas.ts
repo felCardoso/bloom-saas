@@ -6,6 +6,7 @@ import type { Order, OrderStatus, OrderItem, PaymentMethod } from "@/lib/types";
 import { sendOrderConfirmationEmail } from "@/lib/email";
 import { checkPlanLimit } from "@/lib/actions/plan-limit";
 import { logMovimento } from "@/lib/stock-utils";
+import { maybeNotifyLowStock } from "@/lib/notifications/low-stock";
 
 type VendaRow = {
   id: string;
@@ -80,6 +81,12 @@ async function adjustStock(
           motivo: opts.motivo,
           venda_id: opts.vendaId,
         });
+        await maybeNotifyLowStock(
+          supabase,
+          opts.userId,
+          item.product_id,
+          newStock,
+        );
       }
     }
   }

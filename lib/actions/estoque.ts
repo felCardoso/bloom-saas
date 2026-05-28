@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { maybeNotifyLowStock } from "@/lib/notifications/low-stock";
 import type { StockMovement } from "@/lib/types";
 
 type MovRow = {
@@ -76,6 +77,8 @@ export async function adicionarEstoque(
     motivo: motivo?.trim() || null,
   });
   if (movErr) return { error: "Estoque atualizado, mas falha ao registrar histórico." };
+
+  await maybeNotifyLowStock(supabase, user.id, produtoId, newStock);
 
   revalidatePath("/produtos");
   return { newStock };
