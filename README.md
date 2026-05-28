@@ -327,6 +327,7 @@ Por que não pg_dump? A CLI do Supabase requer Docker, e o pg_dump nativo não v
 - ✅ RLS policies + `ENABLE ROW LEVEL SECURITY`
 - ✅ GRANTs para `anon`, `authenticated`, `service_role`
 - ❌ Funções e triggers (o app não usa nenhum hoje)
+- ❌ Views (diagnostic views como `v_saas_overview`, `v_trial_funnel` etc. vivem no Supabase Dashboard — não são críticas pro app funcionar)
 - ❌ Dados (intencional)
 - ❌ Schemas `auth` / `storage` / `realtime` (gerenciados pelo Supabase)
 - ❌ Extensões (precisam ser habilitadas via dashboard)

@@ -173,8 +173,15 @@ for (const tableName of tableNames) {
     const parts = [`CREATE POLICY "${p.name}" ON "${tableName}"`];
     parts.push(`  AS ${p.permissive ? "PERMISSIVE" : "RESTRICTIVE"}`);
     parts.push(`  FOR ${p.cmd}`);
-    if (p.roles && p.roles.length > 0) {
-      parts.push(`  TO ${p.roles.join(", ")}`);
+    // pg_policies.roles vem como name[] mas o driver pode entregar como string
+    // ("{anon,authenticated}") em vez de array — normaliza para array.
+    const roles = Array.isArray(p.roles)
+      ? p.roles
+      : typeof p.roles === "string"
+        ? p.roles.replace(/^\{|\}$/g, "").split(",").filter(Boolean)
+        : [];
+    if (roles.length > 0) {
+      parts.push(`  TO ${roles.join(", ")}`);
     }
     if (p.qual) parts.push(`  USING (${p.qual})`);
     if (p.with_check) parts.push(`  WITH CHECK (${p.with_check})`);
@@ -204,13 +211,16 @@ if (indexes.rows.length > 0) {
 
 // ── GRANTs para roles do Supabase ────────────────────────────────────────────
 const grants = await client.query(`
-  SELECT grantee, table_name,
-         string_agg(DISTINCT privilege_type, ', ' ORDER BY privilege_type) AS privs
-  FROM information_schema.role_table_grants
-  WHERE table_schema = 'public'
-    AND grantee IN ('anon', 'authenticated', 'service_role')
-  GROUP BY grantee, table_name
-  ORDER BY table_name, grantee
+  SELECT g.grantee, g.table_name,
+         string_agg(DISTINCT g.privilege_type, ', ' ORDER BY g.privilege_type) AS privs
+  FROM information_schema.role_table_grants g
+  JOIN information_schema.tables t
+    ON t.table_schema = g.table_schema AND t.table_name = g.table_name
+  WHERE g.table_schema = 'public'
+    AND t.table_type = 'BASE TABLE'
+    AND g.grantee IN ('anon', 'authenticated', 'service_role')
+  GROUP BY g.grantee, g.table_name
+  ORDER BY g.table_name, g.grantee
 `);
 
 if (grants.rows.length > 0) {
