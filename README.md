@@ -305,6 +305,38 @@ curl -H "Authorization: Bearer $CRON_SECRET" https://seu-dominio.vercel.app/api/
 
 ---
 
+## Schema do banco (versionado)
+
+O schema do Supabase (tabelas, índices, FKs, RLS policies, enums, GRANTs) vive em [`supabase/schema.sql`](./supabase/schema.sql) e é regenerado via:
+
+```bash
+# Pega a Connection string pooler em: Supabase Dashboard → Project Settings →
+# Database → "Connection pooling" → modo Transaction
+$env:SUPABASE_DB_URL = "postgresql://postgres.<ref>:<pwd>@aws-0-<region>.pooler.supabase.com:6543/postgres"
+npm run db:dump
+```
+
+Por que não pg_dump? A CLI do Supabase requer Docker, e o pg_dump nativo não vem no Windows por padrão. O script em [scripts/dump-schema.mjs](./scripts/dump-schema.mjs) usa só o cliente `pg` em JS para extrair as DDLs essenciais via queries em `pg_catalog` / `information_schema`.
+
+### Cobertura
+
+- ✅ Tabelas (CREATE TABLE com tipos, defaults, nullable, IDENTITY)
+- ✅ PK, UNIQUE, FK, CHECK constraints
+- ✅ Índices não-implícitos
+- ✅ ENUMs
+- ✅ RLS policies + `ENABLE ROW LEVEL SECURITY`
+- ✅ GRANTs para `anon`, `authenticated`, `service_role`
+- ❌ Funções e triggers (o app não usa nenhum hoje)
+- ❌ Dados (intencional)
+- ❌ Schemas `auth` / `storage` / `realtime` (gerenciados pelo Supabase)
+- ❌ Extensões (precisam ser habilitadas via dashboard)
+
+### Quando regenerar
+
+Roda `npm run db:dump` toda vez que aplicar uma migration no Supabase Dashboard e commita o `schema.sql` resultante junto com o código que depende dele.
+
+---
+
 ## Pagamentos (Asaas)
 
 O Asaas é o gateway de pagamentos brasileiro utilizado (Pix, boleto, cartão de crédito).
