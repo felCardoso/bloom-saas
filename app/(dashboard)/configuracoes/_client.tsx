@@ -746,13 +746,13 @@ function AssinaturaTab({ initialPeriodEnd, initialCpfCnpj }: { initialPeriodEnd:
                 Para confirmar elegibilidade, informe seu CPF:
               </p>
               <div className="flex gap-2">
-                <input
-                  type="text"
+                <Input
+                  tone="rose"
                   value={cpfInput}
                   onChange={(e) => setCpfInput(e.target.value)}
                   placeholder="000.000.000-00"
                   maxLength={14}
-                  className="flex-1 text-sm px-3 py-2 rounded-xl border border-rose-200 dark:border-rose-800 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
+                  wrapperClassName="flex-1"
                 />
                 <button
                   onClick={handleStartTrial}
@@ -1290,17 +1290,21 @@ function ContaTab({ userEmail }: { userEmail: string }) {
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-red-700 dark:text-red-400">
+              <label
+                htmlFor="confirm-email-delete"
+                className="text-xs font-medium text-red-700 dark:text-red-400"
+              >
                 Digite seu e-mail{" "}
                 <span className="font-mono bg-red-100 dark:bg-red-900/40 px-1 py-0.5 rounded">{userEmail}</span>{" "}
                 para confirmar
               </label>
-              <input
+              <Input
+                id="confirm-email-delete"
                 type="email"
+                tone="danger"
                 placeholder={userEmail}
                 value={confirmEmail}
                 onChange={(e) => setConfirmEmail(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-red-300 dark:border-red-700 bg-white dark:bg-neutral-900 text-sm text-neutral-800 dark:text-neutral-200 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all"
               />
             </div>
             {deleteError && (
@@ -1408,12 +1412,13 @@ function CategoriasTab({ initialCategorias }: { initialCategorias: Categoria[] }
             {editingId === cat.id ? (
               <>
                 <div className="flex-1 min-w-0">
-                  <input
+                  <Input
+                    size="sm"
                     value={editNome}
                     onChange={(e) => setEditNome(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") handleRename(cat.id); if (e.key === "Escape") setEditingId(null); }}
                     autoFocus
-                    className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-400"
+                    className="bg-neutral-50 dark:border-neutral-600"
                   />
                 </div>
                 {editError && <p className="text-xs text-red-500 shrink-0">{editError}</p>}
