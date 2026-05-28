@@ -305,3 +305,158 @@ export async function deleteVenda(id: string): Promise<{ error?: string }> {
   revalidatePath("/dashboard");
   return {};
 }
+
+/**
+ * Atualiza os itens de um pedido existente: adiciona, remove ou ajusta
+ * quantidades, reconciliando estoque pelo delta (newQty - oldQty) de cada
+ * produto. Recalcula valor_total da venda.
+ *
+ * Status:
+ * - pendente / confirmado / entregue: ajusta estoque e itens
+ * - cancelado: retorna erro (faz sentido editar só pedidos ativos)
+ *
+ * Falha cedo se algum delta positivo (precisa mais estoque) for maior que
+ * o estoque atual disponível do produto.
+ */
+export async function updateVendaItems(
+  vendaId: string,
+  newItems: OrderItem[],
+): Promise<{ error?: string }> {
+  if (newItems.length === 0) {
+    return { error: "Um pedido precisa ter pelo menos um item." };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Não autenticado" };
+
+  const { data: venda, error: vendaErr } = await supabase
+    .from("vendas")
+    .select("id, status, user_id")
+    .eq("id", vendaId)
+    .single();
+
+  if (vendaErr || !venda) return { error: "Pedido não encontrado" };
+  if (venda.user_id !== user.id) return { error: "Não autorizado" };
+  if (venda.status === "cancelado") {
+    return {
+      error: "Não é possível editar os itens de um pedido cancelado.",
+    };
+  }
+
+  // Carrega itens atuais para calcular o delta por produto
+  const oldItems = await getItensVenda(supabase, vendaId);
+
+  // Mapa produto_id → delta (positivo = precisa baixar mais estoque)
+  const deltas = new Map<string, number>();
+  for (const oldItem of oldItems) {
+    deltas.set(
+      oldItem.product_id,
+      (deltas.get(oldItem.product_id) ?? 0) - oldItem.quantity,
+    );
+  }
+  for (const newItem of newItems) {
+    deltas.set(
+      newItem.product_id,
+      (deltas.get(newItem.product_id) ?? 0) + newItem.quantity,
+    );
+  }
+
+  // Valida disponibilidade pra deltas positivos antes de mexer em nada
+  const positiveProductIds = Array.from(deltas.entries())
+    .filter(([, d]) => d > 0)
+    .map(([id]) => id);
+
+  if (positiveProductIds.length > 0) {
+    const { data: produtos } = await supabase
+      .from("produtos")
+      .select("id, nome, estoque_atual")
+      .in("id", positiveProductIds);
+
+    const stockMap = new Map(
+      (produtos ?? []).map(
+        (p: { id: string; nome: string; estoque_atual: number | null }) => [
+          p.id,
+          { nome: p.nome, stock: p.estoque_atual ?? 0 },
+        ],
+      ),
+    );
+
+    for (const productId of positiveProductIds) {
+      const delta = deltas.get(productId)!;
+      const info = stockMap.get(productId);
+      if (!info) return { error: "Produto não encontrado." };
+      if (delta > info.stock) {
+        return {
+          error: `Estoque insuficiente para ${info.nome}: precisa de ${delta} a mais, disponível ${info.stock}.`,
+        };
+      }
+    }
+  }
+
+  // Substitui todos os itens da venda — mais simples e idempotente que diff
+  // row-by-row. RLS + FK garantem isolamento por usuário.
+  const { error: delErr } = await supabase
+    .from("itens_venda")
+    .delete()
+    .eq("venda_id", vendaId);
+  if (delErr) return { error: delErr.message };
+
+  const newRows = newItems.map((item) => ({
+    venda_id: vendaId,
+    produto_id: item.product_id,
+    quantidade: item.quantity,
+    preco_unitario_no_momento: item.unit_price,
+  }));
+  const { error: insErr } = await supabase.from("itens_venda").insert(newRows);
+  if (insErr) return { error: insErr.message };
+
+  // Aplica delta de estoque + log + notificação por produto afetado
+  for (const [productId, delta] of deltas) {
+    if (delta === 0) continue;
+
+    const { data: produto } = await supabase
+      .from("produtos")
+      .select("estoque_atual")
+      .eq("id", productId)
+      .maybeSingle();
+    if (!produto) continue;
+
+    const currentStock = produto.estoque_atual ?? 0;
+    const newStock = Math.max(0, currentStock - delta);
+
+    await supabase
+      .from("produtos")
+      .update({ estoque_atual: newStock })
+      .eq("id", productId);
+
+    await logMovimento(supabase, {
+      user_id: user.id,
+      produto_id: productId,
+      tipo: delta > 0 ? "saida" : "entrada",
+      quantidade: Math.abs(delta),
+      motivo: delta > 0 ? "Pedido editado (item adicionado)" : "Pedido editado (item removido)",
+      venda_id: vendaId,
+    });
+
+    await maybeNotifyLowStock(supabase, user.id, productId, newStock);
+  }
+
+  // Recalcula valor_total
+  const newTotal = newItems.reduce(
+    (sum, item) => sum + item.quantity * item.unit_price,
+    0,
+  );
+  const { error: updErr } = await supabase
+    .from("vendas")
+    .update({ valor_total: newTotal })
+    .eq("id", vendaId);
+  if (updErr) return { error: updErr.message };
+
+  revalidatePath("/pedidos");
+  revalidatePath("/produtos");
+  revalidatePath("/dashboard");
+  return {};
+}
