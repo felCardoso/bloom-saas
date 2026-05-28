@@ -10,6 +10,7 @@ import { usePlan } from "@/lib/plan-context";
 import { useProfile } from "@/lib/profile-context";
 import { signOut } from "@/lib/actions/auth";
 import { searchGlobal, type SearchResultItem } from "@/lib/actions/search";
+import { cn } from "@/lib/utils";
 
 const pageTitles: Record<string, { title: string; subtitle: string }> = {
   "/dashboard": { title: "Dashboard", subtitle: "Visão geral do seu negócio" },
@@ -270,8 +271,13 @@ export function Header() {
         )}
       </div>
 
-      {/* Title */}
-      <div className="flex-1 min-w-0">
+      {/* Title — escondido em mobile quando search está aberta */}
+      <div
+        className={cn(
+          "flex-1 min-w-0",
+          searchOpen && "hidden md:block",
+        )}
+      >
         <h1 className="text-sm lg:text-base font-semibold text-neutral-800 dark:text-neutral-100 truncate">
           {page.title}
         </h1>
@@ -279,6 +285,22 @@ export function Header() {
           {page.subtitle}
         </p>
       </div>
+
+      {/* Mobile search expandida — ocupa o slot do título */}
+      {searchOpen && (
+        <div className="flex flex-1 items-center gap-2 md:hidden">
+          <div className="flex-1 min-w-0">
+            <SearchBox autoFocus onClose={() => setSearchOpen(false)} />
+          </div>
+          <button
+            onClick={() => setSearchOpen(false)}
+            className="p-2 rounded-xl text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shrink-0"
+            aria-label="Fechar busca"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
 
       <div className="flex items-center gap-2">
         {/* Trial badge */}
@@ -307,23 +329,12 @@ export function Header() {
           <SearchBox />
         </div>
 
-        {/* Mobile search toggle */}
-        {searchOpen ? (
-          <div className="flex items-center gap-2 md:hidden">
-            <div className="w-52">
-              <SearchBox autoFocus onClose={() => setSearchOpen(false)} />
-            </div>
-            <button
-              onClick={() => setSearchOpen(false)}
-              className="p-2 rounded-xl text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shrink-0"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        ) : (
+        {/* Mobile search toggle — só quando search está fechada */}
+        {!searchOpen && (
           <button
             onClick={() => setSearchOpen(true)}
             className="md:hidden p-2 rounded-xl text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+            aria-label="Buscar"
           >
             <Search size={18} />
           </button>

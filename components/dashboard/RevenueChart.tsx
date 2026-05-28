@@ -53,7 +53,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
   const color600 = useThemeColor(600);
 
   return (
-    <Card className="col-span-2">
+    <Card className="lg:col-span-2">
       <CardHeader>
         <CardTitle>Receita dos Últimos 6 Meses</CardTitle>
         <span className="text-xs text-neutral-400">Em reais (R$)</span>
