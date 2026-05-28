@@ -7,8 +7,6 @@ import {
   Bell,
   Shield,
   Trash2,
-  Eye,
-  EyeOff,
   Check,
   Download,
   AlertTriangle,
@@ -1048,7 +1046,6 @@ function formatSince(dateStr: string): string {
 }
 
 function SegurancaTab() {
-  const [showNew, setShowNew] = useState(false);
   const [pw, setPw] = useState({ next: "", confirm: "" });
   const [pwError, setPwError] = useState("");
   const [pwSaved, setPwSaved] = useState(false);
@@ -1093,29 +1090,18 @@ function SegurancaTab() {
     setTimeout(() => setRevokeMsg(null), 4000);
   };
 
-  const pwInputClass =
-    "w-full px-3.5 py-2.5 pr-11 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 hover:border-neutral-300 dark:hover:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all";
-
   return (
     <div className="space-y-8">
       <div>
         <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-4">Alterar senha</h3>
         <div className="space-y-4 max-w-sm">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Nova senha</label>
-            <div className="relative">
-              <input
-                type={showNew ? "text" : "password"}
-                placeholder="Mínimo 8 caracteres"
-                value={pw.next}
-                onChange={(e) => { setPw({ ...pw, next: e.target.value }); setPwError(""); }}
-                className={pwInputClass}
-              />
-              <button type="button" onClick={() => setShowNew((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">
-                {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
+          <Input
+            label="Nova senha"
+            type="password"
+            placeholder="Mínimo 8 caracteres"
+            value={pw.next}
+            onChange={(e) => { setPw({ ...pw, next: e.target.value }); setPwError(""); }}
+          />
           <Input
             label="Confirmar nova senha"
             type="password"
